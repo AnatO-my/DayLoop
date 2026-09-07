@@ -1,0 +1,163 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "5e8ebba9a636466aed39c27f317d085e",
+    "entities": [
+      {
+        "tableName": "tasks",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `status` TEXT NOT NULL, `priority` TEXT NOT NULL, `schedule_kind` TEXT, `all_day_date` TEXT, `deadline_at` TEXT, `time_block_starts_at` TEXT, `time_block_ends_at` TEXT, `interval_every_millis` INTEGER, `interval_window_starts_at` TEXT, `interval_window_ends_at` TEXT, `interval_eligible_days` TEXT, `interval_starts_on` TEXT, `interval_ends_on` TEXT, `interval_anchor` TEXT, `recurrence_frequency` TEXT, `recurrence_every` INTEGER, `recurrence_starts_on` TEXT, `recurrence_ends_on` TEXT, `recurrence_days_of_week` TEXT, `reminder_mode` TEXT NOT NULL, `realert_interval_millis` INTEGER, `maximum_realerts` INTEGER NOT NULL, `snooze_allowed` INTEGER NOT NULL, `reschedule_allowed` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "priority",
+            "columnName": "priority",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scheduleKind",
+            "columnName": "schedule_kind",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "allDayDate",
+            "columnName": "all_day_date",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "deadlineAt",
+            "columnName": "deadline_at",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeBlockStartsAt",
+            "columnName": "time_block_starts_at",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeBlockEndsAt",
+            "columnName": "time_block_ends_at",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "intervalEveryMillis",
+            "columnName": "interval_every_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "intervalWindowStartsAt",
+            "columnName": "interval_window_starts_at",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "intervalWindowEndsAt",
+            "columnName": "interval_window_ends_at",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "intervalEligibleDays",
+            "columnName": "interval_eligible_days",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "intervalStartsOn",
+            "columnName": "interval_starts_on",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "intervalEndsOn",
+            "columnName": "interval_ends_on",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "intervalAnchor",
+            "columnName": "interval_anchor",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recurrenceFrequency",
+            "columnName": "recurrence_frequency",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recurrenceEvery",
+            "columnName": "recurrence_every",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "recurrenceStartsOn",
+            "columnName": "recurrence_starts_on",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recurrenceEndsOn",
+            "columnName": "recurrence_ends_on",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recurrenceDaysOfWeek",
+            "columnName": "recurrence_days_of_week",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "reminderMode",
+            "columnName": "reminder_mode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "realertIntervalMillis",
+            "columnName": "realert_interval_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "maximumRealerts",
+            "columnName": "maximum_realerts",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "snoozeAllowed",
+            "columnName": "snooze_allowed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rescheduleAllowed",
+            "columnName": "reschedule_allowed",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5e8ebba9a636466aed39c27f317d085e')"
+    ]
+  }
+}

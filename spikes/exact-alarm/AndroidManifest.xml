@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.dayloop.spike.exactalarm">
+    <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="36" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <application
+        android:allowBackup="false"
+        android:theme="@android:style/Theme.Material.Light.NoActionBar"
+        android:label="DayLoop Alarm Spike"
+        android:debuggable="true">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".FullScreenAlarmActivity"
+            android:exported="false"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true" />
+
+        <receiver
+            android:name=".UiCommandReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="dayloop.spike.CLEAR" />
+                <action android:name="dayloop.spike.CHECK_UI" />
+                <action android:name="dayloop.spike.POST_HIGH" />
+                <action android:name="dayloop.spike.POST_FULL_SCREEN" />
+                <action android:name="dayloop.spike.SCHEDULE_EXACT" />
+                <action android:name="dayloop.spike.SCHEDULE_FALLBACK" />
+                <action android:name="dayloop.spike.SCHEDULE_INTERVAL" />
+                <action android:name="dayloop.spike.CANCEL" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".BootRecoveryReceiver"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".ReminderAlarmReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".ExactAlarmPermissionReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>
+
