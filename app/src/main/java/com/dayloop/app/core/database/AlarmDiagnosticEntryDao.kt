@@ -16,4 +16,7 @@ interface AlarmDiagnosticEntryDao {
 
     @Query("SELECT * FROM alarm_diagnostic_entries ORDER BY created_at_epoch_millis DESC, id DESC")
     fun observeAll(): Flow<List<AlarmDiagnosticEntryEntity>>
+
+    @Query("DELETE FROM alarm_diagnostic_entries")
+    suspend fun deleteAll()
 }

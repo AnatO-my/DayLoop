@@ -1,6 +1,6 @@
-- [ ] Add `Note` model and update `AppSettings` / `SettingsRepository`
-- [ ] Update `DayLoopNavigation.kt` (`DayLoopMainNav`) for 3-item nav and new gestures
-- [ ] Implement `NotesScreen.kt`
-- [ ] Refactor `PlansScreen.kt` with combined header and internal tab state
-- [ ] Refactor `TodayScreen.kt` (remove metrics, add streak flame)
-- [ ] Update `DayLoopApp.kt` to wire new screens and navigation logic
+- [x] Create core non-Material `DayLoopDesignSystem` primitives
+- [x] Define `MatchaCard` custom geometric shape from Ref 2
+- [x] Implement `DayLoopText` and `DayLoopBox` as standalone components
+- [ ] Migrate `TodayScreen` to use the new custom design system
+- [ ] Implement custom "Matcha Navigation Bar" with floating Plus button
+- [ ] Replace all `MaterialTheme` references with `DayLoopTheme`

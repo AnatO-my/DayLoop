@@ -226,6 +226,7 @@ class AndroidAlarmSchedulerTest {
 
     private class FakeAlarmDiagnosticsRepository : AlarmDiagnosticsRepository {
         val entries = mutableListOf<AlarmDiagnosticEntry>()
+        override suspend fun clearAllEntries() { entries.clear() }
 
         override fun observeEntries(): Flow<List<AlarmDiagnosticEntry>> = flowOf(entries)
 

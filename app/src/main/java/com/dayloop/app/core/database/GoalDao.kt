@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -19,4 +20,13 @@ interface GoalDao {
 
     @Query("DELETE FROM goals WHERE id = :id")
     suspend fun deleteById(id: String): Int
+
+    @Query("UPDATE projects SET goal_id = NULL WHERE goal_id = :id")
+    suspend fun unlinkChildren(id: String)
+
+    @Transaction
+    suspend fun deleteAndUnlink(id: String): Int {
+        unlinkChildren(id)
+        return deleteById(id)
+    }
 }

@@ -5,6 +5,8 @@ import com.dayloop.app.core.model.Goal
 import com.dayloop.app.core.model.GoalId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import com.dayloop.app.repository.toDomain
+import com.dayloop.app.repository.toEntity
 
 class RoomGoalRepository(
     private val goalDao: GoalDao,
@@ -18,5 +20,5 @@ class RoomGoalRepository(
         goalDao.upsert(goal.toEntity())
     }
 
-    override suspend fun deleteGoal(id: GoalId): Boolean = goalDao.deleteById(id.value) > 0
+    override suspend fun deleteGoal(id: GoalId): Boolean = goalDao.deleteAndUnlink(id.value) > 0
 }

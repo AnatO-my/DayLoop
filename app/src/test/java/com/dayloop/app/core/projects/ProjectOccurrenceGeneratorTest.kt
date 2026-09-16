@@ -42,6 +42,19 @@ class ProjectOccurrenceGeneratorTest {
         assertEquals(TaskId("generated:project-1:2026-09-01"), task.id)
         assertEquals(project.id, task.projectId)
         assertEquals("PROJECT_RULE", task.provenance?.originType)
+        assertEquals(1L, task.provenance?.version)
+    }
+
+    @Test
+    fun `generated task reflects project version`() {
+        val today = anchor
+        val moment = TodayMoment(today.atStartOfDay(zone).toInstant(), zone)
+        val updatedProject = project.copy(version = 2L)
+        
+        val generated = generator.generateFor(listOf(updatedProject), moment)
+        
+        val task = generated.first()
+        assertEquals(2L, task.provenance?.version)
     }
 
     @Test

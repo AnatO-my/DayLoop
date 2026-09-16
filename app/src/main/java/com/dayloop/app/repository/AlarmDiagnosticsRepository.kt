@@ -9,4 +9,6 @@ interface AlarmDiagnosticsRepository {
     suspend fun getRecentEntries(limit: Int = 100): List<AlarmDiagnosticEntry>
 
     suspend fun append(entry: AlarmDiagnosticEntry)
+
+    suspend fun clearAllEntries()
 }

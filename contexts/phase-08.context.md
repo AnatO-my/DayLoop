@@ -14,6 +14,17 @@
 - core/alarms
 - core/notifications
 - settings + escalation tests
+- `../app/src/main/java/com/dayloop/app/repository/PersistentReminderEscalationRepository.kt`
+- `../app/src/main/java/com/dayloop/app/repository/RoomPersistentReminderEscalationRepository.kt`
+- `../app/src/main/java/com/dayloop/app/repository/PersistentReminderEscalationEntityMappers.kt`
+- `../app/src/main/java/com/dayloop/app/repository/ScheduledOccurrenceRepository.kt`
+- `../app/src/main/java/com/dayloop/app/repository/ScheduledOccurrenceEntityMappers.kt`
+- `../app/src/main/java/com/dayloop/app/repository/TaskRepository.kt`
+- `../app/src/main/java/com/dayloop/app/core/database/DayLoopDatabase.kt`
+- `../app/src/main/java/com/dayloop/app/core/database/PersistentReminderEscalationDao.kt`
+- `../app/src/main/java/com/dayloop/app/core/database/ScheduledOccurrenceDao.kt`
+- `../app/src/main/java/com/dayloop/app/di/DefaultAppGraph.kt`
+- `../app/src/androidTest/java/com/dayloop/app/core/database/EscalationSchedulingPersistenceTest.kt`
 
 ## Read only if a specific decision blocks work
 - LOOPS.md escalation section only

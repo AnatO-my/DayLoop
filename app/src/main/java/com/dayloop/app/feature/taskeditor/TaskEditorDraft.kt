@@ -11,6 +11,7 @@ import com.dayloop.app.core.model.Task
 import com.dayloop.app.core.model.TaskId
 import com.dayloop.app.core.model.TaskPriority
 import com.dayloop.app.core.model.TaskSchedule
+import com.dayloop.app.core.model.Subtask
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
@@ -44,6 +45,7 @@ private val LocalTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(
 data class TaskEditorDraft(
     val title: String = "",
     val priority: TaskPriority = TaskPriority.NORMAL,
+    val allDayDate: String = "",
     val deadlineEnabled: Boolean = false,
     val deadlineDate: String = "",
     val deadlineTime: String = "",
@@ -68,13 +70,14 @@ data class TaskEditorDraft(
     val reminderMaximumRealerts: String = "3",
     val reminderSnoozeAllowed: Boolean = true,
     val reminderRescheduleAllowed: Boolean = true,
+    val subtasks: List<Subtask> = emptyList(),
     val errorMessage: String? = null,
     val deadlineErrorMessage: String? = null,
     val timeBlockErrorMessage: String? = null,
     val intervalErrorMessage: String? = null,
     val recurrenceErrorMessage: String? = null,
     val reminderPolicyErrorMessage: String? = null,
-) {
+) : java.io.Serializable {
     val normalizedTitle: String = title.trim()
     val canSubmit: Boolean = normalizedTitle.isNotEmpty()
 
@@ -240,6 +243,10 @@ data class TaskEditorDraft(
         reminderPolicyErrorMessage = null,
     )
 
+    fun onSubtasksChanged(subtasks: List<Subtask>): TaskEditorDraft = copy(
+        subtasks = subtasks,
+    )
+
     fun createTask(createTaskId: () -> TaskId = { TaskId.generate() }): TaskEditorSubmitResult {
         if (!canSubmit) {
             return invalidTitle()
@@ -261,6 +268,7 @@ data class TaskEditorDraft(
                 priority = priority,
                 schedule = schedule,
                 reminderPolicy = reminderPolicy,
+                subtasks = subtasks,
             ),
         )
     }
@@ -273,7 +281,7 @@ data class TaskEditorDraft(
         val existingIntervalRule = (task.schedule as? TaskSchedule.Interval)?.rule
         val schedule = when (val result = editorSchedule(existingIntervalRule)) {
             is EditorScheduleResult.Invalid -> return invalidSchedule(result)
-            is EditorScheduleResult.Valid -> result.schedule ?: task.schedule
+            is EditorScheduleResult.Valid -> result.schedule ?: (task.schedule as? TaskSchedule.AllDay)
         }
         val reminderPolicy = when (val result = editorReminderPolicy(schedule)) {
             is EditorReminderPolicyResult.Invalid -> return invalidReminderPolicy(result.message)
@@ -286,6 +294,7 @@ data class TaskEditorDraft(
                 priority = priority,
                 schedule = schedule,
                 reminderPolicy = reminderPolicy,
+                subtasks = subtasks,
             ),
         )
     }
@@ -295,6 +304,11 @@ data class TaskEditorDraft(
         intervalEnabled -> intervalSchedule(existingIntervalRule)
         timeBlockEnabled -> timeBlockSchedule()
         deadlineEnabled -> deadlineSchedule()
+        allDayDate.isNotBlank() -> try {
+            EditorScheduleResult.Valid(TaskSchedule.AllDay(LocalDate.parse(allDayDate)))
+        } catch (_: DateTimeParseException) {
+            EditorScheduleResult.Invalid("Choose a valid planning date", ScheduleErrorTarget.DATE)
+        }
         else -> EditorScheduleResult.Valid(schedule = null)
     }
 
@@ -527,6 +541,7 @@ data class TaskEditorDraft(
             ScheduleErrorTarget.TIME_BLOCK -> copy(timeBlockErrorMessage = result.message)
             ScheduleErrorTarget.INTERVAL -> copy(intervalErrorMessage = result.message)
             ScheduleErrorTarget.RECURRENCE -> copy(recurrenceErrorMessage = result.message)
+            ScheduleErrorTarget.DATE -> copy(errorMessage = result.message)
         }
         return TaskEditorSubmitResult.Invalid(draft = draft)
     }
@@ -539,6 +554,8 @@ data class TaskEditorDraft(
         fun fromTask(task: Task): TaskEditorDraft {
             val reminderPolicy = task.reminderPolicy
             val baseDraft = when (val schedule = task.schedule) {
+                is TaskSchedule.AllDay -> TaskEditorDraft(title = task.title, priority = task.priority,
+                    allDayDate = schedule.date.toString())
                 is TaskSchedule.Deadline -> TaskEditorDraft(
                     title = task.title,
                     priority = task.priority,
@@ -593,6 +610,7 @@ data class TaskEditorDraft(
                 },
                 reminderSnoozeAllowed = reminderPolicy.snoozeAllowed,
                 reminderRescheduleAllowed = reminderPolicy.rescheduleAllowed,
+                subtasks = task.subtasks,
             )
         }
     }
@@ -615,6 +633,7 @@ private sealed interface EditorScheduleResult {
 }
 
 private enum class ScheduleErrorTarget {
+    DATE,
     DEADLINE,
     TIME_BLOCK,
     INTERVAL,

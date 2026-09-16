@@ -10,10 +10,15 @@ import com.dayloop.app.core.model.ReminderMode
 import com.dayloop.app.core.model.ReminderPolicy
 import com.dayloop.app.core.model.Task
 import com.dayloop.app.core.model.TaskId
+import com.dayloop.app.core.model.ProjectId
+import com.dayloop.app.core.model.TaskProvenance
 import com.dayloop.app.core.model.TaskPriority
 import com.dayloop.app.core.model.TaskSchedule
 import com.dayloop.app.core.model.TaskScheduleKind
 import com.dayloop.app.core.model.TaskStatus
+import com.dayloop.app.core.model.Subtask
+import org.json.JSONArray
+import org.json.JSONObject
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
@@ -31,6 +36,21 @@ internal fun Task.toEntity(): TaskEntity {
         maximumRealerts = reminderPolicy.maximumRealerts,
         snoozeAllowed = reminderPolicy.snoozeAllowed,
         rescheduleAllowed = reminderPolicy.rescheduleAllowed,
+        projectId = projectId?.value,
+        provenanceOriginType = provenance?.originType,
+        provenanceRuleId = provenance?.ruleId,
+        provenanceVersion = provenance?.version,
+        subtasksJson = if (subtasks.isEmpty()) null else {
+            JSONArray().apply {
+                subtasks.forEach { subtask ->
+                    put(JSONObject().apply {
+                        put("id", subtask.id)
+                        put("title", subtask.title)
+                        put("completed", subtask.isCompleted)
+                    })
+                }
+            }.toString()
+        },
     )
 
     return when (val taskSchedule = schedule) {
@@ -76,6 +96,23 @@ internal fun TaskEntity.toDomain(): Task = Task(
     priority = TaskPriority.valueOf(priority),
     schedule = toSchedule(),
     reminderPolicy = toReminderPolicy(),
+    projectId = projectId?.let(::ProjectId),
+    subtasks = subtasksJson?.let { json ->
+        try {
+            val array = JSONArray(json)
+            (0 until array.length()).map { i ->
+                val obj = array.getJSONObject(i)
+                Subtask(obj.getString("id"), obj.getString("title"), obj.getBoolean("completed"))
+            }
+        } catch (_: Exception) { emptyList() }
+    } ?: emptyList(),
+    provenance = if (provenanceOriginType != null && provenanceRuleId != null && provenanceVersion != null) {
+        TaskProvenance(
+            originType = provenanceOriginType,
+            ruleId = provenanceRuleId,
+            version = provenanceVersion,
+        )
+    } else null,
 )
 
 private fun TaskEntity.toSchedule(): TaskSchedule? {

@@ -88,3 +88,64 @@ val MIGRATION_3_4: Migration = object : Migration(3, 4) {
         )
     }
 }
+
+val MIGRATION_4_5: Migration = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `goals` (
+                `id` TEXT NOT NULL,
+                `title` TEXT NOT NULL,
+                `target_date` TEXT,
+                `progress_policy` TEXT NOT NULL,
+                `status` TEXT NOT NULL,
+                PRIMARY KEY(`id`)
+            )
+            """.trimIndent(),
+        )
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `projects` (
+                `id` TEXT NOT NULL,
+                `goal_id` TEXT,
+                `title` TEXT NOT NULL,
+                `status` TEXT NOT NULL,
+                PRIMARY KEY(`id`)
+            )
+            """.trimIndent(),
+        )
+        db.execSQL("ALTER TABLE `tasks` ADD COLUMN `project_id` TEXT")
+        db.execSQL("ALTER TABLE `tasks` ADD COLUMN `provenance_origin_type` TEXT")
+        db.execSQL("ALTER TABLE `tasks` ADD COLUMN `provenance_rule_id` TEXT")
+        db.execSQL("ALTER TABLE `tasks` ADD COLUMN `provenance_version` INTEGER")
+    }
+}
+
+val MIGRATION_5_6: Migration = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `projects` ADD COLUMN `protocol_type` TEXT")
+        db.execSQL("ALTER TABLE `projects` ADD COLUMN `protocol_active_days` INTEGER")
+        db.execSQL("ALTER TABLE `projects` ADD COLUMN `protocol_rest_days` INTEGER")
+        db.execSQL("ALTER TABLE `projects` ADD COLUMN `protocol_anchor_date` TEXT")
+        db.execSQL("ALTER TABLE `projects` ADD COLUMN `protocol_task_title` TEXT")
+        db.execSQL("ALTER TABLE `projects` ADD COLUMN `protocol_task_priority` TEXT")
+    }
+}
+
+val MIGRATION_6_7: Migration = object : Migration(6, 7) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `projects` ADD COLUMN `version` INTEGER NOT NULL DEFAULT 1")
+    }
+}
+
+val MIGRATION_7_8: Migration = object : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `goals` ADD COLUMN `manual_progress` REAL NOT NULL DEFAULT 0.0")
+    }
+}
+
+val MIGRATION_8_9: Migration = object : Migration(8, 9) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `tasks` ADD COLUMN `subtasks_json` TEXT")
+    }
+}

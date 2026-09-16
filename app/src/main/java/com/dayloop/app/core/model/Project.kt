@@ -25,8 +25,16 @@ data class Project(
     val goalId: GoalId? = null,
     val title: String,
     val status: ProjectStatus = ProjectStatus.ACTIVE,
+    val protocol: ProjectProtocol? = null,
+    val version: Long = 1L,
 ) {
     init {
         require(title.isNotBlank()) { "Project title must not be blank." }
+        require(version > 0) { "Project version must be positive." }
     }
+
+    fun updateProtocol(newProtocol: ProjectProtocol): Project = copy(
+        protocol = newProtocol,
+        version = version + 1
+    )
 }

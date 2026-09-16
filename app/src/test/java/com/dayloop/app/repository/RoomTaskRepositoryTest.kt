@@ -213,6 +213,12 @@ class RoomTaskRepositoryTest {
             values.firstOrNull { row -> row.id == id }
         }
 
+        override suspend fun getForProject(projectId: String): List<TaskEntity> =
+            rows.value.filter { it.projectId == projectId }
+
+        override fun observeForProject(projectId: String): Flow<List<TaskEntity>> =
+            rows.map { values -> values.filter { it.projectId == projectId } }
+
         override suspend fun deleteById(id: String): Int {
             val originalSize = rows.value.size
             rows.value = rows.value.filterNot { row -> row.id == id }

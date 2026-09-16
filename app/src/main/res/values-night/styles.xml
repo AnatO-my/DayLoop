@@ -1,0 +1,8 @@
+<resources>
+    <style name="Theme.DayLoop" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#111416</item>
+        <item name="android:statusBarColor">#111416</item>
+        <item name="android:navigationBarColor">#111416</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

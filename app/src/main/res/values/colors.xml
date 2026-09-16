@@ -2,4 +2,7 @@
 <resources>
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
+    <color name="dayloop_lime">#A8CF3D</color>
+    <color name="dayloop_dark">#111416</color>
+    <color name="dayloop_emerald">#54DDA2</color>
 </resources>

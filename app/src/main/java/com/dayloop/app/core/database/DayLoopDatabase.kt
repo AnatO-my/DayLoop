@@ -9,8 +9,10 @@ import androidx.room.RoomDatabase
         ScheduledOccurrenceEntity::class,
         AlarmDiagnosticEntryEntity::class,
         PersistentReminderEscalationEntity::class,
+        GoalEntity::class,
+        ProjectEntity::class,
     ],
-    version = 4,
+    version = 9,
     exportSchema = true,
 )
 abstract class DayLoopDatabase : RoomDatabase() {
@@ -21,4 +23,8 @@ abstract class DayLoopDatabase : RoomDatabase() {
     abstract fun alarmDiagnosticEntryDao(): AlarmDiagnosticEntryDao
 
     abstract fun persistentReminderEscalationDao(): PersistentReminderEscalationDao
+
+    abstract fun goalDao(): GoalDao
+
+    abstract fun projectDao(): ProjectDao
 }

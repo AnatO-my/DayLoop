@@ -23,6 +23,12 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE id = :id LIMIT 1")
     fun observeById(id: String): Flow<TaskEntity?>
 
+    @Query("SELECT * FROM tasks WHERE project_id = :projectId ORDER BY id")
+    suspend fun getForProject(projectId: String): List<TaskEntity>
+
+    @Query("SELECT * FROM tasks WHERE project_id = :projectId ORDER BY id")
+    fun observeForProject(projectId: String): Flow<List<TaskEntity>>
+
     @Query("DELETE FROM tasks WHERE id = :id")
     suspend fun deleteById(id: String): Int
 }

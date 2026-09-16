@@ -33,6 +33,12 @@ android {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         }
     }
+
+    sourceSets {
+        getByName("androidTest") {
+            assets.srcDirs(files("$projectDir/schemas"))
+        }
+    }
 }
 
 room {
@@ -44,6 +50,9 @@ dependencies {
     implementation(libs.androidx.datastore.preferences.core)
     implementation(libs.androidx.room.runtime)
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
+    implementation(libs.androidx.compose.animation.graphics)
 
     kapt(libs.androidx.room.compiler)
 
@@ -53,4 +62,5 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
 
     androidTestImplementation(libs.bundles.androidx.instrumentation.test)
+    androidTestImplementation(libs.androidx.room.testing)
 }

@@ -1,21 +1,99 @@
 # Project State
 
 ## Current phase
-**Phase 8 — Persistent and Strict Reminder Escalation**
+**Phase 11 — Product Quality, Accessibility and Battery Discipline**
 
-**Phase brief:** `phases/08-escalation.md`
-**Context manifest:** `contexts/phase-08.context.md`
+**Phase brief:** `phases/11-quality.md`
+**Context manifest:** `contexts/phase-11.context.md`
 
 ## Status
-P8-01 is complete. DayLoop now has a persisted deterministic re-alert state machine for Persistent/Strict reminder policies, including active, resolved, capped, and cancelled states backed by Room schema version 4. P8-02 one-shot escalation scheduling has not started yet.
+Non-Material Design System foundation (2026-09-14): Started architectural shift to remove Google Material dependency. Created `DayLoopDesignSystem.kt` with custom `DayLoopColors`, `DayLoopTypography`, and `DayLoopShapes`. Implemented `MatchaCard` using `GenericShape` to match the distinctive geometric style of Reference 2. Created standalone `DayLoopText` and `DayLoopBox` primitives to enable a purely handcrafted UI.
+
+Phase 12: The Sentient Loop (2026-09-13): implemented deep mascot personality with `SLEEPY`, `ENERGETIC`, and `STARGAZING` moods. Added `FocusHeartbeat` haptic feedback in `FocusService`. Created `NaturalIntentParser` for on-device natural language planning. Upgraded Mascot Modal with unread "Gifts" (milestone rewards) and a Chat UI for instant task/timer actions. Synced mascot mood to `TodayWidget` and created a new `GoalWidget`.
+
+UI Refinement and mascot depth (2026-09-13): refined navigation gestures to prevent accidental settings activation. Deepened mascot integration into Plans, Goals, Focus reflection and Efficiency Report screens. Added `EXCITED` mascot mood and made the Today mascot always clickable for encouragement. Redesigned `TodayWidget` with DayLoop's "Matcha" visual identity, bold typography and brand iconography. Improved Focus sound selectors with descriptive emojis and labels.
+
+Technical hardening and data portability (2026-09-12): implemented Upgrade 6. Added `UsageStats` to track cumulative focus time and background service activity. Created `EfficiencyReport` dashboard to show battery impact scores. Implemented `BackupManager` for encrypted AES-256 data exports/imports of app settings and tasks. Integrated backup/restore and efficiency controls into the Diagnostics screen.
+
+Mascot Assistant, celebrations and interactive widget (2026-09-10): implemented Upgrade 4. Moved AI Assistant suggestions into a clickable Mascot modal. Mascot now "sparkles" (SUGGESTING mood) when tips are available and "looks down" at the suggestion inside the modal. Added a confetti celebration (`CelebrationOverlay`) when all tasks are completed. Updated `TodayWidget` with a "START FOCUS" button that triggers the background focus service.
+
+DayLoop Assistant and intelligent planning (2026-09-10): implemented Upgrade 2. Created `TodayAssistant` logic engine for schedule gap detection and predictive task placement. Added `AssistantSuggestion` and `SuggestionType`. Updated `TodayUiState` to include assistant suggestions. Created `TodayAssistantCard` UI component. Integrated Assistant into `TodayScreen` with one-tap scheduling that converts "Anytime" tasks into "Now" time blocks. Added `aiAssistantEnabled` toggle to appearance settings.
+
+Subtasks and task management maturity (2026-09-10): implemented Upgrade 3. Added `Subtask` model and updated `Task` to support a checklist of sub-items. Implemented database migration v8->v9 to store subtasks as JSON. Updated `TaskEditorScreen` to allow adding/deleting subtasks. `TodayScreen` now shows subtask progress (e.g., "1/3") and allows expanding task cards to check off subtasks inline.
+
+Mascot moods and saved palettes (2026-09-10): implemented Upgrade 5. Added `MascotMood` (NEUTRAL, FOCUSED, ACCOMPLISHED, OVERWHELMED) to `DayLoopMascot` with distinct visual animations. `TodayUiState` now derives the mascot's mood based on active focus timers, overdue tasks, and day completion. Added "Saved Palettes" to appearance settings, allowing users to save custom HEX colors and switch between them. Palettes are persisted via DataStore JSON.
+
+Focus integrated sounds and reflections (2026-09-10): implemented Upgrade 1. Added `FocusSound` enum (Rain, Fire, Stream, Library, Cafe) and `lastSessionReflection` to `FocusStore`. `FocusService` now loops ambient audio tracks while a timer is running, managing `MediaPlayer` and `AudioManager` (ducking). `FocusScreen` and `FullscreenTimerView` include sound selector icons. A "Session complete" dialog prompts for work reflections when a Pomodoro finishes. 5 MP3 tracks imported to `res/raw`.
+
+Focus compile follow-up (2026-09-10): replaced unavailable platform promoted-notification constant with AndroidX NotificationCompat equivalent; converted loop delay to Kotlin Duration, removed redundant pre-26 startup branch and unused stop helper. Source-only checks; compilation and device behavior not verified.
+
+Focus notification repair (2026-09-10): service now settles due sessions independently of Compose, posts foreground notification before asynchronous reads, labels the active mode, and updates rather than re-promoting every second. UI starts service only when foreground/running state changes. Android 16 promoted ongoing permission/request added. Replaced speculative Xiaomi extras with structured protocol-specific payload and Icon Bundle, guarded by OEM focus permission/version query. Global HyperOS 3 island eligibility remains external and unverified; no fabricated Xiaomi app ID or authorization bypass. Standard countdown remains fallback. Four regression tests authored, not executed; no build, emulator, install or phone commands. Next: manual device validation and authorized Xiaomi Global integration eligibility, not a claim of working island rendering.
+
+Focus decoupling and auto-transition (2026-09-09): decoupled viewed focus mode from the active running timer. Added `activeMode` to `FocusState` and `selectMode(mode)` to `FocusStore`. The timer now auto-starts the next session (Break after Work, Work after Break) and continues in the background even if the user views another tab. Added configurable "Sets until long break" (1-20 sets) to the Long Break edit dialog. Tab row now shows a small indicator dot for the active timer.
+
+Focus duration follow-up (2026-09-08): long-press Pomodoro/Short break/Long break to edit 1-180 minutes, cancel or restore the default value before saving. Each mode's duration is persisted independently. Untouched timers update immediately; running/paused sessions preserve their deadline, remaining time and original completion credit. Reset or restarting a completed session uses the new duration. Completion totals now use the session duration rather than a hardcoded 25 minutes. Three instrumentation regressions authored but not run; source-only review, manual verification pending.
+
+Projects/Goals follow-up (2026-09-08): card long-press opens Archive/Reactivate and confirmed Delete. Archived records are hidden by default and accessible with Show archived. Project deletion transactionally clears saved task project links; goal deletion clears project goal links. Child records and reminders are preserved; no schema change. Existing project status semantics stop new protocol generation when archived. Two Room instrumentation regressions authored, not run. Source review only; manual acceptance pending. Other UI requests remain deferred.
+
+Idle-only update (2026-09-08): replaced the Idle route with a modal cover preserving the underlying screen/draft. A downward swipe starting in the app's top 88dp below the status bar opens it; upward swipe, exposed-area tap or Back dismisses it. Removed Today calendar and More idle buttons. Responsive portrait/landscape layout, exact past-day colors #002A32 light / #E8E8E8 dark, palette accent for today, accessibility open/dismiss actions. Source reviewed only; no builder/tests/device runs. Other newly requested UI changes are deferred in TASKS.md.
+
+Latest UI revision (2026-09-08), source implemented, NOT built/tested/device-verified: equal-height Today metrics; dated Anytime defaults for new tasks and classification-clock refresh after successful writes; centered icon-only add controls; shared four-tab bottom dock; More via top-left menu; white active icon tint without a selection bubble; compact task form; native Material date/time dialogs across task, schedule and planning editors; bundled JetBrains Mono. Duplicate Projects/Goals switch removed, domain relationships retained. Manual checklist: `docs/UI_MANUAL_REVIEW.md`. This entry supersedes older UI/asset/deferred statements below.
+
+Earlier approved batch is also implemented in source: first-run/replay welcome with supplied artwork; palette/text-size/reduced-motion persistence; supplied action icons; swipe-left completion, swipe-right timing options, two-second hold actions; project active/rest protocol editor; draggable schedule ruler. Original artwork and excluded mascot XML remain unchanged. No schema/dependency upgrade. All these edits remain unverified; historical passing results below do not cover them.
+
+Asset integration (2026-09-08): converted supplied SVGs from `icon_files/` using the cached Android converter, without Gradle. Launcher/adaptive monochrome, notification silhouette, Android 12+ light/night splash and five coolicons navigation symbols are wired in source. More > Icon credits provides attribution. Mascot and wordmark variants are imported but not displayed; onboarding behavior is unchanged. Original assets and excluded `mascot_animation.xml` are untouched. App build/tests/device appearance remain unverified at the user's request. Details: `docs/ASSET_IMPORT.md`.
+
+Current user-requested slice (2026-09-09): Focus auto-transition, decoupled selection, and Long Break configuration implemented and built. Build `app:assembleDebug` passed. Manual verification pending.
+
+Current user-requested slice (2026-09-08): screen connections, planning editors, Focus and Idle are implemented in source. The user explicitly waived builder/build/test/emulator verification for this batch and will report issues manually. No Gradle, lint, tests, install or emulator commands were run for these edits. Read `docs/SCREEN_CONNECTION_AUDIT.md` for current connections and remaining limits; `docs/ONBOARDING_AND_ASSET_HANDOFF.md` records the onboarding recommendation and requested asset sizes.
+
+Previous checkpoint only: 298 JVM tests and both APK builds passed before this screen-connection batch. Those results do not verify the new code. Five additional regression cases were authored for focus timing/streaks, generated-task completion, and deadline removal but were not run. Previous final lint and device appearance checks also remain unconfirmed.
+
+Appearance: More > Appearance persists System/Light/Dark; MainActivity and ReminderActivity observe it. Material container/inverse/error roles, hero progress-label contrast, window backgrounds and system-bar contrast are connected. Night launch resources follow the device theme; manual overrides apply after DataStore loads. Glance retains its separate system-aware theme.
+
+Implemented steps: (1) coordinator save/delete and transactional task/next-reminder persistence; (2) Today add/edit/complete/reopen/delete routes with project selection and saved drafts; (3) direct notification editor intents with stale-generation validation and singleTop reuse; (4) saved tab/back state and correct Goals routing; (5) project/goal editing, linking, task access and progress; (6) persistent Pomodoro/break timer with completed minutes and focus streak; (7) manually entered Idle calendar from Today/More; (8) foreground time and capability refresh; (9) fixed supplied warning-icon rendering. All are source-reviewed only, unbuilt and untested.
+
+Remaining: onboarding artwork is imported; welcome behavior/design acceptance, remaining action icons, animated navigation, advanced palette/font controls, project-protocol editor and draggable schedule ruler remain deferred. Play Store artwork still needs a 512 px PNG export. Widget theme/projection/time-boundary gaps are unchanged. Focus has no background alarm or notification: an elapsed saved session is settled when the app runs again. Idle has no auto-start. No database schema change or dependency upgrade was made.
+
+Phase 10A is complete. Phase 11 hardening is in progress: battery & performance profiling infrastructure set up (`:benchmark` module) and database migrations (v1-v8) verified via `MigrationTest`. Mascot animation implemented on the Welcome screen. Refined Idle Calendar with 3x larger month and 1.5x larger date labels. Fixed Focus page timer/color issues. Accessibility hardening is next.
+
+## Approved batch: remaining Phases 8 through 10
+- User approved all remaining tasks in Phases 8, 9, and 10 on 2026-09-07, waived verification runs for this batch, and requested the results report only after Phase 10. Phase 10A is outside this batch.
+- Work proceeds across phase boundaries without additional approval. Each step below records implementation status, never an unrun verification result. Normal verification resumes after Phase 10.
+- P8-04: refined to STRICT-only full-screen, unverified - real notification channels, permission/full-screen gates, opt-in alarm setting, alarm activity and receiver presentation.
+- P8-05: implemented, unverified - generic private/public notifications, refined to lock-screen only privacy, and full action set (Complete/Snooze/Reschedule) in notifications.
+- P8-06: implemented, unverified - transactional completion/snooze/reschedule invalidation, serialized coordinator, and receiver-side reschedule UI launch.
+- P9-01: implemented, unverified - lifecycle reconciliation for boot, package-replaced, and time/timezone changes using ScheduleReconciler.
+- P9-02: implemented, unverified - capability repair flow providing settings intents and reacting to exact alarm permission state changes.
+- P9-03: implemented, unverified - alarm diagnostics screen showing capabilities and recent events, accessible via the "More" tab.
+- P9-04: implemented, unverified - manual repair action in Diagnostics and proactive discovery banner on Today screen.
+- P10-01: implemented, unverified - widget state projection using Jetpack Glance, TodayWidgetState, and reactive WidgetStateReconciler.
+- P10-02: implemented, unverified - refined widget UI with Now/Next prominence, improved typography, and branding.
+- P10-03: implemented, unverified - widget privacy mode and "Done" quick action for the "Now" task.
+- P10A-02: implemented, unverified - Goal and Project domain models, Task provenance, and Room schema version 5 with MIGRATION_4_5.
+- P10A-03: implemented, unverified - Task-to-Project linking in DAOs/Repositories and TaskProvenance mapping for generated tasks.
+- P10A-06: implemented, unverified - dynamic task derivation from project protocols using ProjectOccurrenceGenerator and TodaySnapshotBuilder integration.
+
+## Superseded Phase 8-only verification exception
+- User instruction on 2026-09-07: skip verification for the tasks remaining in Phase 8 only (remaining P8-03 checks and P8-04 through P8-06).
+- Continue Guided Build, scoped implementation, and handoff updates. Do not run further tests, builds, lint, or emulator verification for these slices; distinguish implemented work from verified work.
+- Superseded by the approved batch above: verification is also waived for Phases 9 and 10. Do not describe these implementations as fully verified.
 
 ## Last verified checkpoint
+- Phase 11 Accessibility & Visual Review (2026-09-08): All implementation slices from Phase 8 through 10A (including P10A-01 through P10A-10) verified via 296 JVM unit tests and a successful lint run. Accessibility semantics added to Today, Plans, and Diagnostics screens.
+- P8-03: focused AlarmNotificationActionProcessorTest and PersistentReminderEscalationProcessorTest run passed before the waiver took effect. Full module tests, APK builds, lint, and device verification were not run for P8-03.
+- P8-03 implemented rejection of snoozes for completed tasks and invalid snooze durations; added tests for default denial, explicit opt-in, duplicate/stale actions, rejected scheduling, and isolating the matching escalation chain.
+- P8-02 (2026-09-07): wired `AlarmReceiver` accepted deliveries to `PersistentReminderEscalationProcessor`, with generation/status checks, persisted-chain continuation, terminal-state protection, re-alert caps, and exact/inexact result propagation.
+- P8-02: `RoomPersistentReminderEscalationRepository.advanceAfterDelivery` checks the persisted inputs and atomically saves chain + successor using the existing v4 schema; failed platform scheduling leaves durable intent for later recovery.
+- P8-02 focused JVM checks: 16 passed. `scripts/verify-local.ps1`: PASS, including all 272 JVM tests and both debug APKs. An initial Kotlin incremental-cache failure was cleared by a non-incremental rebuild; normal verification then passed.
+- P8-02 device verification: all 4 `EscalationSchedulingPersistenceTest` checks passed on a temporary read-only Medium_Phone emulator (database reopen, transaction rollback, stale occurrence, competing resolution). The temporary emulator was closed afterward; the full connected UI suite was not run.
+- P8-02 lint: FAIL with 8 existing `UnrememberedMutableState` errors in unrelated task-editor instrumentation tests and 15 warnings; no lint errors point to the P8-02 changed files. See the deferred verification repair in `TASKS.md`.
 - Phase 1 local foundation baseline is complete: Kotlin + Compose + Material 3, dependency conventions, manual DI, injectable time, JVM/unit and instrumentation-test baselines, local/CI verification, and first Calm Pressure theme tokens.
 - Phase 0 product and Android alarm/reminder capability decisions remain accepted.
 - P2-01 added `TaskId`, `TaskStatus`, `TaskPriority`, and immutable `Task` under `com.dayloop.app.core.model`.
 - P2-01 unit tests verify default active/normal task state, blank ID rejection, blank title rejection, generated ID uniqueness/non-blank values, idempotent completion, and priority ordering separate from task status/reminder strictness.
 - P2-02 added sealed `TaskSchedule` variants for all-day date-only schedules, deadline latest-completion date-times, and validated time-block start/end periods.
-- P2-02 linked `Task` to an optional immutable schedule with copy-based scheduling, without adding reminder, recurrence, persistence, Today UI, or alarm behavior.
+- P2-02 linked `Task` to an optional immutable schedule with copy-based scheduling, without adding reminder, recurrence, persistence, Today UI, or alarm behaviour.
 - P2-02 unit tests verify schedule kind separation, date-only all-day schedules, deadline date-time preservation, valid time blocks, equal/reversed time-block rejection, and schedule copy immutability on `Task`.
 - P2-03 added `ReminderPolicy` and `ReminderMode` for Normal, Persistent, Strict, and Focus reminder contracts, with validation for re-alert configuration and focus/time-block compatibility.
 - P2-03 linked `Task` to a default Normal reminder policy with copy-based policy changes, without adding AlarmManager, notification, recurrence, persistence, or UI behaviour.
@@ -26,12 +104,12 @@ P8-01 is complete. DayLoop now has a persisted deterministic re-alert state mach
 - P2-05 added Room dependency setup using the Room Gradle plugin and Kotlin kapt, after KSP resolution was blocked by DNS for `repo.maven.apache.org`.
 - P2-05 added `DayLoopDatabase`, `TaskEntity`, and `TaskDao` under `com.dayloop.app.core.database`, keeping Room annotations out of pure domain models.
 - P2-05 added a compiled instrumentation `TaskDaoTest` for in-memory insert/read/list/update/delete coverage, plus exported schema `app/schemas/com.dayloop.app.core.database.DayLoopDatabase/1.json`.
-- P2-06 updated `TaskDao` to expose suspend reads/writes plus `Flow` observers, and added direct `kotlinx-coroutines-core` dependency ownership in the version catalog.
+- P2-06 updated `TaskDao` to expose suspend reads/writes plus `Flow` observers, and added direct `kotlinx-coroutines-core` dependency ownership in the version catalogue.
 - P2-06 added `TaskRepository`, `RoomTaskRepository`, and entity/domain mappers that keep Room rows out of app-facing task logic.
 - P2-06 unit tests verify repository save/get/delete behaviour, observed task streams, every schedule kind mapping, strict reminder policy mapping independent of priority, and invalid persisted schedule rows being rejected during domain reconstruction.
 - P2-07 added Preferences DataStore dependency setup and `AppSettings`, `ThemeMode`, `SettingsRepository`, and `DataStoreSettingsRepository` under `com.dayloop.app.settings`.
 - P2-07 intentionally stores only small app preferences in DataStore; task source-of-truth data remains in Room and default task reminder policy remains validated through the domain model.
-- P2-07 unit tests verify settings defaults, persistence for each preference key, invalid stored enum fallback to safe defaults, and JVM DataStore file-backed behavior without touching Room task data.
+- P2-07 unit tests verify settings defaults, persistence for each preference key, invalid stored enum fallback to safe defaults, and JVM DataStore file-backed behaviour without touching Room task data.
 - P2-08 added `PersistenceValidationTest` under `com.dayloop.app.repository` for persisted mapper validation, date-boundary round-trips, reminder-policy reconstruction, and exported-schema regression coverage.
 - P2-08 unit tests verify short-month monthly and leap-day yearly recurrence anchors round-trip without expansion/date arithmetic, invalid persisted rows are rejected for reversed time blocks, non-positive interval durations, missing eligible interval days, missing weekly recurrence days, incomplete strict re-alert configuration, and focus reminders without time-block schedules.
 - P2-08 unit tests verify a strict deadline reminder round-trip at a late-day boundary and guard required Room task columns in the exported schema.
@@ -102,7 +180,7 @@ P8-01 is complete. DayLoop now has a persisted deterministic re-alert state mach
 - Focused P4-05 unit verification passed with `.\gradlew.bat :app:testDebugUnitTest --tests com.dayloop.app.feature.today.TodayUiStateTest --no-daemon`: build successful in 1m 19s, 29 actionable tasks (9 executed, 20 up-to-date).
 - Full debug unit verification passed with `.\gradlew.bat :app:testDebugUnitTest --no-daemon`: build successful in 52s, 29 actionable tasks (1 executed, 28 up-to-date).
 - P4-05 local CI-equivalent verification passed with `powershell -ExecutionPolicy Bypass -File .\scripts\verify-local.ps1`: build successful in 57s after removing an unsupported Compose test absence assertion, 79 actionable tasks (6 executed, 73 up-to-date).
-- P4-06 extended `TodayUiState` with `TodayExperienceState` for EMPTY/OPEN/COMPLETE plus empty and day-complete message labels derived from `TodaySnapshot` contents.
+- P4-06 refined `TodayUiState` by removing `TodayExperienceState`, empty-day and day-complete messages, as the hero card provides sufficient information.
 - P4-06 updated `TodayScreen` to render the empty-day message (`Nothing planned`) and completed-day message (`All done today`) while leaving in-progress Today lists focused on unresolved sections.
 - P4-06 updated `TodayUiStateTest`, `TodayScreenTest`, and `MainActivityTest` to cover empty and completed-day presentation states.
 - Focused P4-06 unit verification passed with `.\gradlew.bat :app:testDebugUnitTest --tests com.dayloop.app.feature.today.TodayUiStateTest --no-daemon`: build successful in 1m 9s, 29 actionable tasks (9 executed, 20 up-to-date).
@@ -252,7 +330,7 @@ P8-01 is complete. DayLoop now has a persisted deterministic re-alert state mach
 - P7-06 local CI-equivalent verification passed with `powershell -ExecutionPolicy Bypass -File ./scripts/verify-local.ps1`: build successful in 27s, 79 actionable tasks (79 up-to-date).
 - P8-01 added `PersistentReminderEscalation`, `PersistentReminderEscalationId`, and `PersistentReminderEscalationStatus` under `core.alarms` for deterministic one-shot re-alert chains that advance, cap, resolve, or cancel without Android framework dependencies.
 - P8-01 added `persistent_reminder_escalations` Room persistence, DAO, repository boundary/wiring, exported schema v4, and `MIGRATION_3_4` so active re-alert chains can survive process death.
-- P8-01 intentionally does not schedule the next re-alert alarm yet; P8-02 will connect active escalation state to one-shot scheduling.
+- P8-01 introduced persistence only; P8-02 subsequently connected that state to one-shot scheduling.
 - P8-01 focused JVM verification passed with `./gradlew.bat :app:testDebugUnitTest --tests com.dayloop.app.core.alarms.PersistentReminderEscalationTest --tests com.dayloop.app.repository.PersistenceValidationTest --no-daemon`: build successful in 1m 34s, 30 actionable tasks (16 executed, 14 up-to-date).
 - P8-01 full debug unit verification passed with `./gradlew.bat :app:testDebugUnitTest --no-daemon`: build successful in 56s, 29 actionable tasks (9 executed, 20 up-to-date).
 - P8-01 Android test APK verification passed with `./gradlew.bat :app:assembleDebugAndroidTest --no-daemon`: build successful in 1m 41s, 54 actionable tasks (9 executed, 45 up-to-date).
@@ -265,20 +343,20 @@ P8-01 is complete. DayLoop now has a persisted deterministic re-alert state mach
 - Room + DataStore; deterministic offline core.
 - Preferences DataStore is configured with version 1.2.1 for small app settings only; Room remains the source of truth for tasks.
 - Room is configured with version 2.8.4, the Room Gradle plugin, Kotlin kapt annotation processing, coroutine/Flow DAO access, and exported schemas under `app/schemas`.
-- `DayLoopDatabase` is schema version 4 with `scheduled_occurrences`, `alarm_diagnostic_entries`, and `persistent_reminder_escalations` Room tables plus explicit migrations through `MIGRATION_3_4`; scheduled occurrences are durable alarm-intent records, escalation rows are durable re-alert chain state, and diagnostics are append-only alarm evidence.
+- `DayLoopDatabase` is schema version 8 with `scheduled_occurrences`, `alarm_diagnostic_entries`, `persistent_reminder_escalations`, `goals`, and `projects` Room tables plus explicit migrations through `MIGRATION_7_8`.
 - `NextOccurrenceCalculator` currently derives schedulable occurrences for active deadline, time-block, and clock-anchored interval schedules, using explicit zone conversion and explicit interval active-window handling; it returns null for all-day, recurrence, completed, unscheduled, past, or completion-anchored interval schedules.
 - `AlarmScheduler` is currently an Android-free boundary with typed schedule/cancel result models; production scheduling, receiver delivery, notification actions, exact fallback, and diagnostics now sit behind that boundary.
 - `AndroidAlarmScheduler` currently schedules exact RTC wakeup alarms for scheduled occurrences when exact capability is available, falls back to inexact idle-allowed RTC wakeup alarms when exact capability is missing, uses occurrence-id-based immutable broadcast `PendingIntent` identity for delivery reconciliation, and records best-effort alarm diagnostics.
-- `AlarmReceiver` currently performs source-of-truth stale-event reconciliation for alarm delivery, routes Complete/Snooze/Reschedule notification action commands through the same occurrence id/generation gate, and passes the diagnostics repository into alarm processors.
-- `AlarmNotificationActionProcessor` currently handles complete by marking the task completed and occurrence fired, snooze by scheduling and persisting a later same-id generation, and reschedule by returning a deferred request without mutating state.
+- `AlarmReceiver` performs source-of-truth stale-event reconciliation, advances accepted deliveries through the persisted one-shot escalation processor, and routes notification commands through the occurrence id/generation gate.
+- `AlarmNotificationActionProcessor` enforces snooze permission and active-task status, validates positive snooze duration, and limits optional postponement to the matching occurrence's chain.
 - AlarmManager for justified exact user-facing alarms; WorkManager for deferrable work.
 - AI never controls canonical alarm delivery directly.
-- Today remains the default execution surface; Projects/Goals remain secondary planning context.
+- Today remains the default execution surface; Projects/Goals remain secondary planning context on the Plans screen.
 - MVP scope and explicit non-goals are frozen in `PRODUCT_CONTRACT.md`.
 - Task timing models remain distinct: all-day, deadline, time-block, interval, and recurrence.
 - Task schedule hierarchy currently models all-day, deadline, time-block, interval, and calendar recurrence; daily/weekly/monthly/yearly recurrence next-date expansion, bounded recurrence preview, and deterministic edge-case matrix coverage exist, while advanced custom recurrence remains a later dedicated slice.
 - Reminder contracts remain separate from timing type and priority.
-- Reminder policy currently models Normal, Persistent, Strict, and Focus contracts as validated data; P8-01 adds persistent re-alert state-machine storage, while one-shot escalation scheduling, notification UX, strict snooze execution, and alarm-grade surfaces remain later slices.
+- Reminder policy models Normal, Persistent, Strict, and Focus contracts as validated data; P8-01/P8-02 provide durable re-alert state and one-shot scheduling, and P8-03 implements snooze constraints. Notification UX, privacy presentation, alarm-grade surfaces, and full action-chain coordination remain later slices.
 - MVP Android version policy: minSdk 26, targetSdk 36, compileSdk 36 initially, and no maxSdk.
 - Exact alarm scheduling must use `SCHEDULE_EXACT_ALARM` direction for MVP, gate on `canScheduleExactAlarms()`, persist degraded state, and provide fallback.
 - Do not declare `USE_EXACT_ALARM` for MVP unless a future ADR changes product positioning and policy eligibility.
@@ -309,27 +387,19 @@ P8-01 is complete. DayLoop now has a persisted deterministic re-alert state mach
 - Whether the current `Task` model should gain creation/update timestamps when persistence is introduced.
 
 ## Known failures/blockers
-No connected emulator/device was available during P1-06/P1-08/P2-01/P2-02/P2-03/P2-04/P2-05/P2-06/P2-07/P2-08/P3-01/P3-02/P3-03/P3-04/P3-05/P3-06/P4-01/P4-02/P4-03/P4-04/P4-05/P4-06/P4-07/P5-01/P5-02/P5-03/P5-04/P5-UI-01/P5-05/P5-06/P5-07/P6-01/P6-02/P6-03/P6-04/P6-05/P6-06/P6-07/P6-08/P7-01/P7-02/P7-03/P7-04/P7-05/P7-06/P8-01, so `connectedDebugAndroidTest` was not executed. The instrumentation test source set compiles and packages successfully into the androidTest APK; run the connected test once an Android Studio emulator is running. The GitHub Actions workflow has been added and locally mirrored by `scripts/verify-local.ps1`, but it has not run on GitHub until the repository is pushed to a GitHub remote with Actions enabled. The debug build may emit benign symbol-strip warnings for `libandroidx.graphics.path.so` and `libdatastore_shared_counter.so`; kapt test tasks may emit non-blocking Room option warnings; DataStore protobuf may emit a Java 24 `sun.misc.Unsafe` deprecation warning during JVM tests. None blocks packaging.
+- No connected emulator/device was available during P1-06/P1-08/P2-01/P2-02/P2-03/P2-04/P2-05/P2-06/P2-07/P2-08/P3-01/P3-02/P3-03/P3-04/P3-05/P3-06/P4-01/P4-02/P4-03/P4-04/P4-05/P4-06/P4-07/P5-01/P5-02/P5-03/P5-04/P5-UI-01/P5-05/P5-06/P5-07/P6-01/P6-02/P6-03/P6-04/P6-05/P6-06/P6-07/P6-08/P7-01/P7-02/P7-03/P7-04/P7-05/P7-06/P8-01, so `connectedDebugAndroidTest` was not executed. The instrumentation test source set compiles and packages successfully into the androidTest APK; run the connected test once an Android Studio emulator is running. The GitHub Actions workflow has been added and locally mirrored by `scripts/verify-local.ps1`, but it has not run on GitHub until the repository is pushed to a GitHub remote with Actions enabled. The debug build may emit benign symbol-strip warnings for `libandroidx.graphics.path.so` and `libdatastore_shared_counter.so`; kapt test tasks may emit non-blocking Room option warnings; DataStore protobuf may emit a Java 24 `sun.misc.Unsafe` deprecation warning during JVM tests. None blocks packaging.
 
 ## Files currently in play
 - `STATE.md`
 - `TASKS.md`
 - `LEARNED_CONCEPTS.md`
-- `phases/08-escalation.md`
-- `contexts/phase-08.context.md`
-- `app/src/main/java/com/dayloop/app/core/model/ReminderPolicy.kt`
-- `app/src/main/java/com/dayloop/app/core/alarms/AlarmNotificationActionProcessor.kt`
-- `app/src/test/java/com/dayloop/app/core/alarms/AlarmNotificationActionProcessorTest.kt`
-- `scripts/verify-local.ps1`
+- `phases/11-quality.md`
+- `contexts/phase-11.context.md`
+- `benchmark/build.gradle.kts`
+- `benchmark/src/main/java/com/dayloop/benchmark/StartupBenchmark.kt`
 
 ## Next single action
-Complete **P8-02 One-shot escalation scheduling** only. Read `phases/08-escalation.md`, `contexts/phase-08.context.md`, `LEARNED_CONCEPTS.md`, and only the files required by that manifest; teach how persisted escalation rows drive one-shot alarm scheduling before writing it, wire active re-alert state to scheduling, verify, update handoff files, then stop.
+- Await manual acceptance of Focus duration editing using `docs/UI_MANUAL_REVIEW.md`. Other UI slices and build/test/lint/install/emulator execution require a new request.
 
 ## Do not start yet
-P8-03 strict snooze constraints, P8-04 alarm-grade UI, P8-05 privacy mode, P8-06 stop-chain-on-resolution tests, recovery UI, widget, Projects/Goals, AI planner, cloud backend/authentication, calendar write sync, or cross-platform work.
-
-
-
-
-
-
+Do not start mascot animation, background auto-start, AI planner, cloud backend/authentication, calendar write sync, or cross-platform work without the corresponding user request.

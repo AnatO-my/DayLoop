@@ -3,6 +3,7 @@ package com.dayloop.app.repository
 import com.dayloop.app.core.database.TaskDao
 import com.dayloop.app.core.model.Task
 import com.dayloop.app.core.model.TaskId
+import com.dayloop.app.core.model.ProjectId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -20,6 +21,12 @@ class RoomTaskRepository(
     override suspend fun saveTask(task: Task) {
         taskDao.upsert(task.toEntity())
     }
+
+    override suspend fun getTasksForProject(projectId: ProjectId): List<Task> =
+        taskDao.getForProject(projectId.value).map { it.toDomain() }
+
+    override fun observeTasksForProject(projectId: ProjectId): Flow<List<Task>> =
+        taskDao.observeForProject(projectId.value).map { rows -> rows.map { it.toDomain() } }
 
     override suspend fun deleteTask(id: TaskId): Boolean = taskDao.deleteById(id.value) > 0
 }

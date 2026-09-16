@@ -35,9 +35,3 @@ dependencies {
     implementation(libs.androidx.test.uiautomator)
     implementation(libs.androidx.benchmark.macro.junit4)
 }
-
-androidComponents {
-    beforeVariants(selector().all()) {
-        it.enable = it.buildType == "release"
-    }
-}

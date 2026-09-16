@@ -6,6 +6,8 @@ import com.dayloop.app.core.model.Project
 import com.dayloop.app.core.model.ProjectId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import com.dayloop.app.repository.toDomain
+import com.dayloop.app.repository.toEntity
 
 class RoomProjectRepository(
     private val projectDao: ProjectDao,
@@ -22,5 +24,5 @@ class RoomProjectRepository(
         projectDao.upsert(project.toEntity())
     }
 
-    override suspend fun deleteProject(id: ProjectId): Boolean = projectDao.deleteById(id.value) > 0
+    override suspend fun deleteProject(id: ProjectId): Boolean = projectDao.deleteAndUnlink(id.value) > 0
 }

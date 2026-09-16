@@ -17,4 +17,6 @@ data class GoalEntity(
     val progressPolicy: String,
     @ColumnInfo(name = "status")
     val status: String,
+    @ColumnInfo(name = "manual_progress")
+    val manualProgress: Double = 0.0,
 )

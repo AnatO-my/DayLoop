@@ -1,5 +1,9 @@
 package com.dayloop.app.ui.components
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.material3.ProgressIndicatorDefaults
+import androidx.compose.runtime.getValue
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -17,13 +21,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +43,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -42,6 +55,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.dayloop.app.ui.theme.DayLoopTheme
+import com.dayloop.app.R
 import com.dayloop.app.ui.theme.dayLoopTokens
 
 @Immutable
@@ -109,26 +123,43 @@ fun DayLoopMetricCard(
     val tokens = MaterialTheme.dayLoopTokens
 
     Surface(
-        modifier = modifier.defaultMinSize(minHeight = 92.dp),
+        modifier = modifier.height(88.dp + 40.dp * LocalDensity.current.fontScale),
         shape = RoundedCornerShape(tokens.shapeScale.comfortableCorner),
         color = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.onSurface,
     ) {
         Column(
-            modifier = Modifier.padding(tokens.spacing.contentGap),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(tokens.spacing.microGap),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(
-                text = value,
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold,
-                color = accentColor,
-            )
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyLarge,
-                color = tokens.colors.supportingText,
-            )
+            Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                AnimatedContent(
+                    targetState = value,
+                    transitionSpec = {
+                        val targetVal = targetState.filter { it.isDigit() }.toLongOrNull() ?: 0L
+                        val initialVal = initialState.filter { it.isDigit() }.toLongOrNull() ?: 0L
+                        if (targetVal > initialVal) {
+                            (slideInVertically { height -> height } + fadeIn()).togetherWith(
+                                slideOutVertically { height -> -height } + fadeOut())
+                        } else {
+                            (slideInVertically { height -> -height } + fadeIn()).togetherWith(
+                                slideOutVertically { height -> height } + fadeOut())
+                        }.using(SizeTransform(clip = false))
+                    },
+                    label = "metricRoll"
+                ) { targetValue ->
+                    BasicText(targetValue, maxLines = 1, modifier = Modifier.fillMaxWidth(),
+                        style = MaterialTheme.typography.headlineMedium.copy(color = accentColor, textAlign = TextAlign.Center),
+                        autoSize = TextAutoSize.StepBased(minFontSize = 14.sp, maxFontSize = 26.sp))
+                }
+            }
+            Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.TopCenter) {
+                BasicText(if (label == "Focus streak") "Focus\nstreak" else label, maxLines = 2,
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.labelMedium.copy(color = tokens.colors.supportingText, textAlign = TextAlign.Center),
+                    autoSize = TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = 12.sp))
+            }
         }
     }
 }
@@ -162,6 +193,8 @@ fun DayLoopBottomActionBar(
             text = text,
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.weight(1f),
+            textAlign = if (trailing == null) TextAlign.Center else TextAlign.Start,
         )
         if (trailing != null) {
             Spacer(modifier = Modifier.width(tokens.spacing.compactGap))
@@ -202,13 +235,13 @@ fun DayLoopPillTabRow(
                 color = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
                 contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
             ) {
-                Text(
-                    text = option.label,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                    textAlign = TextAlign.Center,
-                )
+                Box(Modifier.height(52.dp).padding(horizontal = 6.dp), contentAlignment = Alignment.Center) {
+                    BasicText(option.label, modifier = Modifier.fillMaxWidth(), maxLines = 1,
+                        style = MaterialTheme.typography.labelLarge.copy(textAlign = TextAlign.Center,
+                            color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal),
+                        autoSize = TextAutoSize.StepBased(minFontSize = 9.sp, maxFontSize = 13.sp))
+                }
             }
         }
     }
@@ -281,7 +314,11 @@ fun DayLoopProgressRing(
     size: Dp = 88.dp,
 ) {
     val tokens = MaterialTheme.dayLoopTokens
-    val coercedProgress = progress.coerceIn(0f, 1f)
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress.coerceIn(0f, 1f),
+        animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
+        label = "progressFill"
+    )
 
     Box(
         modifier = modifier
@@ -290,17 +327,17 @@ fun DayLoopProgressRing(
         contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator(
-            progress = { coercedProgress },
+            progress = { animatedProgress },
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.primary,
             trackColor = tokens.colors.progressTrack,
             strokeWidth = 8.dp,
         )
         Text(
-            text = "${(coercedProgress * 100).toInt()}%",
+            text = "${(animatedProgress * 100).toInt()}%",
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = LocalContentColor.current,
         )
     }
 }
@@ -322,7 +359,7 @@ fun DayLoopWarningBanner(
             horizontalArrangement = Arrangement.spacedBy(tokens.spacing.compactGap),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            leading ?: DayLoopWarningDot()
+            if (leading != null) leading() else DayLoopWarningDot()
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(tokens.spacing.microGap),
@@ -359,57 +396,28 @@ fun DayLoopBottomNav(
     selectedItemId: String,
     onItemSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
-    itemIcon: @Composable (DayLoopBottomNavItem, Boolean) -> Unit = { _, selected ->
-        DayLoopTemporaryIconDot(selected = selected, size = 16.dp)
+    itemIcon: @Composable (DayLoopBottomNavItem, Boolean) -> Unit = { item, selected ->
+        DayLoopNavigationIcon(item.id, selected)
     },
 ) {
-    val tokens = MaterialTheme.dayLoopTokens
+    AnimatedDayLoopNavigation(items, selectedItemId, onItemSelected, modifier, itemIcon)
+}
 
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(tokens.shapeScale.pillCorner),
-        color = tokens.colors.actionSurface,
-        contentColor = tokens.colors.onActionSurface,
-        tonalElevation = 0.dp,
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(tokens.spacing.microGap),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            items.forEach { item ->
-                val selected = item.id == selectedItemId
-                val itemBackground = if (selected) {
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
-                } else {
-                    Color.Transparent
-                }
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(tokens.shapeScale.pillCorner))
-                        .background(itemBackground)
-                        .clickable { onItemSelected(item.id) }
-                        .padding(vertical = 8.dp)
-                        .semantics {
-                            contentDescription = item.label
-                            role = Role.Tab
-                        },
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(tokens.spacing.microGap),
-                ) {
-                    itemIcon(item, selected)
-                    Text(
-                        text = item.label,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (selected) MaterialTheme.colorScheme.primary else tokens.colors.onActionSurface.copy(alpha = 0.72f),
-                        maxLines = 1,
-                        textAlign = TextAlign.Center,
-                    )
-                }
-            }
-        }
+@Composable
+private fun DayLoopNavigationIcon(id: String, selected: Boolean) {
+    val resource = when (id) {
+        "today" -> R.drawable.ic_nav_today
+        "plan" -> R.drawable.ic_nav_plan
+        "focus" -> R.drawable.ic_nav_focus
+        "goals" -> R.drawable.ic_nav_goals
+        else -> R.drawable.ic_nav_more
     }
+    Icon(
+        painter = painterResource(resource),
+        contentDescription = null,
+        modifier = Modifier.size(24.dp),
+        tint = LocalContentColor.current,
+    )
 }
 
 @Composable

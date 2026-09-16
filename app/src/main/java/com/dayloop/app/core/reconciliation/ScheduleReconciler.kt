@@ -22,6 +22,8 @@ class ScheduleReconciler(
         
         diagnosticsRepository.append(
             AlarmDiagnosticEntry(
+                occurrenceId = null,
+                taskId = null,
                 event = AlarmDiagnosticEvent.RECONCILIATION_STARTED,
                 message = "Reconciling ${scheduled.size} occurrences",
                 createdAt = now
@@ -36,6 +38,8 @@ class ScheduleReconciler(
 
         diagnosticsRepository.append(
             AlarmDiagnosticEntry(
+                occurrenceId = null,
+                taskId = null,
                 event = AlarmDiagnosticEvent.RECONCILIATION_COMPLETED,
                 message = "Reconciled ${scheduled.size} occurrences",
                 createdAt = timeProvider.now()

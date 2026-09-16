@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "DayLoop"
 include(":app")
+include(":benchmark")

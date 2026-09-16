@@ -1,7 +1,8 @@
 # ADR 0003 — Task, Project and Goal Boundary
 
-- Status: Proposed
-- Date: 2026-08-25
+- Status: Accepted
+- Date: 2026-09-07
+- Phase: 10A
 
 ## Context
 

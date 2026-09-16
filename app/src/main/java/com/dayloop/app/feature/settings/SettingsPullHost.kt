@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 @Composable
@@ -33,21 +34,23 @@ fun SettingsPullHost(
     val density = LocalDensity.current
     val config = LocalConfiguration.current
     
-    // Bottom region: 88dp height, placed above typical nav bar height (approx 80dp)
-    val regionHeight = with(density) { 88.dp.toPx() }
+    // Bottom region: 72dp height, placed above typical nav bar height (approx 80dp)
+    val regionHeight = with(density) { 72.dp.toPx() }
     val navBarHeight = with(density) { 80.dp.toPx() } // Approximate
     val screenHeight = with(density) { config.screenHeightDp.dp.toPx() }
     
     val triggerBottom = screenHeight - navBarHeight
     val triggerTop = triggerBottom - regionHeight
 
+    val scope = rememberCoroutineScope()
+
     Box(Modifier.fillMaxSize()) {
         Box(
             Modifier
                 .fillMaxSize()
-                .pointerInput(Unit) {
+                .pointerInput(triggerTop, triggerBottom) {
                     awaitEachGesture {
-                        val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                        val down = awaitFirstDown(requireUnconsumed = true)
                         
                         // Check if down event is in the trigger region
                         if (down.position.y < triggerTop || down.position.y > triggerBottom) return@awaitEachGesture
@@ -56,7 +59,7 @@ fun SettingsPullHost(
                         var swipedUp = false
                         
                         // Start a timer for long press
-                        val longPressTimer = scope.launch {
+                        val longPressJob = scope.launch {
                             delay(1500) // Show hint after 1.5s
                             hintVisible = true
                             longPressed = true
@@ -64,7 +67,7 @@ fun SettingsPullHost(
                         
                         try {
                             while (true) {
-                                val event = awaitPointerEvent(PointerEventPass.Initial)
+                                val event = awaitPointerEvent()
                                 val change = event.changes.firstOrNull { it.id == down.id } ?: break
                                 
                                 if (!change.pressed) {
@@ -77,9 +80,9 @@ fun SettingsPullHost(
                                 
                                 val delta = change.position - down.position
                                 
-                                // Cancel long press timer if moved too much horizontally or downwards
-                                if (!longPressed && (abs(delta.x) > viewConfiguration.touchSlop || delta.y > viewConfiguration.touchSlop)) {
-                                    longPressTimer.cancel()
+                                // Cancel long press timer if moved too much
+                                if (!longPressed && (abs(delta.x) > viewConfiguration.touchSlop || abs(delta.y) > viewConfiguration.touchSlop)) {
+                                    longPressJob.cancel()
                                 }
                                 
                                 // Detect swipe up after long press
@@ -94,7 +97,7 @@ fun SettingsPullHost(
                                 onOpenSettings()
                             }
                         } finally {
-                            longPressTimer.cancel()
+                            longPressJob.cancel()
                         }
                     }
                 }

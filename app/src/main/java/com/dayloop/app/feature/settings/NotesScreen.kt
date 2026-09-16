@@ -82,9 +82,9 @@ fun NotesScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(note.content, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
-                            DayLoopIconButton(R.drawable.ic_action_delete, "Delete note") {
+                            DayLoopIconButton(resource = R.drawable.ic_action_delete, label = "Delete note", onClick = {
                                 onDeleteNote(note.id)
-                            }
+                            })
                         }
                     }
                 }

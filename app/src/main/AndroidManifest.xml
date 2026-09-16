@@ -1,13 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:name=".DayLoopApplication"
         android:allowBackup="true"
+        android:icon="@mipmap/ic_dayloop"
+        android:roundIcon="@mipmap/ic_dayloop"
         android:label="DayLoop"
         android:supportsRtl="true"
         android:theme="@style/Theme.DayLoop">
+        <service
+            android:name=".feature.focus.FocusService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Focus Timer for Productivity" />
+        </service>
         <receiver
             android:name=".core.alarms.AlarmReceiver"
             android:exported="false">
@@ -18,8 +35,47 @@
                 <action android:name="com.dayloop.app.action.NOTIFICATION_RESCHEDULE" />
             </intent-filter>
         </receiver>
+        <receiver
+            android:name=".core.reconciliation.LifecycleRecoveryReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".widget.TodayWidgetReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/today_widget_info" />
+        </receiver>
+        <receiver
+            android:name=".widget.GoalWidgetReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/goal_widget_info" />
+        </receiver>
+        <activity
+            android:name=".core.notifications.ReminderActivity"
+            android:exported="false"
+            android:excludeFromRecents="true" />
         <activity
             android:name=".MainActivity"
+            android:theme="@style/Theme.DayLoop.Launch"
+            android:launchMode="singleTop"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

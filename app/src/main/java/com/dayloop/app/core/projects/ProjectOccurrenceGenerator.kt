@@ -19,12 +19,13 @@ class ProjectOccurrenceGenerator {
                         title = template.title,
                         priority = template.priority,
                         status = TaskStatus.ACTIVE,
+                        schedule = TaskSchedule.AllDay(moment.date),
                         reminderPolicy = template.reminderPolicy,
                         projectId = project.id,
                         provenance = TaskProvenance(
                             originType = "PROJECT_RULE",
                             ruleId = "SIMPLE_PHASE_CYCLE",
-                            version = 1L // Initial version
+                            version = project.version
                         )
                     )
                 } else {

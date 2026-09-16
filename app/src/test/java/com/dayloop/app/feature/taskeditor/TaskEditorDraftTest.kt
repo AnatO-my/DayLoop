@@ -25,6 +25,21 @@ import org.junit.Test
 
 class TaskEditorDraftTest {
     @Test
+    fun planningDateCreatesDatedAnytimeTask() {
+        val result = TaskEditorDraft(title = "Plan today", allDayDate = "2026-09-08")
+            .createTask(createTaskId = { TaskId("planned") }) as TaskEditorSubmitResult.Saved
+        assertEquals(TaskSchedule.AllDay(LocalDate.of(2026, 9, 8)), result.task.schedule)
+        assertEquals("2026-09-08", TaskEditorDraft.fromTask(result.task).allDayDate)
+    }
+
+    @Test
+    fun invalidPlanningDateCannotBeSaved() {
+        val result = TaskEditorDraft(title = "Plan today", allDayDate = "2026-02-30")
+            .createTask(createTaskId = { TaskId("invalid-date") })
+        assertTrue(result is TaskEditorSubmitResult.Invalid)
+    }
+
+    @Test
     fun blankTitleReturnsValidationError() {
         val result = TaskEditorDraft(title = " ").createTask(createTaskId = { TaskId("unused") })
 

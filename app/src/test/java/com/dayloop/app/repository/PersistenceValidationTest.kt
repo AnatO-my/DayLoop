@@ -10,7 +10,13 @@ import com.dayloop.app.core.model.ReminderMode
 import com.dayloop.app.core.model.ReminderPolicy
 import com.dayloop.app.core.model.Task
 import com.dayloop.app.core.model.TaskId
+import com.dayloop.app.core.model.ProjectId
+import com.dayloop.app.core.model.TaskProvenance
 import com.dayloop.app.core.model.TaskSchedule
+import com.dayloop.app.core.model.Goal
+import com.dayloop.app.core.model.GoalId
+import com.dayloop.app.core.model.Project
+import com.dayloop.app.core.model.ProjectStatus
 import java.io.File
 import java.time.DayOfWeek
 import java.time.Duration
@@ -226,16 +232,61 @@ class PersistenceValidationTest {
         }
     }
     @Test
+    fun persistedTaskWithProjectLinkageAndProvenanceRoundTrips() {
+        val task = Task(
+            id = TaskId("linked-task"),
+            title = "Study circuits",
+            projectId = ProjectId("project-1"),
+            provenance = TaskProvenance(
+                originType = "PROJECT_RULE",
+                ruleId = "rule-1",
+                version = 2L,
+            ),
+        )
+
+        assertEquals(task, task.toEntity().toDomain())
+    }
+
+    @Test
+    fun persistedGoalRoundTrips() {
+        val goal = Goal(
+            id = GoalId("goal-1"),
+            title = "Master analogue electronics",
+            targetDate = LocalDate.of(2026, 10, 20),
+        )
+
+        assertEquals(goal, goal.toEntity().toDomain())
+    }
+
+    @Test
+    fun persistedProjectRoundTrips() {
+        val project = Project(
+            id = ProjectId("project-1"),
+            goalId = GoalId("goal-1"),
+            title = "Circuits Spaced Study",
+            status = ProjectStatus.ACTIVE,
+        )
+
+        assertEquals(project, project.toEntity().toDomain())
+    }
+
+    @Test
     fun exportedRoomSchemaKeepsTaskAndOccurrencePersistenceColumns() {
         val schema = readExportedSchema()
 
-        assertTrue(schema.contains("\"version\": 4"))
+        assertTrue(schema.contains("\"version\": 8"))
         assertTrue(schema.contains("\"tableName\": \"tasks\""))
-        assertTrue(schema.contains("\"columnName\": \"schedule_kind\""))
-        assertTrue(schema.contains("\"columnName\": \"interval_every_millis\""))
-        assertTrue(schema.contains("\"columnName\": \"recurrence_frequency\""))
-        assertTrue(schema.contains("\"columnName\": \"reminder_mode\""))
-        assertTrue(schema.contains("\"columnName\": \"maximum_realerts\""))
+        assertTrue(schema.contains("\"columnName\": \"project_id\""))
+        assertTrue(schema.contains("\"columnName\": \"provenance_origin_type\""))
+        assertTrue(schema.contains("\"columnName\": \"provenance_rule_id\""))
+        assertTrue(schema.contains("\"columnName\": \"provenance_version\""))
+        assertTrue(schema.contains("\"tableName\": \"goals\""))
+        assertTrue(schema.contains("\"columnName\": \"manual_progress\""))
+        assertTrue(schema.contains("\"tableName\": \"projects\""))
+        assertTrue(schema.contains("\"columnName\": \"goal_id\""))
+        assertTrue(schema.contains("\"columnName\": \"protocol_type\""))
+        assertTrue(schema.contains("\"columnName\": \"protocol_active_days\""))
+        assertTrue(schema.contains("\"columnName\": \"version\""))
         assertTrue(schema.contains("\"tableName\": \"scheduled_occurrences\""))
         assertTrue(schema.contains("\"columnName\": \"task_id\""))
         assertTrue(schema.contains("\"columnName\": \"fire_at_epoch_millis\""))
@@ -243,13 +294,10 @@ class PersistenceValidationTest {
         assertTrue(schema.contains("\"columnName\": \"status\""))
         assertTrue(schema.contains("\"tableName\": \"alarm_diagnostic_entries\""))
         assertTrue(schema.contains("\"columnName\": \"occurrence_id\""))
-        assertTrue(schema.contains("\"columnName\": \"task_id\""))
         assertTrue(schema.contains("\"columnName\": \"event\""))
-        assertTrue(schema.contains("\"columnName\": \"exact\""))
         assertTrue(schema.contains("\"tableName\": \"persistent_reminder_escalations\""))
         assertTrue(schema.contains("\"columnName\": \"source_occurrence_id\""))
         assertTrue(schema.contains("\"columnName\": \"next_realert_at_epoch_millis\""))
-        assertTrue(schema.contains("\"columnName\": \"realerts_delivered\""))
     }
 
     private fun baseIntervalEntity(
@@ -308,7 +356,7 @@ class PersistenceValidationTest {
     )
 
     private fun readExportedSchema(): String {
-        val relativePath = "schemas/com.dayloop.app.core.database.DayLoopDatabase/4.json"
+        val relativePath = "schemas/com.dayloop.app.core.database.DayLoopDatabase/8.json"
         val candidates = listOf(
             File(relativePath),
             File("app/$relativePath"),

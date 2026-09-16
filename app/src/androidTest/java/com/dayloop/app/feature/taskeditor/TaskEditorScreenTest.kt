@@ -2,6 +2,7 @@ package com.dayloop.app.feature.taskeditor
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -41,7 +42,7 @@ class TaskEditorScreenTest {
     fun blankSaveShowsValidationError() {
         composeRule.setContent {
             DayLoopTheme {
-                var draft by mutableStateOf(TaskEditorDraft())
+                var draft by remember { mutableStateOf(TaskEditorDraft()) }
                 TaskEditorScreen(
                     draft = draft,
                     onDraftChange = { changedDraft -> draft = changedDraft },
@@ -62,7 +63,7 @@ class TaskEditorScreenTest {
 
         composeRule.setContent {
             DayLoopTheme {
-                var draft by mutableStateOf(TaskEditorDraft())
+                var draft by remember { mutableStateOf(TaskEditorDraft()) }
                 TaskEditorScreen(
                     draft = draft,
                     onDraftChange = { changedDraft -> draft = changedDraft },
@@ -89,7 +90,7 @@ class TaskEditorScreenTest {
 
         composeRule.setContent {
             DayLoopTheme {
-                var draft by mutableStateOf(TaskEditorDraft())
+                var draft by remember { mutableStateOf(TaskEditorDraft()) }
                 TaskEditorScreen(
                     draft = draft,
                     onDraftChange = { changedDraft -> draft = changedDraft },
@@ -121,7 +122,7 @@ class TaskEditorScreenTest {
 
         composeRule.setContent {
             DayLoopTheme {
-                var draft by mutableStateOf(TaskEditorDraft())
+                var draft by remember { mutableStateOf(TaskEditorDraft()) }
                 TaskEditorScreen(
                     draft = draft,
                     onDraftChange = { changedDraft -> draft = changedDraft },
@@ -158,7 +159,7 @@ class TaskEditorScreenTest {
 
         composeRule.setContent {
             DayLoopTheme {
-                var draft by mutableStateOf(TaskEditorDraft())
+                var draft by remember { mutableStateOf(TaskEditorDraft()) }
                 TaskEditorScreen(
                     draft = draft,
                     onDraftChange = { changedDraft -> draft = changedDraft },
@@ -187,7 +188,7 @@ class TaskEditorScreenTest {
                             startsAt = LocalTime.of(8, 0),
                             endsAt = LocalTime.of(18, 0),
                         ),
-                        eligibleDays = DayOfWeek.values().toSet(),
+                        eligibleDays = DayOfWeek.entries.toSet(),
                         startsOn = LocalDate.of(2026, 9, 6),
                         anchor = IntervalAnchor.SCHEDULED_START,
                     ),
@@ -202,7 +203,7 @@ class TaskEditorScreenTest {
 
         composeRule.setContent {
             DayLoopTheme {
-                var draft by mutableStateOf(TaskEditorDraft())
+                var draft by remember { mutableStateOf(TaskEditorDraft()) }
                 TaskEditorScreen(
                     draft = draft,
                     onDraftChange = { changedDraft -> draft = changedDraft },

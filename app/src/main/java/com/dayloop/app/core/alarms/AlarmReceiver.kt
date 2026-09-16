@@ -19,23 +19,20 @@ class AlarmReceiver : BroadcastReceiver() {
                 when (intent.action) {
                     AlarmIntentIdentity.ACTION_ALARM_DUE -> {
                         val delivery = intent.toAlarmDelivery() ?: return@launch
-                        AlarmDeliveryProcessor(
-                            scheduledOccurrenceRepository = application.appGraph.scheduledOccurrenceRepository,
-                            timeProvider = application.appGraph.timeProvider,
-                            diagnosticsRepository = application.appGraph.alarmDiagnosticsRepository,
-                        ).process(delivery)
+                        application.appGraph.alarmCoordinator.deliver(delivery)
                     }
                     AlarmIntentIdentity.ACTION_NOTIFICATION_COMPLETE,
                     AlarmIntentIdentity.ACTION_NOTIFICATION_SNOOZE,
                     AlarmIntentIdentity.ACTION_NOTIFICATION_RESCHEDULE -> {
                         val command = intent.toAlarmNotificationCommand() ?: return@launch
-                        AlarmNotificationActionProcessor(
-                            taskRepository = application.appGraph.taskRepository,
-                            scheduledOccurrenceRepository = application.appGraph.scheduledOccurrenceRepository,
-                            alarmScheduler = application.appGraph.alarmScheduler,
-                            timeProvider = application.appGraph.timeProvider,
-                            diagnosticsRepository = application.appGraph.alarmDiagnosticsRepository,
-                        ).process(command)
+                        val result = application.appGraph.alarmCoordinator.action(command)
+                        if (result is AlarmNotificationActionResult.RescheduleRequested) {
+                            context.startActivity(
+                                Intent(context, com.dayloop.app.MainActivity::class.java)
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                                    .putExtra("edit_task_id", result.taskId.value)
+                            )
+                        }
                     }
                 }
             } finally {

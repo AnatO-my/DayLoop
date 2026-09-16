@@ -13,6 +13,7 @@ internal fun Goal.toEntity(): GoalEntity = GoalEntity(
     targetDate = targetDate?.toString(),
     progressPolicy = progressPolicy.name,
     status = status.name,
+    manualProgress = manualProgress,
 )
 
 internal fun GoalEntity.toDomain(): Goal = Goal(
@@ -21,4 +22,5 @@ internal fun GoalEntity.toDomain(): Goal = Goal(
     targetDate = targetDate?.let(LocalDate::parse),
     progressPolicy = GoalProgressPolicy.valueOf(progressPolicy),
     status = GoalStatus.valueOf(status),
+    manualProgress = manualProgress,
 )

@@ -15,4 +15,18 @@ data class ProjectEntity(
     val title: String,
     @ColumnInfo(name = "status")
     val status: String,
+    @ColumnInfo(name = "protocol_type")
+    val protocolType: String? = null,
+    @ColumnInfo(name = "protocol_active_days")
+    val protocolActiveDays: Int? = null,
+    @ColumnInfo(name = "protocol_rest_days")
+    val protocolRestDays: Int? = null,
+    @ColumnInfo(name = "protocol_anchor_date")
+    val protocolAnchorDate: String? = null,
+    @ColumnInfo(name = "protocol_task_title")
+    val protocolTaskTitle: String? = null,
+    @ColumnInfo(name = "protocol_task_priority")
+    val protocolTaskPriority: String? = null,
+    @ColumnInfo(name = "version")
+    val version: Long = 1L,
 )

@@ -19,15 +19,10 @@ class LifecycleRecoveryReceiver : BroadcastReceiver() {
                 when (intent.action) {
                     Intent.ACTION_BOOT_COMPLETED,
                     Intent.ACTION_MY_PACKAGE_REPLACED,
-                    Intent.ACTION_TIME_SET,
-                    Intent.ACTION_TIMEZONE_CHANGED -> {
-                        val reconciler = ScheduleReconciler(
-                            application.appGraph.scheduledOccurrenceRepository,
-                            application.appGraph.alarmScheduler,
-                            application.appGraph.alarmDiagnosticsRepository,
-                            application.appGraph.timeProvider
-                        )
-                        reconciler.reconcile()
+                    Intent.ACTION_TIME_CHANGED,
+                    Intent.ACTION_TIMEZONE_CHANGED,
+                    "android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" -> {
+                        application.appGraph.scheduleReconciler.reconcile()
                     }
                 }
             } finally {

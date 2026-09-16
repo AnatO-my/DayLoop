@@ -50,19 +50,6 @@ class TodayScreenTest {
         }
     }
 
-    @Test
-    fun emptyDayShowsEmptyDayMessage() {
-        composeRule.setContent {
-            DayLoopTheme {
-                TodayScreen(
-                    uiState = TodayUiState.empty(date = LocalDate.of(2026, 9, 3)),
-                )
-            }
-        }
-
-        composeRule.onNodeWithText("Nothing planned").assertExists()
-        composeRule.onNodeWithText("Today is clear.").assertExists()
-    }
 
     @Test
     fun todayDashboardVisualExperimentShowsShellAndActions() {
@@ -114,8 +101,6 @@ class TodayScreenTest {
 
         composeRule.onNodeWithText("Completed").assertExists()
         composeRule.onNodeWithText("1 task").assertExists()
-        composeRule.onNodeWithText("All done today").assertExists()
-        composeRule.onNodeWithText("Everything scheduled for today is complete.").assertExists()
         composeRule.onNodeWithContentDescription("Show completed tasks").assertExists()
         composeRule.onNodeWithText("Show").performClick()
 

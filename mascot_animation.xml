@@ -1,0 +1,175 @@
+<animated-vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+
+    <aapt:attr name="android:drawable">
+        <vector
+            android:width="513dp"
+            android:height="513dp"
+            android:viewportWidth="513"
+            android:viewportHeight="513">
+            
+            <group
+                android:name="root_matrix"
+                android:translateX="-0.5"
+                android:translateY="-584.614641">
+                
+                <group
+                    android:name="mascot"
+                    android:scaleX="1.001953"
+                    android:scaleY="1.001953"
+                    android:translateX="0.5"
+                    android:translateY="584.614641">
+                    
+                    <path
+                        android:fillColor="#00945D"
+                        android:pathData="M 0,0 h 512 v 512 h -512 z" />
+                    
+                    <group
+                        android:name="background"
+                        android:scaleX="0.998051"
+                        android:scaleY="0.998051"
+                        android:translateX="-576.942127"
+                        android:translateY="0.499025">
+                        <path
+                            android:fillColor="#00EB73"
+                            android:pathData="M 578.569,0 h 512 v 512 h -512 z" />
+                    </group>
+                    
+                    <group
+                        android:name="eye_frame"
+                        android:scaleX="1.136509"
+                        android:scaleY="1.136509"
+                        android:translateX="-8.702412"
+                        android:translateY="-35.173267">
+                        <path
+                            android:fillColor="#FFFFFF"
+                            android:fillAlpha="0.98"
+                            android:pathData="M 217.025,270.145 C 217.025,270.145 220.272,288.459 230.764,302.548 C 218.113,320.778 193.171,332.038 170.982,332.038 C 139.483,332.038 95.684,307.441 95.258,256.313 C 94.832,205.186 139.677,180.362 170.982,180.362 C 205.32,180.362 246.706,207.45 246.706,255.811 C 246.706,281.06 266.136,304.445 294.838,304.445 C 321.784,304.445 342.968,282.946 342.968,256 C 342.968,226.689 317.709,208.182 294.838,208.182 C 258.987,208.182 248.941,241.782 248.941,241.782 C 248.941,241.782 245.2,222.203 235.202,209.665 C 248.88,193.464 269.224,180.362 294.838,180.362 C 338.187,180.362 370.562,216.292 370.562,256.086 C 370.562,289.181 345.028,331.81 294.838,331.81 C 263.729,331.81 221.382,310.377 219.114,256.313 C 219.114,230.967 198.925,207.955 170.982,207.955 C 146.709,207.955 122.851,227.421 122.851,256.313 C 122.851,279.441 141.826,304.192 169.409,304.192 C 207.868,304.192 217.025,270.145 217.025,270.145 Z" />
+                    </group>
+                    
+                    <group
+                        android:name="right_pupil"
+                        android:scaleX="2.62689"
+                        android:scaleY="2.62689"
+                        android:translateX="-123.66901"
+                        android:translateY="-1934.187427">
+                        <path
+                            android:fillColor="#FFFFFF"
+                            android:fillAlpha="0.98"
+                            android:pathData="M 174.357,824.506 a 9.99,9.99 0 1,0 0,19.98 a 9.99,9.99 0 1,0 0,-19.98" />
+                    </group>
+                    
+                    <group
+                        android:name="left_pupil"
+                        android:scaleX="2.62689"
+                        android:scaleY="2.62689"
+                        android:translateX="-270.87069"
+                        android:translateY="-1934.187427">
+                        <path
+                            android:fillColor="#FFFFFF"
+                            android:fillAlpha="0.98"
+                            android:pathData="M 174.357,824.506 a 9.99,9.99 0 1,0 0,19.98 a 9.99,9.99 0 1,0 0,-19.98" />
+                    </group>
+                    
+                    <group
+                        android:name="left_highlight"
+                        android:scaleX="0.998051"
+                        android:scaleY="0.998051"
+                        android:translateX="15.025931"
+                        android:translateY="-585.756723">
+                        <path
+                            android:fillColor="#00EB73"
+                            android:fillAlpha="0.98"
+                            android:pathData="M 196.284,830.225 a 8.274,8.274 0 1,0 0,16.548 a 8.274,8.274 0 1,0 0,-16.548" />
+                    </group>
+                    
+                    <group
+                        android:name="right_highlight"
+                        android:scaleX="0.998051"
+                        android:scaleY="0.998051"
+                        android:translateX="164.68787"
+                        android:translateY="-585.756723">
+                        <path
+                            android:fillColor="#00EB73"
+                            android:fillAlpha="0.98"
+                            android:pathData="M 196.284,830.225 a 8.274,8.274 0 1,0 0,16.548 a 8.274,8.274 0 1,0 0,-16.548" />
+                    </group>
+                </group>
+            </group>
+        </vector>
+    </aapt:attr>
+
+    <!-- Left Eye Highlight Animations -->
+    <target android:name="left_highlight">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+                <!-- Sequence 1: Look up and hold -->
+                <objectAnimator
+                    android:propertyName="translateY"
+                    android:duration="3000"
+                    android:valueType="floatType"
+                    android:interpolator="@android:interpolator/linear">
+                    <propertyValuesHolder android:propertyName="translateY">
+                        <keyframe android:fraction="0.0" android:value="-585.756" />
+                        <keyframe android:fraction="0.15" android:value="-612.756" /> <!-- Move up -->
+                        <keyframe android:fraction="0.35" android:value="-612.756" /> <!-- Hold up -->
+                        <keyframe android:fraction="0.5" android:value="-585.756" />  <!-- Return to center -->
+                        <keyframe android:fraction="1.0" android:value="-585.756" />  <!-- Stay centered -->
+                    </propertyValuesHolder>
+                </objectAnimator>
+
+                <!-- Sequence 2: Look left and hold -->
+                <objectAnimator
+                    android:propertyName="translateX"
+                    android:duration="3000"
+                    android:valueType="floatType"
+                    android:interpolator="@android:interpolator/linear">
+                    <propertyValuesHolder android:propertyName="translateX">
+                        <keyframe android:fraction="0.0" android:value="15.025" />
+                        <keyframe android:fraction="0.5" android:value="15.025" />
+                        <keyframe android:fraction="0.65" android:value="-10.025" /> <!-- Move left -->
+                        <keyframe android:fraction="0.85" android:value="-10.025" /> <!-- Hold left -->
+                        <keyframe android:fraction="1.0" android:value="15.025" />   <!-- Return to center -->
+                    </propertyValuesHolder>
+                </objectAnimator>
+            </set>
+        </aapt:attr>
+    </target>
+
+    <!-- Right Eye Highlight Animations -->
+    <target android:name="right_highlight">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+                <objectAnimator
+                    android:propertyName="translateY"
+                    android:duration="3000"
+                    android:valueType="floatType"
+                    android:interpolator="@android:interpolator/linear">
+                    <propertyValuesHolder android:propertyName="translateY">
+                        <keyframe android:fraction="0.0" android:value="-585.756" />
+                        <keyframe android:fraction="0.15" android:value="-612.756" /> <!-- Move up -->
+                        <keyframe android:fraction="0.35" android:value="-612.756" /> <!-- Hold up -->
+                        <keyframe android:fraction="0.5" android:value="-585.756" />  <!-- Return to center -->
+                        <keyframe android:fraction="1.0" android:value="-585.756" />  <!-- Stay centered -->
+                    </propertyValuesHolder>
+                </objectAnimator>
+
+                <objectAnimator
+                    android:propertyName="translateX"
+                    android:duration="3000"
+                    android:valueType="floatType"
+                    android:interpolator="@android:interpolator/linear">
+                    <propertyValuesHolder android:propertyName="translateX">
+                        <keyframe android:fraction="0.0" android:value="164.687" />
+                        <keyframe android:fraction="0.5" android:value="164.687" />
+                        <keyframe android:fraction="0.65" android:value="139.687" /> <!-- Move left -->
+                        <keyframe android:fraction="0.85" android:value="139.687" /> <!-- Hold left -->
+                        <keyframe android:fraction="1.0" android:value="164.687" />  <!-- Return to center -->
+                    </propertyValuesHolder>
+                </objectAnimator>
+            </set>
+        </aapt:attr>
+    </target>
+
+</animated-vector>

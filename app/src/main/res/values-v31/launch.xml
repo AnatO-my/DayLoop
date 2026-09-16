@@ -1,0 +1,6 @@
+<resources>
+    <style name="Theme.DayLoop.Launch" parent="Theme.DayLoop">
+        <item name="android:windowSplashScreenBackground">@color/dayloop_splash_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/dayloop_splash_mark</item>
+    </style>
+</resources>

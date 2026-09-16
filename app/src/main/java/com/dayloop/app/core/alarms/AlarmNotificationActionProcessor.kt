@@ -1,6 +1,5 @@
 package com.dayloop.app.core.alarms
 
-import com.dayloop.app.core.model.Task
 import com.dayloop.app.core.model.TaskStatus
 import com.dayloop.app.repository.AlarmDiagnosticsRepository
 import com.dayloop.app.repository.PersistentReminderEscalationRepository
@@ -18,6 +17,12 @@ class AlarmNotificationActionProcessor(
     private val diagnosticsRepository: AlarmDiagnosticsRepository? = null,
     private val escalationRepository: PersistentReminderEscalationRepository? = null,
 ) {
+    init {
+        require(!snoozeDuration.isZero && !snoozeDuration.isNegative) {
+            "Snooze duration must be positive."
+        }
+    }
+
     suspend fun process(command: AlarmNotificationCommand): AlarmNotificationActionResult = when (command.action) {
         AlarmNotificationAction.COMPLETE -> complete(command.delivery)
         AlarmNotificationAction.SNOOZE -> snooze(command.delivery)
@@ -55,12 +60,16 @@ class AlarmNotificationActionProcessor(
             record(fresh, AlarmDiagnosticEvent.ACTION_REJECTED, "TASK_MISSING")
             return result
         }
-        if (!task.reminderPolicy.snoozeAllowed) {
+        if (task.status != TaskStatus.ACTIVE || !task.reminderPolicy.snoozeAllowed) {
             val result = AlarmNotificationActionResult.ActionNotAllowed(
                 occurrenceId = fresh.id,
                 action = AlarmNotificationAction.SNOOZE,
             )
-            record(fresh, AlarmDiagnosticEvent.ACTION_REJECTED, "SNOOZE_NOT_ALLOWED")
+            record(
+                fresh,
+                AlarmDiagnosticEvent.ACTION_REJECTED,
+                if (task.status != TaskStatus.ACTIVE) "TASK_NOT_ACTIVE" else "SNOOZE_NOT_ALLOWED",
+            )
             return result
         }
 
@@ -74,7 +83,7 @@ class AlarmNotificationActionProcessor(
         return when (val scheduleResult = alarmScheduler.schedule(snoozed)) {
             is AlarmScheduleResult.Scheduled -> {
                 scheduledOccurrenceRepository.saveOccurrence(snoozed)
-                postponeActiveEscalationsForTask(task, snoozed.fireAt, now)
+                postponeActiveEscalationsForOccurrence(snoozed, now)
                 val result = AlarmNotificationActionResult.Snoozed(
                     occurrence = snoozed,
                     scheduledExact = scheduleResult.exact,
@@ -131,18 +140,19 @@ class AlarmNotificationActionProcessor(
             .forEach { escalation -> repository.saveEscalation(escalation.resolve(at)) }
     }
 
-    private suspend fun postponeActiveEscalationsForTask(
-        task: Task,
-        nextRealertAt: java.time.Instant,
+    private suspend fun postponeActiveEscalationsForOccurrence(
+        occurrence: ScheduledOccurrence,
         at: java.time.Instant,
     ) {
         val repository = escalationRepository ?: return
         repository.getActiveEscalations()
-            .filter { escalation -> escalation.taskId == task.id }
+            .filter { escalation ->
+                escalation.taskId == occurrence.taskId && escalation.sourceOccurrenceId == occurrence.id
+            }
             .forEach { escalation ->
                 repository.saveEscalation(
                     escalation.copy(
-                        nextRealertAt = nextRealertAt,
+                        nextRealertAt = occurrence.fireAt,
                         updatedAt = at,
                     ),
                 )

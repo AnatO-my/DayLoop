@@ -2,6 +2,7 @@ package com.dayloop.app.feature.taskeditor
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -27,7 +28,7 @@ class QuickAddBarTest {
     fun blankSubmitShowsValidationError() {
         composeRule.setContent {
             DayLoopTheme {
-                var draft by mutableStateOf(QuickAddDraft())
+                var draft by remember { mutableStateOf(QuickAddDraft()) }
                 QuickAddBar(
                     draft = draft,
                     onDraftChange = { changedDraft -> draft = changedDraft },
@@ -48,7 +49,7 @@ class QuickAddBarTest {
 
         composeRule.setContent {
             DayLoopTheme {
-                var draft by mutableStateOf(QuickAddDraft())
+                var draft by remember { mutableStateOf(QuickAddDraft()) }
                 QuickAddBar(
                     draft = draft,
                     onDraftChange = { changedDraft -> draft = changedDraft },

@@ -59,4 +59,14 @@ data class TaskEntity(
     val snoozeAllowed: Boolean = true,
     @ColumnInfo(name = "reschedule_allowed")
     val rescheduleAllowed: Boolean = true,
+    @ColumnInfo(name = "project_id")
+    val projectId: String? = null,
+    @ColumnInfo(name = "provenance_origin_type")
+    val provenanceOriginType: String? = null,
+    @ColumnInfo(name = "provenance_rule_id")
+    val provenanceRuleId: String? = null,
+    @ColumnInfo(name = "provenance_version")
+    val provenanceVersion: Long? = null,
+    @ColumnInfo(name = "subtasks_json")
+    val subtasksJson: String? = null,
 )

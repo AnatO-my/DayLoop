@@ -32,8 +32,10 @@ data class Goal(
     val targetDate: LocalDate? = null,
     val progressPolicy: GoalProgressPolicy = GoalProgressPolicy.BINARY,
     val status: GoalStatus = GoalStatus.ACTIVE,
+    val manualProgress: Double = 0.0,
 ) {
     init {
         require(title.isNotBlank()) { "Goal title must not be blank." }
+        require(manualProgress in 0.0..1.0) { "Manual progress must be between 0.0 and 1.0." }
     }
 }

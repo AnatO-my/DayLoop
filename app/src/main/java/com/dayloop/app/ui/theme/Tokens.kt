@@ -34,6 +34,7 @@ class DayLoopColorTokens internal constructor(
     val appField: Color,
     val progressTrack: Color,
     val warning: Color,
+    val actionAccent: Color = quietAccent,
 )
 
 @Immutable
@@ -64,6 +65,7 @@ internal val CalmPressureLightTokens = DayLoopTokens(
         appField = CalmPressureLightAppField,
         progressTrack = CalmPressureLightProgressTrack,
         warning = CalmPressureLightWarning,
+        actionAccent = CalmPressureLightPrimary,
     ),
 )
 
@@ -88,6 +90,7 @@ internal val CalmPressureDarkTokens = DayLoopTokens(
         appField = CalmPressureDarkAppField,
         progressTrack = CalmPressureDarkProgressTrack,
         warning = CalmPressureDarkWarning,
+        actionAccent = CalmPressureDarkPrimary,
     ),
 )
 

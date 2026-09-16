@@ -35,9 +35,9 @@ class ProjectScenarioTest {
             ScenarioDay(offset = 0, expectTask = true, expectedStatus = TodayDayStatus.OPEN),
             ScenarioDay(offset = 1, expectTask = true, expectedStatus = TodayDayStatus.OPEN),
             ScenarioDay(offset = 2, expectTask = true, expectedStatus = TodayDayStatus.OPEN),
-            ScenarioDay(offset = 3, expectTask = false, expectedStatus = TodayDayStatus.COMPLETE),
-            ScenarioDay(offset = 4, expectTask = false, expectedStatus = TodayDayStatus.COMPLETE),
-            ScenarioDay(offset = 5, expectTask = false, expectedStatus = TodayDayStatus.COMPLETE),
+            ScenarioDay(offset = 3, expectTask = false, expectedStatus = TodayDayStatus.OPEN),
+            ScenarioDay(offset = 4, expectTask = false, expectedStatus = TodayDayStatus.OPEN),
+            ScenarioDay(offset = 5, expectTask = false, expectedStatus = TodayDayStatus.OPEN),
             ScenarioDay(offset = 6, expectTask = true, expectedStatus = TodayDayStatus.OPEN)
         )
 

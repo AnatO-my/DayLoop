@@ -4,6 +4,7 @@
     xmlns:aapt="http://schemas.android.com/aapt">
 
     <aapt:attr name="android:drawable">
+
         <vector
             android:width="513dp"
             android:height="513dp"
@@ -22,9 +23,13 @@
                     android:translateX="0.5"
                     android:translateY="584.614641">
 
+                    <!-- ================================================= -->
+                    <!-- BACKGROUND                                        -->
+                    <!-- ================================================= -->
+
                     <path
                         android:fillColor="#00945D"
-                        android:pathData="M 0,0 h 512 v 512 h -512 z" />
+                        android:pathData="M0,0h512v512h-512z" />
 
                     <group
                         android:name="background"
@@ -35,8 +40,15 @@
 
                         <path
                             android:fillColor="#00EB73"
-                            android:pathData="M 578.569,0 h 512 v 512 h -512 z" />
+                            android:pathData="M578.569,0h512v512h-512z" />
+
                     </group>
+
+
+                    <!-- ================================================= -->
+                    <!-- MAIN WHITE EYE FRAME                              -->
+                    <!-- Kept independent from blinking geometry.          -->
+                    <!-- ================================================= -->
 
                     <group
                         android:name="eye_frame"
@@ -48,24 +60,37 @@
                         <path
                             android:fillColor="#FFFFFF"
                             android:fillAlpha="0.98"
-                            android:pathData="M 217.025,270.145 C 217.025,270.145 220.272,288.459 230.764,302.548 C 218.113,320.778 193.171,332.038 170.982,332.038 C 139.483,332.038 95.684,307.441 95.258,256.313 C 94.832,205.186 139.677,180.362 170.982,180.362 C 205.32,180.362 246.706,207.45 246.706,255.811 C 246.706,281.06 266.136,304.445 294.838,304.445 C 321.784,304.445 342.968,282.946 342.968,256 C 342.968,226.689 317.709,208.182 294.838,208.182 C 258.987,208.182 248.941,241.782 248.941,241.782 C 248.941,241.782 245.2,222.203 235.202,209.665 C 248.88,193.464 269.224,180.362 294.838,180.362 C 338.187,180.362 370.562,216.292 370.562,256.086 C 370.562,289.181 345.028,331.81 294.838,331.81 C 263.729,331.81 221.382,310.377 219.114,256.313 C 219.114,230.967 198.925,207.955 170.982,207.955 C 146.709,207.955 122.851,227.421 122.851,256.313 C 122.851,279.441 141.826,304.192 169.409,304.192 C 207.868,304.192 217.025,270.145 217.025,270.145 Z" />
+                            android:pathData="
+                                M217.025,270.145
+                                C217.025,270.145 220.272,288.459 230.764,302.548
+                                C218.113,320.778 193.171,332.038 170.982,332.038
+                                C139.483,332.038 95.684,307.441 95.258,256.313
+                                C94.832,205.186 139.677,180.362 170.982,180.362
+                                C205.32,180.362 246.706,207.45 246.706,255.811
+                                C246.706,281.06 266.136,304.445 294.838,304.445
+                                C321.784,304.445 342.968,282.946 342.968,256
+                                C342.968,226.689 317.709,208.182 294.838,208.182
+                                C258.987,208.182 248.941,241.782 248.941,241.782
+                                C248.941,241.782 245.2,222.203 235.202,209.665
+                                C248.88,193.464 269.224,180.362 294.838,180.362
+                                C338.187,180.362 370.562,216.292 370.562,256.086
+                                C370.562,289.181 345.028,331.81 294.838,331.81
+                                C263.729,331.81 221.382,310.377 219.114,256.313
+                                C219.114,230.967 198.925,207.955 170.982,207.955
+                                C146.709,207.955 122.851,227.421 122.851,256.313
+                                C122.851,279.441 141.826,304.192 169.409,304.192
+                                C207.868,304.192 217.025,270.145 217.025,270.145
+                                Z" />
+
                     </group>
 
-                    <group
-                        android:name="right_pupil"
-                        android:scaleX="2.62689"
-                        android:scaleY="2.62689"
-                        android:translateX="-123.66901"
-                        android:translateY="-1934.187427">
 
-                        <path
-                            android:fillColor="#FFFFFF"
-                            android:fillAlpha="0.98"
-                            android:pathData="M 174.357,824.506 a 9.99,9.99 0 1,0 0,19.98 a 9.99,9.99 0 1,0 0,-19.98" />
-                    </group>
+                    <!-- ================================================= -->
+                    <!-- SMALL WHITE EYEBALLS                              -->
+                    <!-- ================================================= -->
 
                     <group
-                        android:name="left_pupil"
+                        android:name="left_eye_white"
                         android:scaleX="2.62689"
                         android:scaleY="2.62689"
                         android:translateX="-270.87069"
@@ -74,11 +99,37 @@
                         <path
                             android:fillColor="#FFFFFF"
                             android:fillAlpha="0.98"
-                            android:pathData="M 174.357,824.506 a 9.99,9.99 0 1,0 0,19.98 a 9.99,9.99 0 1,0 0,-19.98" />
+                            android:pathData="
+                                M174.357,824.506
+                                a9.99,9.99 0 1,0 0,19.98
+                                a9.99,9.99 0 1,0 0,-19.98" />
+
                     </group>
 
                     <group
-                        android:name="left_highlight"
+                        android:name="right_eye_white"
+                        android:scaleX="2.62689"
+                        android:scaleY="2.62689"
+                        android:translateX="-123.66901"
+                        android:translateY="-1934.187427">
+
+                        <path
+                            android:fillColor="#FFFFFF"
+                            android:fillAlpha="0.98"
+                            android:pathData="
+                                M174.357,824.506
+                                a9.99,9.99 0 1,0 0,19.98
+                                a9.99,9.99 0 1,0 0,-19.98" />
+
+                    </group>
+
+
+                    <!-- ================================================= -->
+                    <!-- MOVING GREEN PUPILS                               -->
+                    <!-- ================================================= -->
+
+                    <group
+                        android:name="left_pupil"
                         android:scaleX="0.998051"
                         android:scaleY="0.998051"
                         android:translateX="15.025931"
@@ -87,11 +138,15 @@
                         <path
                             android:fillColor="#00EB73"
                             android:fillAlpha="0.98"
-                            android:pathData="M 196.284,830.225 a 8.274,8.274 0 1,0 0,16.548 a 8.274,8.274 0 1,0 0,-16.548" />
+                            android:pathData="
+                                M196.284,830.225
+                                a8.274,8.274 0 1,0 0,16.548
+                                a8.274,8.274 0 1,0 0,-16.548" />
+
                     </group>
 
                     <group
-                        android:name="right_highlight"
+                        android:name="right_pupil"
                         android:scaleX="0.998051"
                         android:scaleY="0.998051"
                         android:translateX="164.68787"
@@ -100,159 +155,727 @@
                         <path
                             android:fillColor="#00EB73"
                             android:fillAlpha="0.98"
-                            android:pathData="M 196.284,830.225 a 8.274,8.274 0 1,0 0,16.548 a 8.274,8.274 0 1,0 0,-16.548" />
+                            android:pathData="
+                                M196.284,830.225
+                                a8.274,8.274 0 1,0 0,16.548
+                                a8.274,8.274 0 1,0 0,-16.548" />
+
+                    </group>
+
+
+                    <!-- ================================================= -->
+                    <!-- LEFT EYE LID CLIPPING                             -->
+                    <!--                                                   -->
+                    <!-- Exact eyeball centre ≈ (187.146, 257.942)         -->
+                    <!-- radius ≈ 26.243                                   -->
+                    <!--                                                   -->
+                    <!-- Anything animated below can ONLY appear           -->
+                    <!-- within the small white eyeball.                    -->
+                    <!-- ================================================= -->
+
+                    <group android:name="left_eye_lid_clip">
+
+                        <clip-path
+                            android:name="left_eye_aperture"
+                            android:pathData="
+                                M160.903,257.942
+                                a26.243,26.243 0 1,0 52.486,0
+                                a26.243,26.243 0 1,0 -52.486,0" />
+
+
+                        <!-- ============================================= -->
+                        <!-- LEFT UPPER LID                                -->
+                        <!-- Not circular.                                 -->
+                        <!-- ============================================= -->
+
+                        <group
+                            android:name="left_upper_eyelid"
+                            android:translateY="-36">
+
+                            <path
+                                android:fillColor="#00EB73"
+                                android:pathData="
+                                    M150,210
+                                    L224,210
+                                    L224,260
+                                    C211,254
+                                     200,252
+                                     187.146,252
+                                    C174,252
+                                     163,254
+                                     150,260
+                                    Z" />
+
+                        </group>
+
+
+                        <!-- ============================================= -->
+                        <!-- LEFT LOWER LID                                -->
+                        <!-- ============================================= -->
+
+                        <group
+                            android:name="left_lower_eyelid"
+                            android:translateY="36">
+
+                            <path
+                                android:fillColor="#00EB73"
+                                android:pathData="
+                                    M150,306
+                                    L224,306
+                                    L224,257
+                                    C211,263
+                                     200,265
+                                     187.146,265
+                                    C174,265
+                                     163,263
+                                     150,257
+                                    Z" />
+
+                        </group>
+
+                    </group>
+
+
+                    <!-- ================================================= -->
+                    <!-- RIGHT EYE LID CLIPPING                            -->
+                    <!--                                                   -->
+                    <!-- centre ≈ (334.348, 257.942)                       -->
+                    <!-- radius ≈ 26.243                                   -->
+                    <!-- ================================================= -->
+
+                    <group android:name="right_eye_lid_clip">
+
+                        <clip-path
+                            android:name="right_eye_aperture"
+                            android:pathData="
+                                M308.105,257.942
+                                a26.243,26.243 0 1,0 52.486,0
+                                a26.243,26.243 0 1,0 -52.486,0" />
+
+
+                        <!-- ============================================= -->
+                        <!-- RIGHT UPPER LID                               -->
+                        <!-- ============================================= -->
+
+                        <group
+                            android:name="right_upper_eyelid"
+                            android:translateY="-36">
+
+                            <path
+                                android:fillColor="#00EB73"
+                                android:pathData="
+                                    M297,210
+                                    L372,210
+                                    L372,260
+                                    C359,254
+                                     347,252
+                                     334.348,252
+                                    C321,252
+                                     310,254
+                                     297,260
+                                    Z" />
+
+                        </group>
+
+
+                        <!-- ============================================= -->
+                        <!-- RIGHT LOWER LID                               -->
+                        <!-- ============================================= -->
+
+                        <group
+                            android:name="right_lower_eyelid"
+                            android:translateY="36">
+
+                            <path
+                                android:fillColor="#00EB73"
+                                android:pathData="
+                                    M297,306
+                                    L372,306
+                                    L372,257
+                                    C359,263
+                                     347,265
+                                     334.348,265
+                                    C321,265
+                                     310,263
+                                     297,257
+                                    Z" />
+
+                        </group>
+
                     </group>
 
                 </group>
             </group>
 
         </vector>
+
     </aapt:attr>
 
-    <!-- Left Eye Highlight Animations -->
-    <target android:name="left_highlight">
+
+    <!-- ========================================================= -->
+    <!-- LEFT PUPIL GAZE                                           -->
+    <!-- ========================================================= -->
+
+    <target android:name="left_pupil">
+
         <aapt:attr name="android:animation">
+
             <set android:ordering="together">
 
-                <!-- Look up, hold, then return -->
                 <objectAnimator
-                    android:propertyName="translateY"
-                    android:duration="3000"
+                    android:duration="8000"
+                    android:repeatCount="infinite"
+                    android:repeatMode="restart"
                     android:valueType="floatType"
-                    android:interpolator="@android:interpolator/linear">
-
-                    <propertyValuesHolder android:propertyName="translateY">
-
-                        <keyframe
-                            android:fraction="0.0"
-                            android:value="-585.756723" />
-
-                        <keyframe
-                            android:fraction="0.15"
-                            android:value="-612.756723" />
-
-                        <keyframe
-                            android:fraction="0.35"
-                            android:value="-612.756723" />
-
-                        <keyframe
-                            android:fraction="0.5"
-                            android:value="-585.756723" />
-
-                        <keyframe
-                            android:fraction="1.0"
-                            android:value="-585.756723" />
-
-                    </propertyValuesHolder>
-                </objectAnimator>
-
-                <!-- Look left, hold, then return -->
-                <objectAnimator
-                    android:propertyName="translateX"
-                    android:duration="3000"
-                    android:valueType="floatType"
-                    android:interpolator="@android:interpolator/linear">
+                    android:interpolator="@android:interpolator/fast_out_slow_in">
 
                     <propertyValuesHolder android:propertyName="translateX">
 
                         <keyframe
-                            android:fraction="0.0"
+                            android:fraction="0.000"
                             android:value="15.025931" />
 
                         <keyframe
-                            android:fraction="0.5"
+                            android:fraction="0.080"
+                            android:value="15.025931" />
+
+                        <!-- Up-left -->
+                        <keyframe
+                            android:fraction="0.100"
+                            android:value="9.025931" />
+
+                        <keyframe
+                            android:fraction="0.180"
+                            android:value="9.025931" />
+
+                        <keyframe
+                            android:fraction="0.205"
+                            android:value="15.025931" />
+
+                        <!-- Strong left glance -->
+                        <keyframe
+                            android:fraction="0.330"
                             android:value="15.025931" />
 
                         <keyframe
-                            android:fraction="0.65"
-                            android:value="-9.974069" />
+                            android:fraction="0.350"
+                            android:value="4.025931" />
 
                         <keyframe
-                            android:fraction="0.85"
-                            android:value="-9.974069" />
+                            android:fraction="0.430"
+                            android:value="4.025931" />
 
                         <keyframe
-                            android:fraction="1.0"
+                            android:fraction="0.455"
+                            android:value="15.025931" />
+
+                        <!-- Right glance -->
+                        <keyframe
+                            android:fraction="0.600"
+                            android:value="15.025931" />
+
+                        <keyframe
+                            android:fraction="0.620"
+                            android:value="20.025931" />
+
+                        <keyframe
+                            android:fraction="0.675"
+                            android:value="20.025931" />
+
+                        <keyframe
+                            android:fraction="0.700"
+                            android:value="15.025931" />
+
+                        <!-- Neutral through wink -->
+                        <keyframe
+                            android:fraction="0.845"
+                            android:value="15.025931" />
+
+                        <!-- Micro-saccade -->
+                        <keyframe
+                            android:fraction="0.860"
+                            android:value="12.525931" />
+
+                        <keyframe
+                            android:fraction="0.895"
+                            android:value="12.525931" />
+
+                        <keyframe
+                            android:fraction="0.910"
+                            android:value="15.025931" />
+
+                        <keyframe
+                            android:fraction="1.000"
                             android:value="15.025931" />
 
                     </propertyValuesHolder>
+
+                </objectAnimator>
+
+
+                <objectAnimator
+                    android:duration="8000"
+                    android:repeatCount="infinite"
+                    android:repeatMode="restart"
+                    android:valueType="floatType"
+                    android:interpolator="@android:interpolator/fast_out_slow_in">
+
+                    <propertyValuesHolder android:propertyName="translateY">
+
+                        <keyframe
+                            android:fraction="0.000"
+                            android:value="-585.756723" />
+
+                        <keyframe
+                            android:fraction="0.080"
+                            android:value="-585.756723" />
+
+                        <!-- Look up -->
+                        <keyframe
+                            android:fraction="0.100"
+                            android:value="-592.756723" />
+
+                        <keyframe
+                            android:fraction="0.180"
+                            android:value="-592.756723" />
+
+                        <keyframe
+                            android:fraction="0.205"
+                            android:value="-585.756723" />
+
+                        <!-- Neutral -->
+                        <keyframe
+                            android:fraction="0.600"
+                            android:value="-585.756723" />
+
+                        <!-- Slight downward look -->
+                        <keyframe
+                            android:fraction="0.620"
+                            android:value="-584.256723" />
+
+                        <keyframe
+                            android:fraction="0.675"
+                            android:value="-584.256723" />
+
+                        <keyframe
+                            android:fraction="0.700"
+                            android:value="-585.756723" />
+
+                        <!-- Micro glance -->
+                        <keyframe
+                            android:fraction="0.845"
+                            android:value="-585.756723" />
+
+                        <keyframe
+                            android:fraction="0.860"
+                            android:value="-583.756723" />
+
+                        <keyframe
+                            android:fraction="0.895"
+                            android:value="-583.756723" />
+
+                        <keyframe
+                            android:fraction="0.910"
+                            android:value="-585.756723" />
+
+                        <keyframe
+                            android:fraction="1.000"
+                            android:value="-585.756723" />
+
+                    </propertyValuesHolder>
+
                 </objectAnimator>
 
             </set>
+
         </aapt:attr>
+
     </target>
 
-    <!-- Right Eye Highlight Animations -->
-    <target android:name="right_highlight">
+
+    <!-- ========================================================= -->
+    <!-- RIGHT PUPIL GAZE                                          -->
+    <!-- ========================================================= -->
+
+    <target android:name="right_pupil">
+
         <aapt:attr name="android:animation">
+
             <set android:ordering="together">
 
-                <!-- Look up, hold, then return -->
                 <objectAnimator
-                    android:propertyName="translateY"
-                    android:duration="3000"
+                    android:duration="8000"
+                    android:repeatCount="infinite"
+                    android:repeatMode="restart"
                     android:valueType="floatType"
-                    android:interpolator="@android:interpolator/linear">
-
-                    <propertyValuesHolder android:propertyName="translateY">
-
-                        <keyframe
-                            android:fraction="0.0"
-                            android:value="-585.756723" />
-
-                        <keyframe
-                            android:fraction="0.15"
-                            android:value="-612.756723" />
-
-                        <keyframe
-                            android:fraction="0.35"
-                            android:value="-612.756723" />
-
-                        <keyframe
-                            android:fraction="0.5"
-                            android:value="-585.756723" />
-
-                        <keyframe
-                            android:fraction="1.0"
-                            android:value="-585.756723" />
-
-                    </propertyValuesHolder>
-                </objectAnimator>
-
-                <!-- Look left, hold, then return -->
-                <objectAnimator
-                    android:propertyName="translateX"
-                    android:duration="3000"
-                    android:valueType="floatType"
-                    android:interpolator="@android:interpolator/linear">
+                    android:interpolator="@android:interpolator/fast_out_slow_in">
 
                     <propertyValuesHolder android:propertyName="translateX">
 
                         <keyframe
-                            android:fraction="0.0"
+                            android:fraction="0.000"
                             android:value="164.68787" />
 
                         <keyframe
-                            android:fraction="0.5"
+                            android:fraction="0.080"
+                            android:value="164.68787" />
+
+                        <!-- Up-left -->
+                        <keyframe
+                            android:fraction="0.100"
+                            android:value="158.68787" />
+
+                        <keyframe
+                            android:fraction="0.180"
+                            android:value="158.68787" />
+
+                        <keyframe
+                            android:fraction="0.205"
+                            android:value="164.68787" />
+
+                        <!-- Left -->
+                        <keyframe
+                            android:fraction="0.330"
                             android:value="164.68787" />
 
                         <keyframe
-                            android:fraction="0.65"
-                            android:value="139.68787" />
+                            android:fraction="0.350"
+                            android:value="153.68787" />
 
                         <keyframe
-                            android:fraction="0.85"
-                            android:value="139.68787" />
+                            android:fraction="0.430"
+                            android:value="153.68787" />
 
                         <keyframe
-                            android:fraction="1.0"
+                            android:fraction="0.455"
+                            android:value="164.68787" />
+
+                        <!-- Right -->
+                        <keyframe
+                            android:fraction="0.600"
+                            android:value="164.68787" />
+
+                        <keyframe
+                            android:fraction="0.620"
+                            android:value="169.68787" />
+
+                        <keyframe
+                            android:fraction="0.675"
+                            android:value="169.68787" />
+
+                        <keyframe
+                            android:fraction="0.700"
+                            android:value="164.68787" />
+
+                        <!-- Micro-saccade -->
+                        <keyframe
+                            android:fraction="0.845"
+                            android:value="164.68787" />
+
+                        <keyframe
+                            android:fraction="0.860"
+                            android:value="162.18787" />
+
+                        <keyframe
+                            android:fraction="0.895"
+                            android:value="162.18787" />
+
+                        <keyframe
+                            android:fraction="0.910"
+                            android:value="164.68787" />
+
+                        <keyframe
+                            android:fraction="1.000"
                             android:value="164.68787" />
 
                     </propertyValuesHolder>
+
+                </objectAnimator>
+
+
+                <objectAnimator
+                    android:duration="8000"
+                    android:repeatCount="infinite"
+                    android:repeatMode="restart"
+                    android:valueType="floatType"
+                    android:interpolator="@android:interpolator/fast_out_slow_in">
+
+                    <propertyValuesHolder android:propertyName="translateY">
+
+                        <keyframe
+                            android:fraction="0.000"
+                            android:value="-585.756723" />
+
+                        <keyframe
+                            android:fraction="0.080"
+                            android:value="-585.756723" />
+
+                        <keyframe
+                            android:fraction="0.100"
+                            android:value="-592.756723" />
+
+                        <keyframe
+                            android:fraction="0.180"
+                            android:value="-592.756723" />
+
+                        <keyframe
+                            android:fraction="0.205"
+                            android:value="-585.756723" />
+
+                        <keyframe
+                            android:fraction="0.600"
+                            android:value="-585.756723" />
+
+                        <keyframe
+                            android:fraction="0.620"
+                            android:value="-584.256723" />
+
+                        <keyframe
+                            android:fraction="0.675"
+                            android:value="-584.256723" />
+
+                        <keyframe
+                            android:fraction="0.700"
+                            android:value="-585.756723" />
+
+                        <keyframe
+                            android:fraction="0.845"
+                            android:value="-585.756723" />
+
+                        <keyframe
+                            android:fraction="0.860"
+                            android:value="-583.756723" />
+
+                        <keyframe
+                            android:fraction="0.895"
+                            android:value="-583.756723" />
+
+                        <keyframe
+                            android:fraction="0.910"
+                            android:value="-585.756723" />
+
+                        <keyframe
+                            android:fraction="1.000"
+                            android:value="-585.756723" />
+
+                    </propertyValuesHolder>
+
                 </objectAnimator>
 
             </set>
+
         </aapt:attr>
+
+    </target>
+
+
+    <!-- ========================================================= -->
+    <!-- LEFT UPPER EYELID                                         -->
+    <!-- ========================================================= -->
+
+    <target android:name="left_upper_eyelid">
+
+        <aapt:attr name="android:animation">
+
+            <objectAnimator
+                android:duration="8000"
+                android:repeatCount="infinite"
+                android:repeatMode="restart"
+                android:valueType="floatType"
+                android:interpolator="@android:interpolator/linear">
+
+                <propertyValuesHolder android:propertyName="translateY">
+
+                    <!-- Open -->
+                    <keyframe android:fraction="0.000" android:value="-36" />
+
+                    <!-- Natural blink -->
+                    <keyframe android:fraction="0.270" android:value="-36" />
+                    <keyframe android:fraction="0.281" android:value="0" />
+                    <keyframe android:fraction="0.292" android:value="0" />
+                    <keyframe android:fraction="0.304" android:value="-36" />
+
+                    <!-- Double blink #1 -->
+                    <keyframe android:fraction="0.548" android:value="-36" />
+                    <keyframe android:fraction="0.560" android:value="0" />
+                    <keyframe android:fraction="0.570" android:value="0" />
+                    <keyframe android:fraction="0.582" android:value="-36" />
+
+                    <!-- Double blink #2 -->
+                    <keyframe android:fraction="0.600" android:value="-36" />
+                    <keyframe android:fraction="0.612" android:value="0" />
+                    <keyframe android:fraction="0.622" android:value="0" />
+                    <keyframe android:fraction="0.634" android:value="-36" />
+
+                    <!-- Deliberate left-eye wink -->
+                    <keyframe android:fraction="0.748" android:value="-36" />
+                    <keyframe android:fraction="0.765" android:value="0" />
+
+                    <keyframe android:fraction="0.795" android:value="0" />
+
+                    <keyframe android:fraction="0.815" android:value="-36" />
+
+                    <keyframe android:fraction="1.000" android:value="-36" />
+
+                </propertyValuesHolder>
+
+            </objectAnimator>
+
+        </aapt:attr>
+
+    </target>
+
+
+    <!-- ========================================================= -->
+    <!-- LEFT LOWER EYELID                                         -->
+    <!-- ========================================================= -->
+
+    <target android:name="left_lower_eyelid">
+
+        <aapt:attr name="android:animation">
+
+            <objectAnimator
+                android:duration="8000"
+                android:repeatCount="infinite"
+                android:repeatMode="restart"
+                android:valueType="floatType"
+                android:interpolator="@android:interpolator/linear">
+
+                <propertyValuesHolder android:propertyName="translateY">
+
+                    <keyframe android:fraction="0.000" android:value="36" />
+
+                    <!-- Natural blink -->
+                    <keyframe android:fraction="0.270" android:value="36" />
+                    <keyframe android:fraction="0.281" android:value="0" />
+                    <keyframe android:fraction="0.292" android:value="0" />
+                    <keyframe android:fraction="0.304" android:value="36" />
+
+                    <!-- Double blink #1 -->
+                    <keyframe android:fraction="0.548" android:value="36" />
+                    <keyframe android:fraction="0.560" android:value="0" />
+                    <keyframe android:fraction="0.570" android:value="0" />
+                    <keyframe android:fraction="0.582" android:value="36" />
+
+                    <!-- Double blink #2 -->
+                    <keyframe android:fraction="0.600" android:value="36" />
+                    <keyframe android:fraction="0.612" android:value="0" />
+                    <keyframe android:fraction="0.622" android:value="0" />
+                    <keyframe android:fraction="0.634" android:value="36" />
+
+                    <!-- Wink -->
+                    <keyframe android:fraction="0.748" android:value="36" />
+                    <keyframe android:fraction="0.765" android:value="0" />
+                    <keyframe android:fraction="0.795" android:value="0" />
+                    <keyframe android:fraction="0.815" android:value="36" />
+
+                    <keyframe android:fraction="1.000" android:value="36" />
+
+                </propertyValuesHolder>
+
+            </objectAnimator>
+
+        </aapt:attr>
+
+    </target>
+
+
+    <!-- ========================================================= -->
+    <!-- RIGHT UPPER EYELID                                        -->
+    <!-- Slight delay produces natural blink asymmetry.             -->
+    <!-- ========================================================= -->
+
+    <target android:name="right_upper_eyelid">
+
+        <aapt:attr name="android:animation">
+
+            <objectAnimator
+                android:duration="8000"
+                android:repeatCount="infinite"
+                android:repeatMode="restart"
+                android:valueType="floatType"
+                android:interpolator="@android:interpolator/linear">
+
+                <propertyValuesHolder android:propertyName="translateY">
+
+                    <keyframe android:fraction="0.000" android:value="-36" />
+
+                    <!-- Natural blink -->
+                    <keyframe android:fraction="0.272" android:value="-36" />
+                    <keyframe android:fraction="0.283" android:value="0" />
+                    <keyframe android:fraction="0.294" android:value="0" />
+                    <keyframe android:fraction="0.306" android:value="-36" />
+
+                    <!-- Double blink #1 -->
+                    <keyframe android:fraction="0.550" android:value="-36" />
+                    <keyframe android:fraction="0.562" android:value="0" />
+                    <keyframe android:fraction="0.572" android:value="0" />
+                    <keyframe android:fraction="0.584" android:value="-36" />
+
+                    <!-- Double blink #2 -->
+                    <keyframe android:fraction="0.602" android:value="-36" />
+                    <keyframe android:fraction="0.614" android:value="0" />
+                    <keyframe android:fraction="0.624" android:value="0" />
+                    <keyframe android:fraction="0.636" android:value="-36" />
+
+                    <!-- Remains open during wink -->
+                    <keyframe android:fraction="1.000" android:value="-36" />
+
+                </propertyValuesHolder>
+
+            </objectAnimator>
+
+        </aapt:attr>
+
+    </target>
+
+
+    <!-- ========================================================= -->
+    <!-- RIGHT LOWER EYELID                                        -->
+    <!-- ========================================================= -->
+
+    <target android:name="right_lower_eyelid">
+
+        <aapt:attr name="android:animation">
+
+            <objectAnimator
+                android:duration="8000"
+                android:repeatCount="infinite"
+                android:repeatMode="restart"
+                android:valueType="floatType"
+                android:interpolator="@android:interpolator/linear">
+
+                <propertyValuesHolder android:propertyName="translateY">
+
+                    <keyframe android:fraction="0.000" android:value="36" />
+
+                    <!-- Natural blink -->
+                    <keyframe android:fraction="0.272" android:value="36" />
+                    <keyframe android:fraction="0.283" android:value="0" />
+                    <keyframe android:fraction="0.294" android:value="0" />
+                    <keyframe android:fraction="0.306" android:value="36" />
+
+                    <!-- Double blink #1 -->
+                    <keyframe android:fraction="0.550" android:value="36" />
+                    <keyframe android:fraction="0.562" android:value="0" />
+                    <keyframe android:fraction="0.572" android:value="0" />
+                    <keyframe android:fraction="0.584" android:value="36" />
+
+                    <!-- Double blink #2 -->
+                    <keyframe android:fraction="0.602" android:value="36" />
+                    <keyframe android:fraction="0.614" android:value="0" />
+                    <keyframe android:fraction="0.624" android:value="0" />
+                    <keyframe android:fraction="0.636" android:value="36" />
+
+                    <!-- No right-eye wink -->
+                    <keyframe android:fraction="1.000" android:value="36" />
+
+                </propertyValuesHolder>
+
+            </objectAnimator>
+
+        </aapt:attr>
+
     </target>
 
 </animated-vector>

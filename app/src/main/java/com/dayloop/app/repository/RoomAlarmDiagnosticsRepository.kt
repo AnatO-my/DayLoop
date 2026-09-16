@@ -25,6 +25,10 @@ class RoomAlarmDiagnosticsRepository(
     override suspend fun append(entry: AlarmDiagnosticEntry) {
         alarmDiagnosticEntryDao.insert(entry.toEntity())
     }
+
+    override suspend fun clearAllEntries() {
+        alarmDiagnosticEntryDao.deleteAll()
+    }
 }
 
 internal fun AlarmDiagnosticEntry.toEntity(): AlarmDiagnosticEntryEntity = AlarmDiagnosticEntryEntity(

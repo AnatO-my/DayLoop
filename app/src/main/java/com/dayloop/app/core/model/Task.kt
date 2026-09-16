@@ -13,6 +13,12 @@ value class TaskId(val value: String) {
     }
 }
 
+data class Subtask(
+    val id: String,
+    val title: String,
+    val isCompleted: Boolean = false
+)
+
 enum class TaskStatus {
     ACTIVE,
     COMPLETED,
@@ -33,6 +39,9 @@ data class Task(
     val priority: TaskPriority = TaskPriority.NORMAL,
     val schedule: TaskSchedule? = null,
     val reminderPolicy: ReminderPolicy = ReminderPolicy.normal(),
+    val projectId: ProjectId? = null,
+    val subtasks: List<Subtask> = emptyList(),
+    val provenance: TaskProvenance? = null,
 ) {
     init {
         require(title.isNotBlank()) { "Task title must not be blank." }
@@ -47,3 +56,9 @@ data class Task(
 
     fun withReminderPolicy(reminderPolicy: ReminderPolicy): Task = copy(reminderPolicy = reminderPolicy)
 }
+
+data class TaskProvenance(
+    val originType: String, // e.g. "PROJECT_RULE"
+    val ruleId: String,
+    val version: Long,
+)

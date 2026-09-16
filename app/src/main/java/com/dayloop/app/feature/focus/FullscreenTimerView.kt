@@ -1,8 +1,8 @@
 package com.dayloop.app.feature.focus
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
@@ -11,17 +11,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dayloop.app.R
+import com.dayloop.app.di.LocalAppGraph
 import com.dayloop.app.ui.components.DayLoopBottomActionBar
 import com.dayloop.app.ui.components.DayLoopIcon
 import com.dayloop.app.ui.components.DayLoopIconButton
-import com.dayloop.app.ui.theme.DayLoopFontFamily
-import com.dayloop.app.ui.theme.dayLoopTokens
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.util.Locale
 
@@ -29,15 +31,16 @@ import java.util.Locale
 fun FullscreenTimerView(
     session: FocusState,
     now: Instant,
-    onPause: () -> Unit,
+    onPause: ((Long) -> Unit) -> Unit,
     onStart: () -> Unit,
     onReset: () -> Unit,
+    onSetSound: (FocusSound) -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     BackHandler(onBack = onDismiss)
+    val scope = rememberCoroutineScope()
 
-    val tokens = MaterialTheme.dayLoopTokens
     val seconds = session.secondsAt(now)
     val totalSeconds = session.sessionDuration.toFloat()
     val progress = if (totalSeconds > 0) (totalSeconds - seconds) / totalSeconds else 0f
@@ -48,10 +51,13 @@ fun FullscreenTimerView(
         animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
     )
 
+    val containerColor = MaterialTheme.colorScheme.primaryContainer
+    val contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+
     Surface(
         modifier = modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.primaryContainer,
-        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        color = containerColor,
+        contentColor = contentColor
     ) {
         Column(
             modifier = Modifier
@@ -67,23 +73,63 @@ fun FullscreenTimerView(
                 horizontalArrangement = Arrangement.Start
             ) {
                 DayLoopIconButton(
-                    iconRes = R.drawable.ic_action_back,
-                    contentDescription = "Back",
-                    onClick = onDismiss,
-                    enabled = true,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    resource = R.drawable.ic_action_back,
+                    label = "Back",
+                    onClick = onDismiss
                 )
             }
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 Text(
                     text = session.mode.label,
                     style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                    color = contentColor.copy(alpha = 0.7f)
                 )
+
+                // Sound Selector
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    FocusSound.entries.forEach { sound ->
+                        val isSelected = session.preferredSound == sound
+                        Surface(
+                            onClick = { onSetSound(sound) },
+                            shape = CircleShape,
+                            color = if (isSelected) contentColor else Color.Transparent,
+                            contentColor = if (isSelected) containerColor else contentColor,
+                            modifier = Modifier.size(48.dp),
+                            border = if (isSelected) null else BorderStroke(1.dp, contentColor.copy(alpha = 0.2f))
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier.padding(2.dp)
+                            ) {
+                                Text(
+                                    text = when (sound) {
+                                        FocusSound.NONE -> "❌"
+                                        FocusSound.RAIN -> "🌧️"
+                                        FocusSound.FIRE -> "🔥"
+                                        FocusSound.STREAM -> "🏞️"
+                                        FocusSound.LIBRARY -> "📚"
+                                        FocusSound.CAFE -> "☕"
+                                    },
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                Text(
+                                    text = sound.label,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontSize = 8.sp
+                                )
+                            }
+                        }
+                    }
+                }
 
                 Box(
                     modifier = Modifier.size(280.dp),
@@ -110,7 +156,7 @@ fun FullscreenTimerView(
                         maxLines = 1,
                         style = androidx.compose.ui.text.TextStyle(
                             fontWeight = FontWeight.Bold,
-                            fontFamily = DayLoopFontFamily,
+                            fontFamily = MaterialTheme.typography.displayLarge.fontFamily,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         ),
@@ -138,19 +184,45 @@ fun FullscreenTimerView(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 val isActive = session.endsAt != null
+                val appGraph = LocalAppGraph.current
                 DayLoopBottomActionBar(
                     text = if (isActive) "Pause" else "Start",
-                    onClick = { if (isActive) onPause() else onStart() },
+                    onClick = { if (isActive) onPause { minutes ->
+                        scope.launch { appGraph.settingsRepository.addFocusMinutes(minutes) }
+                    } else onStart() },
                 ) {
                     DayLoopIcon(if (isActive) R.drawable.ic_action_pause else R.drawable.ic_action_play)
                 }
 
                 DayLoopIconButton(
-                    iconRes = R.drawable.ic_action_reset,
-                    contentDescription = "Reset session",
+                    resource = R.drawable.ic_action_reset,
+                    label = "Reset session",
                     onClick = onReset
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun FullscreenTimerPreview() {
+    val session = FocusState(
+        mode = FocusMode.WORK,
+        remaining = 1500L,
+        endsAt = Instant.now().plusSeconds(1500L),
+        sessionDuration = 1500L
+    )
+    val now = Instant.now()
+    com.dayloop.app.ui.theme.DayLoopTheme {
+        FullscreenTimerView(
+            session = session,
+            now = now,
+            onPause = {},
+            onStart = {},
+            onReset = {},
+            onSetSound = {},
+            onDismiss = {}
+        )
     }
 }

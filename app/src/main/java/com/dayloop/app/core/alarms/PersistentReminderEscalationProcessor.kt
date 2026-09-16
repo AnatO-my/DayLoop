@@ -15,7 +15,14 @@ class PersistentReminderEscalationProcessor(
     private val alarmScheduler: AlarmScheduler,
     private val timeProvider: TimeProvider,
 ) {
-    suspend fun processAcceptedDelivery(occurrence: ScheduledOccurrence): PersistentReminderEscalationResult {
+    suspend fun processAcceptedDelivery(delivered: ScheduledOccurrence): PersistentReminderEscalationResult {
+        val occurrence = scheduledOccurrenceRepository.getOccurrence(delivered.id)
+        if (occurrence == null || occurrence.generation != delivered.generation ||
+            occurrence.taskId != delivered.taskId || occurrence.status != ScheduledOccurrenceStatus.FIRED ||
+            delivered.status != ScheduledOccurrenceStatus.FIRED
+        ) {
+            return PersistentReminderEscalationResult.Stale(delivered.id)
+        }
         val task = taskRepository.getTask(occurrence.taskId)
         if (task == null) {
             resolveActiveEscalationsForOccurrence(occurrence)
@@ -27,7 +34,14 @@ class PersistentReminderEscalationProcessor(
             return PersistentReminderEscalationResult.NotEligible(occurrence.id)
         }
 
-        val activeEscalation = activeEscalationFor(occurrence)
+        val activeEscalation = escalationRepository.getEscalationsForTask(occurrence.taskId)
+            .firstOrNull { it.sourceOccurrenceId == occurrence.id }
+        if (activeEscalation != null && !activeEscalation.isActive) {
+            return PersistentReminderEscalationResult.Inactive(occurrence.id)
+        }
+        if (activeEscalation != null && activeEscalation.nextRealertAt != occurrence.fireAt) {
+            return PersistentReminderEscalationResult.Stale(occurrence.id)
+        }
         val nextEscalation = if (activeEscalation == null) {
             PersistentReminderEscalation.start(
                 policy = task.reminderPolicy,
@@ -38,17 +52,19 @@ class PersistentReminderEscalationProcessor(
         } else {
             activeEscalation.recordRealertDelivered(timeProvider.now())
         }
-        escalationRepository.saveEscalation(nextEscalation)
-
         if (!nextEscalation.isActive) {
+            if (!escalationRepository.advanceAfterDelivery(occurrence, activeEscalation, nextEscalation, null)) {
+                return PersistentReminderEscalationResult.Stale(occurrence.id)
+            }
             return PersistentReminderEscalationResult.Capped(nextEscalation)
         }
 
-        return scheduleNextRealert(occurrence, nextEscalation, task)
+        return scheduleNextRealert(occurrence, activeEscalation, nextEscalation, task)
     }
 
     private suspend fun scheduleNextRealert(
         occurrence: ScheduledOccurrence,
+        previous: PersistentReminderEscalation?,
         escalation: PersistentReminderEscalation,
         task: Task,
     ): PersistentReminderEscalationResult {
@@ -61,9 +77,11 @@ class PersistentReminderEscalationProcessor(
             updatedAt = now,
         )
 
+        if (!escalationRepository.advanceAfterDelivery(occurrence, previous, escalation, scheduled)) {
+            return PersistentReminderEscalationResult.Stale(occurrence.id)
+        }
         return when (val result = alarmScheduler.schedule(scheduled)) {
             is AlarmScheduleResult.Scheduled -> {
-                scheduledOccurrenceRepository.saveOccurrence(scheduled)
                 PersistentReminderEscalationResult.Scheduled(
                     escalation = escalation,
                     occurrence = scheduled,
@@ -89,14 +107,14 @@ class PersistentReminderEscalationProcessor(
             }
     }
 
-    private suspend fun activeEscalationFor(occurrence: ScheduledOccurrence): PersistentReminderEscalation? =
-        escalationRepository.getActiveEscalations().firstOrNull { escalation ->
-            escalation.sourceOccurrenceId == occurrence.id && escalation.taskId == occurrence.taskId
-        }
 }
 
 sealed interface PersistentReminderEscalationResult {
     val occurrenceId: ScheduledOccurrenceId
+
+    data class Stale(override val occurrenceId: ScheduledOccurrenceId) : PersistentReminderEscalationResult
+
+    data class Inactive(override val occurrenceId: ScheduledOccurrenceId) : PersistentReminderEscalationResult
 
     data class Scheduled(
         val escalation: PersistentReminderEscalation,
