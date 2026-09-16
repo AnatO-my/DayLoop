@@ -1,0 +1,6 @@
+- [ ] Add `Note` model and update `AppSettings` / `SettingsRepository`
+- [ ] Update `DayLoopNavigation.kt` (`DayLoopMainNav`) for 3-item nav and new gestures
+- [ ] Implement `NotesScreen.kt`
+- [ ] Refactor `PlansScreen.kt` with combined header and internal tab state
+- [ ] Refactor `TodayScreen.kt` (remove metrics, add streak flame)
+- [ ] Update `DayLoopApp.kt` to wire new screens and navigation logic
