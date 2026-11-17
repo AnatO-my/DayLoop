@@ -78,4 +78,62 @@ class FocusDurationTest {
         assertEquals(1200L, store.state.first().remaining)
         assertEquals(1500L, store.state.first().durationFor(FocusMode.WORK))
     }
+
+    @Test fun notificationPauseResumeIsIdempotentAndIgnoresViewedTab() = runBlocking {
+        val start = Instant.parse("2026-09-19T12:00:00Z")
+        store.start(start)
+        val running = store.state.first().notificationToken()
+        store.selectMode(FocusMode.LONG_BREAK)
+        store.applyNotificationCommand(FocusNotificationCommand.PAUSE, running, start.plusSeconds(60))
+        val paused = store.state.first()
+        assertEquals(FocusMode.WORK, paused.activeMode)
+        assertEquals(1440L, paused.remaining)
+        assertNull(paused.endsAt)
+        store.applyNotificationCommand(FocusNotificationCommand.RESUME, paused.notificationToken(), start.plusSeconds(120))
+        val resumedEnd = store.state.first().endsAt
+        store.applyNotificationCommand(FocusNotificationCommand.RESUME, paused.notificationToken(), start.plusSeconds(180))
+        store.applyNotificationCommand(FocusNotificationCommand.END, running, start.plusSeconds(180))
+        assertEquals(resumedEnd, store.state.first().endsAt)
+    }
+
+    @Test fun notificationEndResetsSelectedModeWithoutClearingHistory() = runBlocking {
+        val start = Instant.parse("2026-09-19T12:00:00Z")
+        store.start(start)
+        store.finishIfDue(start.plusSeconds(1500))
+        val before = store.state.first()
+        store.selectMode(FocusMode.LONG_BREAK)
+        store.applyNotificationCommand(FocusNotificationCommand.END, before.notificationToken(), start.plusSeconds(1501))
+        val ended = store.state.first()
+        assertNull(ended.activeMode)
+        assertNull(ended.endsAt)
+        assertEquals(FocusMode.LONG_BREAK.seconds, ended.remaining)
+        assertEquals(before.minutes, ended.minutes)
+        assertEquals(before.sets, ended.sets)
+    }
+
+    @Test fun expiredNotificationCannotEndAutoTransitionedSession() = runBlocking {
+        val start = Instant.parse("2026-09-19T12:00:00Z")
+        store.start(start)
+        val token = store.state.first().notificationToken()
+        val end = start.plusSeconds(1500)
+        store.applyNotificationCommand(FocusNotificationCommand.END, token, end)
+        assertNotNull(store.state.first().endsAt)
+        store.finishIfDue(end)
+        store.applyNotificationCommand(FocusNotificationCommand.END, token, end.plusSeconds(1))
+        assertEquals(FocusMode.SHORT_BREAK, store.state.first().activeMode)
+    }
+
+    @Test fun oldPausedControlsCannotTargetIdenticalLaterSession() = runBlocking {
+        val start = Instant.parse("2026-09-19T12:00:00Z")
+        store.start(start)
+        store.pause(start.plusSeconds(60))
+        val oldToken = store.state.first().notificationToken()
+        store.reset(FocusMode.WORK)
+        store.start(start.plusSeconds(600))
+        store.pause(start.plusSeconds(660))
+        assertEquals(1440L, store.state.first().remaining)
+        assertNotEquals(oldToken, store.state.first().notificationToken())
+        store.applyNotificationCommand(FocusNotificationCommand.END, oldToken, start.plusSeconds(700))
+        assertEquals(FocusMode.WORK, store.state.first().activeMode)
+    }
 }

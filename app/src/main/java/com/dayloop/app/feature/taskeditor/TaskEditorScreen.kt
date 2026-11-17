@@ -1,234 +1,366 @@
 package com.dayloop.app.feature.taskeditor
 
 import androidx.compose.animation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.dayloop.app.R
 import com.dayloop.app.core.model.*
+import com.dayloop.app.feature.onboarding.MascotMood
+import com.dayloop.app.feature.onboarding.DayLoopMascot
+import com.dayloop.app.settings.*
 import com.dayloop.app.ui.components.*
-import com.dayloop.app.ui.designsystem.DayLoopChoice
-import com.dayloop.app.ui.designsystem.DayLoopHeader
-import java.time.DayOfWeek
+import com.dayloop.app.ui.guides.GuideHost
+import com.dayloop.app.ui.guides.GuideStep
+import com.dayloop.app.ui.guides.GuideTargets
+import com.dayloop.app.ui.guides.guideTarget
+import com.dayloop.app.ui.theme.dayLoopTokens
+import androidx.compose.ui.tooling.preview.Preview
+import com.dayloop.app.ui.theme.DayLoopTheme
 import java.time.LocalDate
 import java.util.UUID
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TaskEditorScreen(draft: TaskEditorDraft, onDraftChange: (TaskEditorDraft) -> Unit, onTaskSaved: (Task) -> Unit,
     modifier: Modifier = Modifier, existingTask: Task? = null, onCancel: () -> Unit = {},
     createTaskId: () -> TaskId = { TaskId.generate() }, saving: Boolean = false,
     projects: List<Project> = emptyList(), selectedProjectId: String? = null, onProjectSelected: (String?) -> Unit = {},
-    onDelete: (() -> Unit)? = null, onReopen: (() -> Unit)? = null, today: LocalDate? = null,
+    onDelete: (() -> Unit)? = null, onReopen: (() -> Unit)? = null, onEditSeries: ((TaskId) -> Unit)? = null,
+    today: LocalDate? = null,
+    activeGuideStep: GuideStep? = null,
+    guideNextAction: GuideAction? = null,
+    guideBusy: Boolean = false,
+    onGuideAction: (GuideAction) -> Unit = {},
     sharedTransitionScope: SharedTransitionScope? = null,
     animatedVisibilityScope: AnimatedVisibilityScope? = null) {
-    var scheduleDraft by rememberSaveable { mutableStateOf<TaskEditorDraft?>(null) }
-    var advanced by rememberSaveable { mutableStateOf(false) }
-    val mode = when {
-        draft.deadlineEnabled -> "deadline"
-        draft.timeBlockEnabled -> "block"
-        draft.intervalEnabled -> "interval"
-        draft.recurrenceEnabled -> "repeat"
-        else -> "day"
-    }
-    val fallbackDate = draft.allDayDate.ifBlank { today?.toString().orEmpty() }
+    val tokens = MaterialTheme.dayLoopTokens
+    var showOptions by remember { mutableStateOf(false) }
+
     fun submit() {
         if (saving) return
         when (val result = if (existingTask == null) draft.createTask(createTaskId) else draft.applyTo(existingTask)) {
-            is TaskEditorSubmitResult.Invalid -> onDraftChange(result.draft)
+            is TaskEditorSubmitResult.Invalid -> { onDraftChange(result.draft); showOptions = true }
             is TaskEditorSubmitResult.Saved -> onTaskSaved(result.task)
         }
     }
-    fun editRange(interval: Boolean) {
-        scheduleDraft = if (interval) draft.onIntervalEnabledChanged(true).copy(
-            intervalStartDate = draft.intervalStartDate.ifBlank { fallbackDate },
-            intervalEveryMinutes = draft.intervalEveryMinutes.ifBlank { "60" },
-            intervalWindowStartTime = draft.intervalWindowStartTime.ifBlank { "09:00" },
-            intervalWindowEndTime = draft.intervalWindowEndTime.ifBlank { "17:00" })
-        else draft.onTimeBlockEnabledChanged(true).copy(
-            timeBlockStartDate = draft.timeBlockStartDate.ifBlank { fallbackDate },
-            timeBlockEndDate = draft.timeBlockEndDate.ifBlank { fallbackDate },
-            timeBlockStartTime = draft.timeBlockStartTime.ifBlank { "09:00" },
-            timeBlockEndTime = draft.timeBlockEndTime.ifBlank { "10:00" })
-    }
-    scheduleDraft?.let { staged ->
-        ScheduleEditor(staged, today, { scheduleDraft = null }, {
-            onDraftChange(it.copy(timeBlockErrorMessage = null, intervalErrorMessage = null))
-            scheduleDraft = null
-        })
-    }
-    Surface(modifier = modifier.then(if (sharedTransitionScope != null && animatedVisibilityScope != null) {
-        with(sharedTransitionScope) {
-            Modifier.sharedBounds(
-                rememberSharedContentState(key = "row-${existingTask?.id?.value ?: "new"}"),
-                animatedVisibilityScope = animatedVisibilityScope
-            )
-        }
-    } else Modifier), color = MaterialTheme.colorScheme.background) {
-        Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
-            Row(Modifier.fillMaxWidth().heightIn(min = 64.dp), verticalAlignment = Alignment.CenterVertically) {
-                DayLoopIconButton(resource = R.drawable.ic_action_close, label = "Cancel", enabled = !saving, onClick = onCancel)
-                Text(if (existingTask == null) "New task" else "Edit task", modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center, style = MaterialTheme.typography.titleMedium)
-                DayLoopIconButton(resource = R.drawable.ic_action_check, label = "Save task", enabled = !saving && draft.canSubmit, onClick = ::submit)
-            }
-            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(18.dp)) {
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("Title", style = MaterialTheme.typography.labelMedium)
-                    TextField(value = draft.title, onValueChange = { onDraftChange(draft.onTitleChanged(it)) },
-                        enabled = !saving, modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Task title" }
-                            .then(if (sharedTransitionScope != null && animatedVisibilityScope != null) {
-                                with(sharedTransitionScope) {
-                                    Modifier.sharedBounds(
-                                        rememberSharedContentState(key = "text-${existingTask?.id?.value ?: "new"}"),
-                                        animatedVisibilityScope = animatedVisibilityScope
-                                    )
-                                }
-                            } else Modifier),
-                        placeholder = { Text("Task title") }, shape = RoundedCornerShape(12.dp),
-                        singleLine = false, maxLines = 3, isError = draft.errorMessage != null,
-                        colors = TextFieldDefaults.colors(focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent))
+
+    GuideHost(activeStep = activeGuideStep, onAction = onGuideAction, nextAction = guideNextAction, busy = guideBusy) {
+        Surface(
+            modifier = modifier.then(if (sharedTransitionScope != null && animatedVisibilityScope != null) {
+                with(sharedTransitionScope) {
+                    Modifier.sharedBounds(
+                        rememberSharedContentState(key = "row-${existingTask?.id?.value ?: "new"}"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
                 }
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("Priority", style = MaterialTheme.typography.labelMedium)
-                    DayLoopPillTabRow(TaskPriority.entries.map { DayLoopPillOption(it.name, it.name.lowercase().replaceFirstChar(Char::uppercase)) },
-                        draft.priority.name, { if (!saving) onDraftChange(draft.onPriorityChanged(TaskPriority.valueOf(it))) })
+            } else Modifier),
+            color = tokens.colors.background
+        ) {
+            Column(Modifier.fillMaxSize()) {
+                // Top Bar
+                Row(
+                    Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    DayLoopIconButton(resource = R.drawable.ic_action_back, label = "Back", onClick = onCancel, tint = tokens.colors.text)
+                    Text("Task Details", style = MaterialTheme.typography.labelLarge, color = tokens.colors.secondaryText)
+                    DayLoopMascot(modifier = Modifier.size(36.dp), mood = MascotMood.NEUTRAL)
                 }
-                DayLoopChoice("Schedule", listOf("day" to "Anytime", "deadline" to "Deadline", "block" to "Time block",
-                    "interval" to "Interval", "repeat" to "Repeat"), mode, { selected ->
-                    when (selected) {
-                        "day" -> onDraftChange(draft.copy(deadlineEnabled = false, timeBlockEnabled = false,
-                            intervalEnabled = false, recurrenceEnabled = false, allDayDate = fallbackDate))
-                        "deadline" -> onDraftChange(draft.onDeadlineEnabledChanged(true).copy(
-                            deadlineDate = draft.deadlineDate.ifBlank { fallbackDate }, deadlineTime = draft.deadlineTime.ifBlank { "17:00" }))
-                        "block" -> editRange(false)
-                        "interval" -> editRange(true)
-                        "repeat" -> onDraftChange(draft.onRecurrenceEnabledChanged(true).copy(
-                            recurrenceStartDate = draft.recurrenceStartDate.ifBlank { fallbackDate }))
-                    }
-                }, !saving)
-                when (mode) {
-                    "day" -> TemporalPickerField("Planning date", draft.allDayDate, TemporalKind.DATE,
-                        { onDraftChange(draft.copy(allDayDate = it, errorMessage = null)) }, enabled = !saving)
-                    "deadline" -> {
-                        TemporalPickerField("Due date", draft.deadlineDate, TemporalKind.DATE,
-                            { onDraftChange(draft.onDeadlineDateChanged(it)) }, enabled = !saving)
-                        TemporalPickerField("Due time", draft.deadlineTime, TemporalKind.TIME,
-                            { onDraftChange(draft.onDeadlineTimeChanged(it)) }, enabled = !saving)
-                    }
-                    "block", "interval" -> Surface(onClick = { editRange(mode == "interval") }, enabled = !saving,
-                        shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
-                        Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Text(if (mode == "block") "${draft.timeBlockStartDate}\n${draft.timeBlockStartTime} - ${draft.timeBlockEndTime}"
-                                else "Every ${draft.intervalEveryMinutes} min\n${draft.intervalWindowStartTime} - ${draft.intervalWindowEndTime}",
-                                modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
-                            DayLoopIcon(R.drawable.ic_action_edit, "Edit schedule")
+
+                Column(
+                    Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = tokens.spacing.pageMargin),
+                    verticalArrangement = Arrangement.spacedBy(tokens.spacing.sectionGap)
+                ) {
+                    // Title
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        BasicTextField(
+                            value = draft.title,
+                            onValueChange = { onDraftChange(draft.onTitleChanged(it)) },
+                            textStyle = MaterialTheme.typography.displayMedium.copy(color = tokens.colors.text, fontWeight = FontWeight.Bold),
+                            modifier = Modifier.fillMaxWidth().guideTarget(GuideTargets.EDITOR_TITLE),
+                            enabled = !saving,
+                            cursorBrush = SolidColor(tokens.colors.text),
+                            decorationBox = { innerTextField ->
+                                if (draft.title.isEmpty()) Text("Task Title", style = MaterialTheme.typography.displayMedium, color = tokens.colors.mutedText)
+                                innerTextField()
+                            }
+                        )
+
+                        // Due Date Row
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Icon(painterResource(R.drawable.ic_nav_plan), contentDescription = null, tint = tokens.colors.secondaryText, modifier = Modifier.size(20.dp))
+                            val dueText = if (draft.deadlineEnabled) "Due Date: ${draft.deadlineDate}" else "Planning: ${draft.allDayDate}"
+                            Text(dueText, style = MaterialTheme.typography.bodyMedium, color = tokens.colors.secondaryText)
                         }
                     }
-                    "repeat" -> RecurrenceFields(draft, onDraftChange, !saving)
-                }
-                DayLoopChoice("Project", listOf("" to "No project") + projects.map { it.id.value to it.title },
-                    selectedProjectId.orEmpty(), { onProjectSelected(it.takeIf(String::isNotEmpty)) },
-                    enabled = !saving && existingTask?.provenance == null)
-                DayLoopChoice("Reminder", ReminderMode.entries.map { it.name to it.name.lowercase().replaceFirstChar(Char::uppercase) },
-                    draft.reminderMode.name, { onDraftChange(draft.onReminderModeChanged(ReminderMode.valueOf(it))) }, !saving)
-                
-                SubtasksSection(draft.subtasks, !saving) { onDraftChange(draft.onSubtasksChanged(it)) }
 
-                if (draft.reminderMode == ReminderMode.PERSISTENT || draft.reminderMode == ReminderMode.STRICT) {
-                    NumberField("Re-alert every (minutes)", draft.reminderRealertMinutes, !saving) { onDraftChange(draft.onReminderRealertMinutesChanged(it)) }
-                    NumberField("Maximum re-alerts", draft.reminderMaximumRealerts, !saving) { onDraftChange(draft.onReminderMaximumRealertsChanged(it)) }
+                    // Description card uses the shared editorial surface treatment.
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(tokens.shapeScale.cardCorner),
+                        color = tokens.colors.raised,
+                        contentColor = tokens.colors.text
+                    ) {
+                        Column(Modifier.padding(tokens.spacing.cardPadding), verticalArrangement = Arrangement.spacedBy(tokens.spacing.itemGap)) {
+                            // Handle bar (dash)
+                            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                Box(Modifier.size(32.dp, 4.dp).clip(CircleShape).background(tokens.colors.decorativeBorder))
+                            }
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                Text("Description", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                                DayLoopIconButton(resource = R.drawable.ic_nav_more, label = "Task settings", onClick = { showOptions = true }, tint = tokens.colors.text,
+                                    modifier = Modifier.guideTarget(GuideTargets.EDITOR_SETTINGS))
+                            }
+                            
+                            BasicTextField(
+                                value = draft.notes ?: "",
+                                onValueChange = { onDraftChange(draft.copy(notes = it)) },
+                                textStyle = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
+                                modifier = Modifier.fillMaxWidth().guideTarget(GuideTargets.EDITOR_DESCRIPTION),
+                                enabled = !saving,
+                                decorationBox = { innerTextField ->
+                                    if ((draft.notes ?: "").isEmpty()) Text("No description added...", color = tokens.colors.mutedText)
+                                    innerTextField()
+                                }
+                            )
+                        }
+                    }
+
+                    // Sub Tasks Section
+                    Column(verticalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.guideTarget(GuideTargets.EDITOR_SUBTASKS)) {
+                        Text("Sub Tasks", style = MaterialTheme.typography.headlineSmall, color = tokens.colors.text, fontWeight = FontWeight.Bold)
+                        
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            draft.subtasks.forEachIndexed { index, subtask ->
+                                SubtaskRow(
+                                    title = subtask.title,
+                                    isCompleted = subtask.isCompleted,
+                                    onToggle = { checked ->
+                                        onDraftChange(draft.onSubtasksChanged(draft.subtasks.toMutableList().apply { set(index, subtask.copy(isCompleted = checked)) }))
+                                    },
+                                    onRemove = {
+                                        onDraftChange(draft.onSubtasksChanged(draft.subtasks.toMutableList().apply { removeAt(index) }))
+                                    },
+                                    enabled = !saving
+                                )
+                            }
+                            
+                            // Add task to list button (bottom matching image)
+                            var newSubtaskTitle by remember { mutableStateOf("") }
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                               OutlinedTextField(
+                                   value = newSubtaskTitle,
+                                   onValueChange = { newSubtaskTitle = it },
+                                   modifier = Modifier.weight(1f),
+                                   placeholder = { Text("New subtask...") },
+                                   enabled = !saving,
+                                   singleLine = true,
+                                   shape = RoundedCornerShape(tokens.shapeScale.inputCorner),
+                                   colors = OutlinedTextFieldDefaults.colors(
+                                       focusedTextColor = tokens.colors.text,
+                                       unfocusedTextColor = tokens.colors.text,
+                                       focusedContainerColor = tokens.colors.surface,
+                                       unfocusedContainerColor = tokens.colors.surface,
+                                       focusedBorderColor = tokens.colors.accent,
+                                       unfocusedBorderColor = tokens.colors.controlBorder
+                                   )
+                               )
+                               DayLoopIconButton(
+                                   resource = R.drawable.ic_action_add,
+                                   label = "Add subtask",
+                                   enabled = !saving && newSubtaskTitle.isNotBlank(),
+                                   onClick = {
+                                       onDraftChange(draft.onSubtasksChanged(draft.subtasks + Subtask(UUID.randomUUID().toString(), newSubtaskTitle.trim())))
+                                       newSubtaskTitle = ""
+                                   },
+                                   tint = tokens.colors.accent
+                               )
+                            }
+                        }
+                    }
+                    
+                    Spacer(Modifier.height(100.dp)) // Clearance
                 }
-                TextButton(onClick = { advanced = !advanced }) { Text(if (advanced) "Hide options" else "More options") }
-                if (advanced) {
-                    ToggleField("Allow snooze", draft.reminderSnoozeAllowed, !saving) { onDraftChange(draft.onReminderSnoozeAllowedChanged(it)) }
-                    ToggleField("Allow reschedule", draft.reminderRescheduleAllowed, !saving) { onDraftChange(draft.onReminderRescheduleAllowedChanged(it)) }
-                    Row {
-                        onReopen?.let { DayLoopIconButton(resource = R.drawable.ic_action_reset, label = "Reopen task", enabled = !saving, onClick = it) }
-                        onDelete?.let { DayLoopIconButton(resource = R.drawable.ic_action_delete, label = "Delete task", enabled = !saving, onClick = it) }
+                
+                listOfNotNull(draft.errorMessage, draft.deadlineErrorMessage, draft.timeBlockErrorMessage,
+                    draft.intervalErrorMessage, draft.recurrenceErrorMessage, draft.reminderPolicyErrorMessage)
+                    .forEach { Text(it, color = tokens.colors.error, modifier = Modifier.padding(horizontal = tokens.spacing.pageMargin)) }
+                // Floating Action Button at Bottom (Matching image "Add task to list")
+                Surface(
+                    modifier = Modifier.fillMaxWidth().padding(tokens.spacing.pageMargin).height(48.dp).clip(RoundedCornerShape(tokens.shapeScale.inputCorner)).clickable(enabled = !saving && draft.canSubmit) { submit() }
+                        .guideTarget(GuideTargets.EDITOR_SAVE),
+                    color = tokens.colors.accent,
+                    contentColor = tokens.colors.onAccent
+                ) {
+                    Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                       DayLoopIcon(R.drawable.ic_action_add, tint = tokens.colors.onAccent)
+                       Spacer(Modifier.width(8.dp))
+                       Text("Save task changes", style = MaterialTheme.typography.labelLarge, color = tokens.colors.onAccent, fontWeight = FontWeight.Bold)
                     }
                 }
+            }
+        }
+    }
+
+    if (showOptions) {
+        ModalBottomSheet(onDismissRequest = { showOptions = false }) {
+            Column(Modifier.fillMaxWidth().weight(1f, fill = false).verticalScroll(rememberScrollState()).padding(tokens.spacing.pageMargin), verticalArrangement = Arrangement.spacedBy(tokens.spacing.cardPadding)) {
+                Text("Task Settings", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                
+                TaskSettingsFields(draft, !saving, onDraftChange, projects, selectedProjectId, onProjectSelected)
                 listOfNotNull(draft.errorMessage, draft.deadlineErrorMessage, draft.timeBlockErrorMessage,
-                    draft.intervalErrorMessage, draft.recurrenceErrorMessage, draft.reminderPolicyErrorMessage).distinct().forEach {
-                    Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    draft.intervalErrorMessage, draft.recurrenceErrorMessage, draft.reminderPolicyErrorMessage)
+                    .forEach { Text(it, color = tokens.colors.error) }
+                
+                if (existingTask?.provenance?.originType == "RECURRENCE_RULE" && onEditSeries != null) {
+                    TextButton(onClick = { onEditSeries(TaskId(existingTask.provenance.ruleId)) }) {
+                        Text("Edit series (master task)")
+                    }
                 }
-                Spacer(Modifier.height(12.dp))
+
+                TextButton(onClick = ::submit, enabled = !saving && draft.canSubmit) { Text(if (existingTask?.provenance != null) "Save this occurrence" else "Save task") }
+                if (onReopen != null) TextButton(onClick = onReopen, enabled = !saving) { Text("Reopen task") }
+                
+                if (onDelete != null) TextButton(enabled = !saving, onClick = { onDelete(); showOptions = false }, colors = ButtonDefaults.textButtonColors(contentColor = tokens.colors.error)) {
+                    DayLoopIcon(R.drawable.ic_action_delete, tint = tokens.colors.error)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Delete Task")
+                }
+                
+                Spacer(Modifier.height(32.dp))
             }
         }
     }
 }
 
 @Composable
-private fun SubtasksSection(subtasks: List<Subtask>, enabled: Boolean, onSubtasksChanged: (List<Subtask>) -> Unit) {
-    var newSubtaskTitle by remember { mutableStateOf("") }
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("Subtasks", style = MaterialTheme.typography.labelMedium)
-        subtasks.forEachIndexed { index, subtask ->
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Checkbox(checked = subtask.isCompleted, onCheckedChange = { checked ->
-                    onSubtasksChanged(subtasks.toMutableList().apply { set(index, subtask.copy(isCompleted = checked)) })
-                }, enabled = enabled)
-                Text(subtask.title, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium,
-                    color = if (subtask.isCompleted) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f) else MaterialTheme.colorScheme.onSurface)
-                DayLoopIconButton(resource = R.drawable.ic_action_close, label = "Remove subtask", enabled = enabled, onClick = {
-                    onSubtasksChanged(subtasks.toMutableList().apply { removeAt(index) })
-                })
+internal fun SubtaskRow(title: String, isCompleted: Boolean, onToggle: (Boolean) -> Unit, onRemove: () -> Unit, enabled: Boolean) {
+    val tokens = MaterialTheme.dayLoopTokens
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(tokens.shapeScale.inputCorner),
+        color = tokens.colors.raised
+    ) {
+        Row(
+            Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .clip(CircleShape)
+                    .background(if (isCompleted) tokens.colors.accent else Color.Transparent)
+                    .border(2.dp, tokens.colors.controlBorder, CircleShape)
+                    .clickable(enabled = enabled) { onToggle(!isCompleted) },
+                contentAlignment = Alignment.Center
+            ) {
+                if (isCompleted) DayLoopIcon(R.drawable.ic_action_check, tint = tokens.colors.onAccent, modifier = Modifier.size(14.dp))
             }
-        }
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField(value = newSubtaskTitle, onValueChange = { newSubtaskTitle = it },
-                modifier = Modifier.weight(1f), placeholder = { Text("Add subtask...") },
-                enabled = enabled, singleLine = true, shape = RoundedCornerShape(12.dp))
-            DayLoopIconButton(resource = R.drawable.ic_action_add, label = "Add subtask", enabled = enabled && newSubtaskTitle.isNotBlank(), onClick = {
-                onSubtasksChanged(subtasks + Subtask(UUID.randomUUID().toString(), newSubtaskTitle.trim()))
-                newSubtaskTitle = ""
-            })
+            
+            Text(
+                text = title,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodyLarge,
+                color = tokens.colors.text,
+                textDecoration = if (isCompleted) TextDecoration.LineThrough else null,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            
+            DayLoopIconButton(resource = R.drawable.ic_action_close, label = "Remove", onClick = onRemove, tint = tokens.colors.mutedText, modifier = Modifier.size(32.dp))
         }
     }
-}
-
-@Composable
-private fun RecurrenceFields(draft: TaskEditorDraft, change: (TaskEditorDraft) -> Unit, enabled: Boolean) {
-    DayLoopChoice("Frequency", RecurrenceFrequency.entries.map { it.name to it.name.lowercase().replaceFirstChar(Char::uppercase) },
-        draft.recurrenceFrequency.name, { change(draft.onRecurrenceFrequencyChanged(RecurrenceFrequency.valueOf(it))) }, enabled)
-    NumberField("Repeat interval", draft.recurrenceEvery, enabled) { change(draft.onRecurrenceEveryChanged(it)) }
-    TemporalPickerField("Starts", draft.recurrenceStartDate, TemporalKind.DATE,
-        { change(draft.onRecurrenceStartDateChanged(it)) }, enabled = enabled)
-    TemporalPickerField("Ends", draft.recurrenceEndDate, TemporalKind.DATE,
-        { change(draft.onRecurrenceEndDateChanged(it)) }, enabled = enabled, optional = true)
-    if (draft.recurrenceFrequency == RecurrenceFrequency.WEEKLY) {
-        DayOfWeek.entries.forEach { day ->
-            ToggleField(day.name.lowercase().replaceFirstChar(Char::uppercase), day in draft.recurrenceDaysOfWeek, enabled) {
-                change(draft.onRecurrenceDayToggled(day))
-            }
-        }
-    }
-}
-
-@Composable
-private fun NumberField(label: String, value: String, enabled: Boolean, change: (String) -> Unit) {
-    OutlinedTextField(value, change, enabled = enabled, label = { Text(label) }, modifier = Modifier.fillMaxWidth(),
-        singleLine = true, keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number))
 }
 
 @Composable
 private fun ToggleField(label: String, checked: Boolean, enabled: Boolean, change: (Boolean) -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text(label, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+        Text(label, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
         Switch(checked, change, enabled = enabled)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TaskEditorScreenNewTaskPreview() {
+    DayLoopTheme(darkTheme = true) {
+        TaskEditorScreen(
+            draft = TaskEditorDraft(
+                title = "",
+                notes = "",
+                deadlineEnabled = false,
+                allDayDate = LocalDate.now().toString()
+            ),
+            onDraftChange = {},
+            onTaskSaved = {},
+            onCancel = {},
+            projects = listOf(
+                Project(ProjectId("1"), title = "Work"),
+                Project(ProjectId("2"), title = "Personal")
+            ),
+            today = LocalDate.now()
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TaskEditorScreenExistingTaskPreview() {
+    DayLoopTheme(darkTheme = true) {
+        TaskEditorScreen(
+            draft = TaskEditorDraft(
+                title = "Finish project proposal",
+                notes = "Review the budget and timeline sections.",
+                subtasks = listOf(
+                    Subtask("1", "Review budget", true),
+                    Subtask("2", "Update timeline", false),
+                    Subtask("3", "Send to manager", false)
+                ),
+                deadlineEnabled = true,
+                deadlineDate = LocalDate.now().plusDays(1).toString()
+            ),
+            onDraftChange = {},
+            onTaskSaved = {},
+            onCancel = {},
+            existingTask = Task(
+                id = TaskId.generate(),
+                title = "Finish project proposal",
+                status = TaskStatus.ACTIVE
+            ),
+            projects = listOf(
+                Project(ProjectId("1"), title = "Work"),
+                Project(ProjectId("2"), title = "Personal")
+            ),
+            selectedProjectId = "1",
+            today = LocalDate.now()
+        )
     }
 }

@@ -22,11 +22,11 @@ class CalendarStyleTest {
     @get:Rule val compose = createComposeRule()
 
     private fun render(name: String, date: LocalDate, dark: Boolean = false, height: Int = 660, scale: Float = 1f,
-        font: AppFont = AppFont.JETBRAINS_MONO) {
+        font: AppFont = AppFont.FUNNEL_DISPLAY) {
         compose.setContent {
             DayLoopTheme(AppSettings(themeMode = if (dark) ThemeMode.DARK else ThemeMode.LIGHT, textScale = scale, font = font)) {
                 Surface(Modifier.requiredSize(340.dp, height.dp)) {
-                    CalendarFace(date, emptyList())
+                    CalendarFace(date, emptyList(), emptyList())
                 }
             }
         }

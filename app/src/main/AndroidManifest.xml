@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
 
     <application
         android:name=".DayLoopApplication"
@@ -48,6 +50,8 @@
         </receiver>
         <receiver
             android:name=".widget.TodayWidgetReceiver"
+            android:label="@string/widget_today_label"
+            android:description="@string/widget_today_description"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
@@ -59,6 +63,8 @@
         </receiver>
         <receiver
             android:name=".widget.GoalWidgetReceiver"
+            android:label="@string/widget_goal_label"
+            android:description="@string/widget_goal_description"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
@@ -67,6 +73,12 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/goal_widget_info" />
+        </receiver>
+        <receiver android:name=".widget.FocusWidgetReceiver" android:label="@string/widget_focus_label"
+            android:description="@string/widget_focus_description"
+            android:enabled="true" android:exported="false">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/focus_widget_info" />
         </receiver>
         <activity
             android:name=".core.notifications.ReminderActivity"
@@ -82,5 +94,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Lets the device camera app write one temporary wardrobe photo into private cache. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.wardrobe.capture"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/wardrobe_capture_paths" />
+        </provider>
+
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="subject_segment" />
     </application>
 </manifest>

@@ -13,12 +13,13 @@ import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.dayloop.app.core.model.OutfitRecord
 import com.dayloop.app.core.model.Task
 import java.time.LocalDate
 import kotlin.math.abs
 
 @Composable
-fun IdleCalendarHost(date: LocalDate, tasks: List<Task>, enabled: Boolean, content: @Composable () -> Unit) {
+fun IdleCalendarHost(date: LocalDate, tasks: List<Task>, outfits: List<OutfitRecord>, enabled: Boolean, content: @Composable () -> Unit) {
     var visible by rememberSaveable { mutableStateOf(false) }
     val density = LocalDensity.current
     val threshold = with(density) { 64.dp.toPx() }
@@ -55,5 +56,5 @@ fun IdleCalendarHost(date: LocalDate, tasks: List<Task>, enabled: Boolean, conte
         }) {
         content()
     }
-    if (visible && enabled) IdleScreen(date, tasks, onExit = { visible = false })
+    if (visible && enabled) IdleScreen(date, tasks, outfits, onExit = { visible = false })
 }

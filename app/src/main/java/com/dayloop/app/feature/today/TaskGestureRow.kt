@@ -1,5 +1,7 @@
 package com.dayloop.app.feature.today
 
+import androidx.compose.material3.MaterialTheme
+import com.dayloop.app.ui.theme.dayLoopTokens
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -53,11 +55,12 @@ internal fun TaskGestureRow(enabled: Boolean, color: Color, onEdit: () -> Unit,
         override val longPressTimeoutMillis: Long = 2000L
     } }
     LaunchedEffect(enabled) { if (!enabled) { offset = 0f; dragging = false } }
+    var crossedThreshold by remember { mutableStateOf(false) }
     CompositionLocalProvider(LocalViewConfiguration provides longHold) {
         Box(modifier.fillMaxWidth().onSizeChanged { width = it.width }
-            .clip(RoundedCornerShape(20.dp))) {
+            .clip(RoundedCornerShape(MaterialTheme.dayLoopTokens.shapeScale.inputCorner))) {
         val fraction = (offset / threshold).coerceIn(-1f, 1f)
-        val actionColor = if (offset < 0f) Color(0xFF6B8E23) else MaterialTheme.colorScheme.secondary // Matcha-ish green
+        val actionColor = MaterialTheme.colorScheme.primary
         val bgColor = lerp(color, actionColor, if (reduced) (if (abs(fraction) > 0.5f) 0.8f else 0f) else abs(fraction) * 0.8f)
 
         Box(Modifier.matchParentSize().background(bgColor))
@@ -75,20 +78,25 @@ internal fun TaskGestureRow(enabled: Boolean, color: Color, onEdit: () -> Unit,
                 }
             }
         }
-        Surface(color = color, shape = RoundedCornerShape(20.dp), modifier = Modifier.fillMaxWidth()
+        Surface(color = color, shape = RoundedCornerShape(MaterialTheme.dayLoopTokens.shapeScale.inputCorner), modifier = Modifier.fillMaxWidth()
             .graphicsLayer { translationX = if (dragging) offset else settling }
             .pointerInput(enabled, width) {
                     if (enabled) detectHorizontalDragGestures(
-                        onDragStart = { dragging = true },
-                        onDragCancel = { dragging = false; offset = 0f },
+                        onDragStart = { dragging = true; crossedThreshold = false },
+                        onDragCancel = { dragging = false; offset = 0f; crossedThreshold = false },
                         onDragEnd = {
                             val action = if (offset <= -threshold) complete else if (offset >= threshold) timing else null
-                            dragging = false; offset = 0f
+                            dragging = false; offset = 0f; crossedThreshold = false
                             action?.let { haptic.performHapticFeedback(HapticFeedbackType.LongPress); it() }
                         },
                     ) { change, delta ->
                         change.consume()
                         val proposed = offset + delta
+                        val isPast = abs(proposed) >= threshold
+                        if (isPast != crossedThreshold) {
+                            crossedThreshold = isPast
+                            if (isPast) haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        }
                         offset = when {
                             proposed < 0 && complete == null -> 0f
                             proposed > 0 && timing == null -> 0f

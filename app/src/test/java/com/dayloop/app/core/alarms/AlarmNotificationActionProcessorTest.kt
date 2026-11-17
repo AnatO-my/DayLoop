@@ -40,7 +40,7 @@ class AlarmNotificationActionProcessorTest {
 
     @Test
     fun duplicateCompleteForResolvedOccurrenceIsIgnoredAsStale() = runBlocking {
-        val task = baseTask().markCompleted()
+        val task = baseTask().markCompleted(java.time.Instant.EPOCH)
         val occurrence = baseOccurrence(taskId = task.id).markFired(NOW)
         val taskRepository = FakeTaskRepository(task)
         val occurrenceRepository = FakeScheduledOccurrenceRepository(occurrence)
@@ -248,7 +248,7 @@ class AlarmNotificationActionProcessorTest {
 
     @Test
     fun completedTaskCannotBeSnoozedDespiteAllowingPolicy() = runBlocking {
-        val task = baseTask(ReminderPolicy.strict(Duration.ofMinutes(5), 3, snoozeAllowed = true)).markCompleted()
+        val task = baseTask(ReminderPolicy.strict(Duration.ofMinutes(5), 3, snoozeAllowed = true)).markCompleted(java.time.Instant.EPOCH)
         val occurrence = baseOccurrence()
         val tasks = FakeTaskRepository(task)
         val occurrences = FakeScheduledOccurrenceRepository(occurrence)

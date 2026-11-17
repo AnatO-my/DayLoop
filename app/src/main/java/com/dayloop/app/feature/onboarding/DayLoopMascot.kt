@@ -2012,7 +2012,7 @@ private fun DrawScope.drawHappyEye(
                 cy + 4f
             )
 
-            quadraticBezierTo(
+            quadraticTo(
                 cx,
                 cy - 17f,
                 cx + 23f,
@@ -2154,28 +2154,28 @@ private fun DrawScope.drawSparkle(
                 center.y - radius
             )
 
-            quadraticBezierTo(
+            quadraticTo(
                 center.x + radius * 0.18f,
                 center.y - radius * 0.18f,
                 center.x + radius,
                 center.y
             )
 
-            quadraticBezierTo(
+            quadraticTo(
                 center.x + radius * 0.18f,
                 center.y + radius * 0.18f,
                 center.x,
                 center.y + radius
             )
 
-            quadraticBezierTo(
+            quadraticTo(
                 center.x - radius * 0.18f,
                 center.y + radius * 0.18f,
                 center.x - radius,
                 center.y
             )
 
-            quadraticBezierTo(
+            quadraticTo(
                 center.x - radius * 0.18f,
                 center.y - radius * 0.18f,
                 center.x,

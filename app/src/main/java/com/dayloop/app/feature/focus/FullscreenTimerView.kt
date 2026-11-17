@@ -36,7 +36,8 @@ fun FullscreenTimerView(
     onReset: () -> Unit,
     onSetSound: (FocusSound) -> Unit,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    busy: Boolean = false,
 ) {
     BackHandler(onBack = onDismiss)
     val scope = rememberCoroutineScope()
@@ -89,47 +90,11 @@ fun FullscreenTimerView(
                     color = contentColor.copy(alpha = 0.7f)
                 )
 
-                // Sound Selector
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    FocusSound.entries.forEach { sound ->
-                        val isSelected = session.preferredSound == sound
-                        Surface(
-                            onClick = { onSetSound(sound) },
-                            shape = CircleShape,
-                            color = if (isSelected) contentColor else Color.Transparent,
-                            contentColor = if (isSelected) containerColor else contentColor,
-                            modifier = Modifier.size(48.dp),
-                            border = if (isSelected) null else BorderStroke(1.dp, contentColor.copy(alpha = 0.2f))
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                                modifier = Modifier.padding(2.dp)
-                            ) {
-                                Text(
-                                    text = when (sound) {
-                                        FocusSound.NONE -> "❌"
-                                        FocusSound.RAIN -> "🌧️"
-                                        FocusSound.FIRE -> "🔥"
-                                        FocusSound.STREAM -> "🏞️"
-                                        FocusSound.LIBRARY -> "📚"
-                                        FocusSound.CAFE -> "☕"
-                                    },
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-                                Text(
-                                    text = sound.label,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontSize = 8.sp
-                                )
-                            }
-                        }
-                    }
-                }
+                FocusSoundPicker(
+                    selected = session.preferredSound,
+                    onSelect = onSetSound,
+                    enabled = !busy,
+                )
 
                 Box(
                     modifier = Modifier.size(280.dp),

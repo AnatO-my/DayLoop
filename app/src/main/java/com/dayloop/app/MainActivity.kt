@@ -23,6 +23,8 @@ import java.time.LocalDate
 
 class MainActivity : ComponentActivity() {
     private var requestedTaskId by mutableStateOf<String?>(null)
+    private var widgetRequest by mutableStateOf<String?>(null)
+    private var widgetRequestVersion by mutableStateOf(0)
     private var requestedOccurrenceId by mutableStateOf<String?>(null)
     private var requestedGeneration by mutableStateOf(0L)
     private var foreground by mutableStateOf(false)
@@ -42,6 +44,8 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        widgetRequest = intent.getStringExtra("widget_route")
+        widgetRequestVersion++
         requestedTaskId = intent.getStringExtra("edit_task_id")?.takeIf { it.isNotBlank() }
         requestedOccurrenceId = intent.getStringExtra("reminder_occurrence_id")
         requestedGeneration = intent.getLongExtra("reminder_generation", 0L)
@@ -49,6 +53,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        widgetRequest = intent.getStringExtra("widget_route")
         requestedTaskId = intent.getStringExtra("edit_task_id")?.takeIf { it.isNotBlank() }
         requestedOccurrenceId = intent.getStringExtra("reminder_occurrence_id")
         requestedGeneration = intent.getLongExtra("reminder_generation", 0L)
@@ -57,6 +62,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             CompositionLocalProvider(LocalAppGraph provides appGraph) {
                 val settings by appGraph.settingsRepository.settings.collectAsState(initial = null)
+                val previewUiMode = androidx.compose.ui.platform.LocalConfiguration.current.uiMode
+                androidx.compose.runtime.LaunchedEffect(settings?.themeMode, previewUiMode) {
+                    settings?.let { com.dayloop.app.widget.WidgetPreviews.publishIfNeeded(applicationContext, it.themeMode) }
+                }
                 DayLoopTheme(settings = settings ?: AppSettings()) {
                     if (settings == null) {
                         androidx.compose.material3.Surface(modifier = Modifier.fillMaxSize()) {}
@@ -64,6 +73,9 @@ class MainActivity : ComponentActivity() {
                     }
                     DayLoopApp(
                         settings = settings!!,
+                        widgetRequest = widgetRequest,
+                        widgetRequestVersion = widgetRequestVersion,
+                        onWidgetRequestConsumed = { widgetRequest = null; intent.removeExtra("widget_route") },
                         requestedTaskId = requestedTaskId,
                         requestedOccurrenceId = requestedOccurrenceId,
                         requestedGeneration = requestedGeneration,

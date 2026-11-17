@@ -13,12 +13,15 @@ import com.dayloop.app.ui.components.DayLoopIcon
 @Composable
 fun TaskActionsDialog(task: Task, menu: TaskActionMenu, busy: Boolean, canSnooze: Boolean,
     onDismiss: () -> Unit, onEdit: () -> Unit, onComplete: () -> Unit, onReopen: () -> Unit,
-    onSnooze: () -> Unit, onDelete: () -> Unit) {
+    onSnooze: () -> Unit, onDelete: () -> Unit, onSkip: () -> Unit) {
     AlertDialog(onDismissRequest = { if (!busy) onDismiss() }, title = { Text(task.title) }, text = {
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             if (menu == TaskActionMenu.ALL) {
                 TaskAction(R.drawable.ic_action_edit, "Edit task", !busy, onEdit)
-                if (task.status == TaskStatus.ACTIVE) TaskAction(R.drawable.ic_action_check, "Complete", !busy, onComplete)
+                if (task.status == TaskStatus.ACTIVE) {
+                    TaskAction(R.drawable.ic_action_check, "Complete", !busy, onComplete)
+                    TaskAction(R.drawable.ic_action_close, "Skip once", !busy, onSkip)
+                }
                 else TaskAction(R.drawable.ic_action_reset, "Reopen task", !busy, onReopen)
             }
             if (task.status == TaskStatus.ACTIVE) {

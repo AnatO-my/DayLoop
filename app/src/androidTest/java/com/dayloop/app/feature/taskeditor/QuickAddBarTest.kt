@@ -13,8 +13,10 @@ import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.dayloop.app.core.model.Task
 import com.dayloop.app.core.model.TaskId
+import com.dayloop.app.core.model.TaskSchedule
 import com.dayloop.app.ui.theme.DayLoopTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -32,7 +34,7 @@ class QuickAddBarTest {
                 QuickAddBar(
                     draft = draft,
                     onDraftChange = { changedDraft -> draft = changedDraft },
-                    onTaskCreated = {},
+                    onTaskCreated = { _, _ -> },
                     createTaskId = { TaskId("unused") },
                 )
             }
@@ -53,7 +55,7 @@ class QuickAddBarTest {
                 QuickAddBar(
                     draft = draft,
                     onDraftChange = { changedDraft -> draft = changedDraft },
-                    onTaskCreated = { task -> createdTask = task },
+                    onTaskCreated = { task, _ -> createdTask = task },
                     createTaskId = { TaskId("quick-1") },
                 )
             }
@@ -67,5 +69,37 @@ class QuickAddBarTest {
             assertEquals("Plan today", createdTask?.title)
         }
         composeRule.onNodeWithContentDescription("Quick add task title").assertTextEquals("")
+    }
+
+    @Test
+    fun chipSelectionSetsScheduleMode() {
+        var createdTask: Task? = null
+        var focusRequested = false
+
+        composeRule.setContent {
+            DayLoopTheme {
+                var draft by remember { mutableStateOf(QuickAddDraft()) }
+                QuickAddBar(
+                    draft = draft,
+                    onDraftChange = { changedDraft -> draft = changedDraft },
+                    onTaskCreated = { task, startFocus ->
+                        createdTask = task
+                        focusRequested = startFocus
+                    },
+                    createTaskId = { TaskId("quick-2") },
+                )
+            }
+        }
+
+        composeRule.onNodeWithContentDescription("Quick add task title").performTextInput("Start focus session")
+        composeRule.onNodeWithContentDescription("Schedule mode ⚡ Focus").performClick()
+        composeRule.onNodeWithContentDescription("Add task").performClick()
+
+        composeRule.runOnIdle {
+            assertEquals(TaskId("quick-2"), createdTask?.id)
+            assertEquals("Start focus session", createdTask?.title)
+            assertTrue(createdTask?.schedule is TaskSchedule.TimeBlock)
+            assertTrue(focusRequested)
+        }
     }
 }

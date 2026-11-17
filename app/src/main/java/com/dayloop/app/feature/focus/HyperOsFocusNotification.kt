@@ -5,8 +5,8 @@ import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import com.dayloop.app.R
 import org.json.JSONObject
+import org.json.JSONArray
 
 /** Optional OEM presentation; never a prerequisite for running the timer. */
 internal object HyperOsFocusNotification {
@@ -21,7 +21,10 @@ internal object HyperOsFocusNotification {
         0
     }
 
-    fun extras(protocol: Int, label: String, remaining: String): Bundle {
+    const val TOGGLE_ACTION = "miui.focus.action_timer"
+    const val END_ACTION = "miui.focus.action_end_timer"
+
+    fun extras(context: Context, protocol: Int, presentation: FocusNotificationPresentation): Bundle {
         if (protocol < 2) return Bundle()
         val iconKey = "miui.focus.pic_timer"
         val iconInfo = JSONObject().put("type", 1).put("pic", iconKey)
@@ -29,26 +32,36 @@ internal object HyperOsFocusNotification {
             .put("protocol", 1)
             .put("business", "focus_timer")
             .put("updatable", true)
+            .put("reopen", "reopen")
             .put("enableFloat", false)
             .put("islandFirstFloat", false)
             .put("filterWhenNoPermission", false)
-            .put("ticker", remaining)
+            .put("ticker", presentation.remaining)
             .put("tickerPic", iconKey)
-            .put("baseInfo", JSONObject().put("type", 2)
-                .put("title", label).put("content", "$remaining remaining"))
+            // Template 13: highlighted countdown + ordinary action buttons (OS2/OS3).
+            .put("highlightInfo", JSONObject()
+                .put("title", presentation.remaining)
+                .put("content", presentation.mode.label)
+                .put("subContent", if (presentation.paused) "Paused" else "Remaining")
+                .put("picFunction", iconKey)
+                .put("colorTitle", "#405000").put("colorTitleDark", "#DDF36B"))
+            .put("actions", JSONArray()
+                .put(JSONObject().put("action", TOGGLE_ACTION))
+                .put(JSONObject().put("action", END_ACTION)))
         if (protocol >= 3) {
             params.put("param_island", JSONObject()
                 .put("bigIslandArea", JSONObject()
                     .put("imageTextInfoLeft", JSONObject().put("type", 1)
-                        .put("picInfo", iconInfo)
-                        .put("textInfo", JSONObject().put("title", remaining).put("content", label)))
-                    .put("picInfo", iconInfo))
+                        .put("picInfo", iconInfo))
+                    // Summary template 6: icon in area A, equal-width digits in area B.
+                    .put("sameWidthDigitInfo", JSONObject()
+                        .put("digit", presentation.remaining).put("showHighlightColor", false)))
                 .put("smallIslandArea", JSONObject().put("picInfo", iconInfo)))
         }
         return Bundle().apply {
             putString("miui.focus.param", JSONObject().put("param_v2", params).toString())
             putBundle("miui.focus.pics", Bundle().apply {
-                putParcelable(iconKey, Icon.createWithResource("com.dayloop.app", R.drawable.ic_nav_focus))
+                putParcelable(iconKey, Icon.createWithResource(context, presentation.iconRes))
             })
         }
     }

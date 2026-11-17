@@ -209,7 +209,27 @@ class NextOccurrenceCalculatorTest {
     }
 
     @Test
-    fun unscheduledAllDayAndRecurrenceTasksReturnNoOccurrenceInThisSlice() {
+    fun recurrenceWithTimeReturnsOccurrence() {
+        val task = Task(
+            id = TaskId("task-recurrence"),
+            title = "Morning Gym",
+            schedule = TaskSchedule.CalendarRecurrence(
+                rule = RecurrenceRule.daily(LocalDate.of(2026, 9, 6)),
+                localTime = LocalTime.of(7, 0)
+            ),
+        )
+
+        val occurrence = calculator().calculate(
+            task = task,
+            now = now,
+            zoneId = zoneId,
+        )
+
+        assertEquals(Instant.parse("2026-09-07T06:00:00Z"), occurrence?.fireAt)
+    }
+
+    @Test
+    fun unscheduledAllDayAndRecurrenceWithoutTimeTasksReturnNoOccurrence() {
         val unscheduled = Task(
             id = TaskId("task-unscheduled"),
             title = "Inbox",

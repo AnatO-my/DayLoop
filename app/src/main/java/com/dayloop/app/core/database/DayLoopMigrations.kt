@@ -149,3 +149,198 @@ val MIGRATION_8_9: Migration = object : Migration(8, 9) {
         db.execSQL("ALTER TABLE `tasks` ADD COLUMN `subtasks_json` TEXT")
     }
 }
+
+val MIGRATION_9_10: Migration = object : Migration(9, 10) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Unknown historic completion dates stay null; schedules are not completion evidence.
+        db.execSQL("ALTER TABLE `tasks` ADD COLUMN `completed_at` INTEGER")
+    }
+}
+
+val MIGRATION_10_11: Migration = object : Migration(10, 11) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `tasks` ADD COLUMN `recurrence_time` TEXT")
+    }
+}
+
+val MIGRATION_11_12: Migration = object : Migration(11, 12) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `clothing_items` (
+                `id` TEXT NOT NULL,
+                `name` TEXT NOT NULL,
+                `category` TEXT NOT NULL,
+                `color_hex` TEXT,
+                PRIMARY KEY(`id`)
+            )
+            """.trimIndent()
+        )
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `outfit_records` (
+                `date` TEXT NOT NULL,
+                PRIMARY KEY(`date`)
+            )
+            """.trimIndent()
+        )
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `outfit_items` (
+                `date` TEXT NOT NULL,
+                `clothing_item_id` TEXT NOT NULL,
+                PRIMARY KEY(`date`, `clothing_item_id`)
+            )
+            """.trimIndent()
+        )
+    }
+}
+
+val MIGRATION_13_14: Migration = object : Migration(13, 14) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `tasks` ADD COLUMN `description` TEXT")
+    }
+}
+
+val MIGRATION_12_13: Migration = object : Migration(12, 13) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `clothing_items` ADD COLUMN `is_archived` INTEGER NOT NULL DEFAULT 0")
+    }
+}
+
+val MIGRATION_14_15: Migration = object : Migration(14, 15) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `wardrobe_media` (
+                `id` TEXT NOT NULL,
+                `file_name` TEXT NOT NULL,
+                `mime_type` TEXT NOT NULL,
+                `width` INTEGER NOT NULL,
+                `height` INTEGER NOT NULL,
+                `created_at` INTEGER NOT NULL,
+                PRIMARY KEY(`id`)
+            )
+            """.trimIndent()
+        )
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `clothing_item_media` (
+                `clothing_item_id` TEXT NOT NULL,
+                `media_id` TEXT NOT NULL,
+                `is_primary` INTEGER NOT NULL DEFAULT 0,
+                PRIMARY KEY(`clothing_item_id`, `media_id`)
+            )
+            """.trimIndent()
+        )
+    }
+}
+
+val MIGRATION_15_16: Migration = object : Migration(15, 16) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `outfit_media` (
+                `date` TEXT NOT NULL,
+                `media_id` TEXT NOT NULL,
+                PRIMARY KEY(`date`, `media_id`)
+            )
+            """.trimIndent()
+        )
+    }
+}
+
+val MIGRATION_16_17: Migration = object : Migration(16, 17) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `wardrobe_media` ADD COLUMN `labels_json` TEXT")
+    }
+}
+
+/** Additive: optional per-item details. Existing tables and rows are not touched. */
+val MIGRATION_17_18: Migration = object : Migration(17, 18) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `clothing_item_attributes` (
+                `item_id` TEXT NOT NULL,
+                `garment_type` TEXT,
+                `secondary_color_hex` TEXT,
+                `pattern` TEXT,
+                `material` TEXT,
+                `fit` TEXT,
+                `warmth` TEXT,
+                `occasions` TEXT,
+                `model_id` TEXT,
+                `model_version` TEXT,
+                `type_confidence` REAL,
+                `user_corrected` INTEGER NOT NULL,
+                `updated_at` INTEGER NOT NULL,
+                PRIMARY KEY(`item_id`)
+            )
+            """.trimIndent()
+        )
+    }
+}
+
+/** Additive: what the user did with suggested outfits. Existing tables are not touched. */
+val MIGRATION_18_19: Migration = object : Migration(18, 19) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `outfit_feedback` (
+                `id` TEXT NOT NULL,
+                `date` TEXT NOT NULL,
+                `item_ids` TEXT NOT NULL,
+                `verdict` TEXT NOT NULL,
+                `reason` TEXT,
+                `created_at` INTEGER NOT NULL,
+                PRIMARY KEY(`id`)
+            )
+            """.trimIndent()
+        )
+    }
+}
+
+/** Additive routine content. Routines stay local planning data and never schedule alarms by themselves. */
+val MIGRATION_19_20: Migration = object : Migration(19, 20) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `workout_routines` (
+                `id` TEXT NOT NULL,
+                `title` TEXT NOT NULL,
+                `exercises_payload` TEXT NOT NULL,
+                `scheduled_days` TEXT NOT NULL,
+                PRIMARY KEY(`id`)
+            )
+            """.trimIndent(),
+        )
+    }
+}
+
+/** Commercial Note Engine addition (version 20 -> 21) */
+val MIGRATION_20_21: Migration = object : Migration(20, 21) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `notes` (
+                `id` TEXT NOT NULL,
+                `title` TEXT NOT NULL,
+                `content` TEXT NOT NULL,
+                `is_pinned` INTEGER NOT NULL,
+                `is_archived` INTEGER NOT NULL,
+                `linked_task_id` TEXT,
+                `linked_project_id` TEXT,
+                `created_at` INTEGER NOT NULL,
+                `updated_at` INTEGER NOT NULL,
+                `tags` TEXT NOT NULL,
+                PRIMARY KEY(`id`)
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_notes_is_pinned` ON `notes` (`is_pinned`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_notes_updated_at` ON `notes` (`updated_at`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_notes_linked_task_id` ON `notes` (`linked_task_id`)")
+    }
+}
+

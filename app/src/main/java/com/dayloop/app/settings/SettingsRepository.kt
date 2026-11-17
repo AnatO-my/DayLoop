@@ -7,8 +7,17 @@ import kotlinx.coroutines.flow.Flow
 interface SettingsRepository {
     val settings: Flow<AppSettings>
 
+    fun observeGuideProgress(key: GuideKey): Flow<GuideProgress> = error("Guide persistence unavailable")
+
+    suspend fun updateGuideProgress(key: GuideKey, expected: GuideProgress, action: GuideAction): Boolean {
+        error("Guide persistence unavailable")
+    }
+
     suspend fun setThemeMode(themeMode: ThemeMode)
     suspend fun setFont(font: AppFont) { error("Font persistence unavailable") }
+    suspend fun setReadableBodyText(enabled: Boolean) { error("Typography persistence unavailable") }
+    suspend fun setHomePresentation(presentation: HomePresentation) { error("Home presentation persistence unavailable") }
+    suspend fun setDisplayName(name: String) { error("Display name persistence unavailable") }
     suspend fun setPlanningIcon(key: String, icon: String) { error("Icon persistence unavailable") }
 
     suspend fun completeOnboarding() { error("Onboarding persistence is unavailable") }

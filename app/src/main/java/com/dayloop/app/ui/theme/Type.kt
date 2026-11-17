@@ -8,6 +8,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.TextStyle
 import com.dayloop.app.R
 import androidx.compose.ui.unit.sp
+import com.dayloop.app.settings.AppFont
 
 val DayLoopFontFamily = FontFamily(
     Font(R.font.jetbrains_mono_regular, FontWeight.Normal),
@@ -17,24 +18,32 @@ val DayLoopFontFamily = FontFamily(
     Font(R.font.jetbrains_mono_italic, FontWeight.Normal, FontStyle.Italic),
 )
 
-private fun mono(size: Int, line: Int, weight: FontWeight = FontWeight.Normal) = TextStyle(
-    fontFamily = DayLoopFontFamily, fontSize = size.sp, lineHeight = line.sp,
+private fun type(size: Int, line: Int, weight: FontWeight = FontWeight.Normal, family: FontFamily = FontFamily.SansSerif) = TextStyle(
+    fontFamily = family, fontSize = size.sp, lineHeight = line.sp,
     fontWeight = weight, letterSpacing = 0.sp,
 )
 
 internal val DayLoopTypography = Typography(
-    displayLarge = mono(52, 60, FontWeight.Bold), displayMedium = mono(44, 52, FontWeight.Bold),
-    displaySmall = mono(36, 44, FontWeight.Bold),
-    headlineLarge = mono(28, 36, FontWeight.Bold), headlineMedium = mono(24, 32, FontWeight.Bold),
-    headlineSmall = mono(22, 30, FontWeight.SemiBold),
-    titleLarge = mono(20, 28, FontWeight.SemiBold), titleMedium = mono(16, 24, FontWeight.SemiBold),
-    titleSmall = mono(14, 20, FontWeight.Medium),
-    bodyLarge = mono(15, 23), bodyMedium = mono(14, 22), bodySmall = mono(12, 18),
-    labelLarge = mono(13, 18, FontWeight.Medium), labelMedium = mono(12, 17, FontWeight.Medium),
-    labelSmall = mono(11, 16),
+    displayMedium = type(44, 48, FontWeight.Bold),       // Display -> Bold
+    headlineLarge = type(32, 38, FontWeight.Bold),       // Heading 1 -> Bold
+    headlineMedium = type(24, 30, FontWeight.SemiBold),  // Heading 2 -> SemiBold
+    headlineSmall = type(20, 26, FontWeight.SemiBold),   // Heading 3 -> SemiBold
+    titleLarge = type(18, 24, FontWeight.Medium),        // Title -> Medium
+    bodyLarge = type(16, 24, FontWeight.Normal),         // Body Large -> Regular
+    bodyMedium = type(14, 20, FontWeight.Normal),         // Body -> Regular
+    bodySmall = type(13, 18, FontWeight.Normal),         // Body Small -> Regular
+    labelLarge = type(14, 20, FontWeight.Medium),        // Label -> Medium
+    labelSmall = type(12, 16, FontWeight.Medium),        // Caption -> Medium
+    // Styles that screens use but the scale did not define; without these they fell back
+    // to Material's default sizes and letter spacing.
+    displayLarge = type(57, 64, FontWeight.Bold),        // Hero numerals -> Bold
+    displaySmall = type(36, 44, FontWeight.Bold),        // Display Small -> Bold
+    titleMedium = type(16, 22, FontWeight.Medium),       // Card title -> Medium
+    titleSmall = type(14, 20, FontWeight.Medium),        // Section title -> Medium
+    labelMedium = type(13, 18, FontWeight.Medium),       // Label Medium -> Medium
 )
 
-internal fun scaledTypography(scale: Float, font: com.dayloop.app.settings.AppFont = com.dayloop.app.settings.AppFont.JETBRAINS_MONO): Typography {
+internal fun scaledTypography(scale: Float, font: AppFont = AppFont.FUNNEL_DISPLAY): Typography {
     val family = appFontFamily(font)
     fun scaleWeight(weight: FontWeight?): FontWeight {
         val original = weight?.weight ?: 400

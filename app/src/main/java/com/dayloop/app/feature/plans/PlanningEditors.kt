@@ -2,6 +2,7 @@ package com.dayloop.app.feature.plans
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -9,9 +10,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.dayloop.app.core.model.*
-import com.dayloop.app.ui.components.TemporalPickerField
-import com.dayloop.app.ui.components.TemporalKind
-import com.dayloop.app.ui.designsystem.DayLoopChoice
+import com.dayloop.app.ui.components.*
 import java.time.LocalDate
 
 @Composable
@@ -46,11 +45,25 @@ internal fun ProjectEditorDialog(
         text = {
             Column(Modifier.heightIn(max = 520.dp).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(title, { title = it }, label = { Text("Project name") }, enabled = !busy, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(title, { title = it }, label = { Text("Project name") }, enabled = !busy, modifier = Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.small)
                 PlanningIconPicker(icon, !busy) { icon = it }
-                DayLoopChoice("Goal", listOf("" to "No goal") + goals.map { it.id.value to it.title }, goal, { goal = it }, !busy)
-                DayLoopChoice("Status", ProjectStatus.entries.map { it.name to it.name.lowercase().replaceFirstChar(Char::uppercase) }, status.name,
-                    { status = ProjectStatus.valueOf(it) }, !busy)
+                
+                Text("Goal", style = MaterialTheme.typography.labelMedium)
+                DayLoopOptionGrid(
+                    options = listOf(DayLoopPillOption("", "No goal")) + goals.map { DayLoopPillOption(it.id.value, it.title) },
+                    selectedOptionId = goal,
+                    onOptionSelected = { goal = it },
+                    enabled = !busy
+                )
+
+                Text("Status", style = MaterialTheme.typography.labelMedium)
+                DayLoopOptionGrid(
+                    options = ProjectStatus.entries.map { DayLoopPillOption(it.name, it.name.lowercase().replaceFirstChar(Char::uppercase)) },
+                    selectedOptionId = status.name,
+                    onOptionSelected = { status = ProjectStatus.valueOf(it) },
+                    enabled = !busy
+                )
+
                 Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     Text("Active / rest cycle", modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
                     Switch(cycleEnabled, onCheckedChange = { cycleEnabled = it }, enabled = !busy)
@@ -59,13 +72,20 @@ internal fun ProjectEditorDialog(
                     TemporalPickerField("Cycle starts", anchor, TemporalKind.DATE, { anchor = it },
                         enabled = !busy, error = anchorDate == null)
                     OutlinedTextField(active, { active = it }, label = { Text("Active days") }, enabled = !busy,
-                        isError = activeDays == null || activeDays !in 1..3650, modifier = Modifier.fillMaxWidth())
+                        isError = activeDays == null || activeDays !in 1..3650, modifier = Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.small)
                     OutlinedTextField(rest, { rest = it }, label = { Text("Rest days") }, enabled = !busy,
-                        isError = restDays == null || restDays !in 0..3650, modifier = Modifier.fillMaxWidth())
+                        isError = restDays == null || restDays !in 0..3650, modifier = Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.small)
                     OutlinedTextField(templateTitle, { templateTitle = it }, label = { Text("Generated task title") },
-                        enabled = !busy, isError = templateTitle.isBlank(), modifier = Modifier.fillMaxWidth())
-                    DayLoopChoice("Task priority", TaskPriority.entries.map { it.name to it.name.lowercase().replaceFirstChar(Char::uppercase) },
-                        templatePriority.name, { templatePriority = TaskPriority.valueOf(it) }, !busy)
+                        enabled = !busy, isError = templateTitle.isBlank(), modifier = Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.small)
+                    
+                    Text("Task priority", style = MaterialTheme.typography.labelMedium)
+                    DayLoopOptionGrid(
+                        options = TaskPriority.entries.map { DayLoopPillOption(it.name, it.name.lowercase().replaceFirstChar(Char::uppercase)) },
+                        selectedOptionId = templatePriority.name,
+                        onOptionSelected = { templatePriority = TaskPriority.valueOf(it) },
+                        enabled = !busy
+                    )
+
                     if (cycleValid) Text("$activeDays active / $restDays rest", style = MaterialTheme.typography.labelMedium)
                 }
                 if (previousCycle != null) Text("Cycle changes regenerate today's project task.", style = MaterialTheme.typography.labelSmall)
@@ -111,10 +131,27 @@ internal fun GoalEditorDialog(goal: Goal?, busy: Boolean, onDismiss: () -> Unit,
                 PlanningIconPicker(icon, !busy) { icon = it }
                 TemporalPickerField("Target date", date, TemporalKind.DATE, { date = it },
                     error = !validDate, enabled = !busy, optional = true)
-                DayLoopChoice("Progress", listOf("COUNT" to "Linked work", "BINARY" to "Done or not done", "MANUAL" to "Manual"),
-                    policy.name, { policy = GoalProgressPolicy.valueOf(it) }, !busy)
-                DayLoopChoice("Status", GoalStatus.entries.map { it.name to it.name.lowercase().replaceFirstChar(Char::uppercase) }, status.name,
-                    { status = GoalStatus.valueOf(it) }, !busy)
+                
+                Text("Progress", style = MaterialTheme.typography.labelMedium)
+                DayLoopOptionGrid(
+                    options = listOf(
+                        DayLoopPillOption("COUNT", "Linked work"),
+                        DayLoopPillOption("BINARY", "Done or not done"),
+                        DayLoopPillOption("MANUAL", "Manual")
+                    ),
+                    selectedOptionId = policy.name,
+                    onOptionSelected = { policy = GoalProgressPolicy.valueOf(it) },
+                    enabled = !busy
+                )
+
+                Text("Status", style = MaterialTheme.typography.labelMedium)
+                DayLoopOptionGrid(
+                    options = GoalStatus.entries.map { DayLoopPillOption(it.name, it.name.lowercase().replaceFirstChar(Char::uppercase)) },
+                    selectedOptionId = status.name,
+                    onOptionSelected = { status = GoalStatus.valueOf(it) },
+                    enabled = !busy
+                )
+
                 if (policy == GoalProgressPolicy.MANUAL) {
                     Text("${(manual * 100).toInt()}% complete")
                     Slider(value = manual, onValueChange = { manual = it }, enabled = !busy)

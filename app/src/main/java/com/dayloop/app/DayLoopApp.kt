@@ -10,20 +10,27 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import com.dayloop.app.core.model.*
+import com.dayloop.app.core.model.Note as DomainNote
 import com.dayloop.app.core.alarms.*
 import com.dayloop.app.core.projects.ProjectOccurrenceGenerator
+import com.dayloop.app.core.recurrence.RecurrenceOccurrenceGenerator
 import com.dayloop.app.di.LocalAppGraph
 import com.dayloop.app.feature.diagnostics.DiagnosticsRoute
+import com.dayloop.app.feature.diagnostics.rememberWardrobeTransfer
 import com.dayloop.app.feature.focus.FocusRoute
 import com.dayloop.app.feature.focus.FocusStore
 import com.dayloop.app.feature.focus.FocusService
 import com.dayloop.app.feature.focus.FocusMode
 import com.dayloop.app.feature.idle.IdleCalendarHost
+import com.dayloop.app.feature.notes.NoteEditorScreen
+import com.dayloop.app.feature.onboarding.WelcomeScreen
 import com.dayloop.app.feature.plans.PlansRoute
 import com.dayloop.app.feature.plans.PlansTab
 import com.dayloop.app.feature.taskeditor.TaskEditorDraft
 import com.dayloop.app.feature.taskeditor.TaskEditorScreen
 import com.dayloop.app.feature.today.TodayRoute
+import com.dayloop.app.feature.today.MissedTaskReviewScreen
+import com.dayloop.app.feature.today.SavedWorkScreen
 import com.dayloop.app.feature.today.TaskActionMenu
 import com.dayloop.app.feature.today.TaskActionsDialog
 import com.dayloop.app.feature.settings.SettingsPullHost
@@ -34,30 +41,56 @@ import com.dayloop.app.today.NaturalIntent
 import com.dayloop.app.today.TodayDayStatus
 import com.dayloop.app.today.TodaySnapshotBuilder
 import com.dayloop.app.ui.components.DayLoopScreen
+import com.dayloop.app.ui.guides.GuideDefinitions
+import com.dayloop.app.ui.guides.GuideHost
+import com.dayloop.app.ui.guides.GuideStep
+import com.dayloop.app.settings.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.io.IOException
+import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
+import java.util.UUID
 
 @Composable
 fun DayLoopApp(
-    settings: com.dayloop.app.settings.AppSettings = com.dayloop.app.settings.AppSettings(onboardingCompleted = true),
+    settings: AppSettings = AppSettings(onboardingCompleted = true),
     requestedTaskId: String? = null,
     requestedOccurrenceId: String? = null,
     requestedGeneration: Long = 0L,
     onEditRequestConsumed: () -> Unit = {},
     foreground: Boolean = true,
     resumeVersion: Int = 0,
+    widgetRequest: String? = null,
+    widgetRequestVersion: Int = 0,
+    onWidgetRequestConsumed: () -> Unit = {},
 ) {
     val graph = LocalAppGraph.current
     val scope = rememberCoroutineScope()
     val tasks by graph.taskRepository.observeTasks().collectAsState(initial = null)
     val occurrences by graph.scheduledOccurrenceRepository.observeOccurrences().collectAsState(emptyList())
     val projects by graph.projectRepository.observeProjects().collectAsState(emptyList())
+    val outfits by graph.outfitRepository.observeAllOutfits().collectAsState(initial = emptyList())
+    val notes by graph.noteRepository.observeAllNotes().collectAsState(initial = emptyList())
+    
+    // Guide Progresses
+    val firstLaunchGuide by graph.settingsRepository.observeGuideProgress(GuideDefinitions.FirstLaunch).collectAsState(initial = null)
+    val todayGuide by graph.settingsRepository.observeGuideProgress(GuideDefinitions.Today).collectAsState(initial = null)
+    val taskEditorGuide by graph.settingsRepository.observeGuideProgress(GuideDefinitions.TaskEditor).collectAsState(initial = null)
+    val schedulingGuide by graph.settingsRepository.observeGuideProgress(GuideDefinitions.Scheduling).collectAsState(initial = null)
+    val plansGuide by graph.settingsRepository.observeGuideProgress(GuideDefinitions.Plans).collectAsState(initial = null)
+    val focusGuide by graph.settingsRepository.observeGuideProgress(GuideDefinitions.Focus).collectAsState(initial = null)
+    val wardrobeGuide by graph.settingsRepository.observeGuideProgress(GuideDefinitions.Wardrobe).collectAsState(initial = null)
+    val calendarGuide by graph.settingsRepository.observeGuideProgress(GuideDefinitions.Calendar).collectAsState(initial = null)
+
+    val wardrobeTransfer = rememberWardrobeTransfer(graph)
     val focusStore = remember { FocusStore.get(graph.applicationContext) }
     val focus by focusStore.state.collectAsState(initial = null)
     var mutationVersion by remember { mutableIntStateOf(0) }
+    
     val now by produceState(graph.timeProvider.now(), foreground, resumeVersion, focus?.endsAt, mutationVersion) {
         value = graph.timeProvider.now()
         while (foreground) {
@@ -67,8 +100,93 @@ fun DayLoopApp(
     }
     val moment = TodayMoment(now, ZoneId.systemDefault())
     val generated = remember(projects, moment.date) { ProjectOccurrenceGenerator().generateFor(projects, moment) }
+    val projectedTasks = remember(generated, tasks, moment.date) {
+        generated + RecurrenceOccurrenceGenerator().generateFor(tasks.orEmpty(), moment)
+    }
     var route by rememberSaveable { mutableStateOf(if (settings.onboardingCompleted) "today" else "welcome") }
     var returnRoute by rememberSaveable { mutableStateOf("today") }
+
+    // Global Guide Selection
+    val activeGuideKey = remember(route, firstLaunchGuide, todayGuide, taskEditorGuide, schedulingGuide, plansGuide, focusGuide, wardrobeGuide, calendarGuide) {
+        val guides = mapOf(
+            "today" to todayGuide,
+            "editor" to taskEditorGuide,
+            "plan" to plansGuide,
+            "focus" to focusGuide,
+            "wardrobe" to wardrobeGuide,
+            "calendar" to calendarGuide
+        )
+        
+        when {
+            // First launch has priority if we are on Today and it's not finished
+            route == "today" && (firstLaunchGuide?.status == GuideStatus.UNSEEN || firstLaunchGuide?.status == GuideStatus.IN_PROGRESS) -> GuideDefinitions.FirstLaunch
+            // Otherwise, show the guide matching the current route
+            else -> {
+                val currentProgress = guides[route]
+                if (currentProgress?.status == GuideStatus.UNSEEN || currentProgress?.status == GuideStatus.IN_PROGRESS) {
+                    when(route) {
+                        "today" -> GuideDefinitions.Today
+                        "editor" -> GuideDefinitions.TaskEditor
+                        "plan" -> GuideDefinitions.Plans
+                        "focus" -> GuideDefinitions.Focus
+                        "wardrobe" -> GuideDefinitions.Wardrobe
+                        "calendar" -> GuideDefinitions.Calendar
+                        else -> null
+                    }
+                } else null
+            }
+        }
+    }
+    
+    val activeProgress = remember(activeGuideKey, firstLaunchGuide, todayGuide, taskEditorGuide, schedulingGuide, plansGuide, focusGuide, wardrobeGuide, calendarGuide) {
+        when (activeGuideKey) {
+            GuideDefinitions.FirstLaunch -> firstLaunchGuide
+            GuideDefinitions.Today -> todayGuide
+            GuideDefinitions.TaskEditor -> taskEditorGuide
+            GuideDefinitions.Scheduling -> schedulingGuide
+            GuideDefinitions.Plans -> plansGuide
+            GuideDefinitions.Focus -> focusGuide
+            GuideDefinitions.Wardrobe -> wardrobeGuide
+            GuideDefinitions.Calendar -> calendarGuide
+            else -> null
+        }
+    }
+    
+    val activeStep = remember(activeGuideKey, activeProgress) {
+        val key = activeGuideKey ?: return@remember null
+        val progress = activeProgress ?: return@remember null
+        val steps = GuideDefinitions.getSteps(key)
+        if (progress.status == GuideStatus.IN_PROGRESS) steps.find { it.id == progress.stepId } else null
+    }
+
+    val guideNextAction = activeGuideKey?.let { key -> activeStep?.let { GuideDefinitions.nextAction(key, it.id) } }
+    var guideBusy by remember { mutableStateOf(false) }
+
+    val onGuideAction: (GuideAction) -> Unit = { action ->
+        val key = activeGuideKey
+        val progress = activeProgress
+        if (key != null && progress != null && !guideBusy) {
+            guideBusy = true
+            scope.launch {
+                try {
+                    graph.settingsRepository.updateGuideProgress(key, progress, action)
+                } catch (cancelled: CancellationException) { throw cancelled }
+                catch (_: Exception) { /* Silently fail for now or show error */ }
+                finally { guideBusy = false }
+            }
+        }
+    }
+
+    // Auto-start unseen guide
+    LaunchedEffect(activeGuideKey, activeProgress, route, foreground) {
+        if (foreground && activeGuideKey != null && activeProgress?.status == GuideStatus.UNSEEN) {
+            val firstStep = GuideDefinitions.getSteps(activeGuideKey).firstOrNull()
+            if (firstStep != null) {
+                onGuideAction(GuideAction.Start(firstStep.id))
+            }
+        }
+    }
+
     var editId by rememberSaveable { mutableStateOf<String?>(null) }
     var projectId by rememberSaveable { mutableStateOf<String?>(null) }
     var message by rememberSaveable { mutableStateOf<String?>(null) }
@@ -78,6 +196,12 @@ fun DayLoopApp(
     var actionMenu by rememberSaveable { mutableStateOf(TaskActionMenu.ALL) }
     var showAdvancedSettings by rememberSaveable { mutableStateOf(false) }
     var showNotes by rememberSaveable { mutableStateOf(false) }
+    var showNoteEditor by rememberSaveable { mutableStateOf(false) }
+    var editingNote by remember { mutableStateOf<DomainNote?>(null) }
+    var externalGuideEntry by rememberSaveable { mutableStateOf(requestedTaskId != null || widgetRequest != null) }
+    LaunchedEffect(requestedTaskId, widgetRequest) {
+        if (requestedTaskId != null || widgetRequest != null) externalGuideEntry = true
+    }
     
     LaunchedEffect(Unit) {
         graph.settingsRepository.recordAppOpen(graph.timeProvider.now().toEpochMilli())
@@ -90,7 +214,7 @@ fun DayLoopApp(
             }
         }
         catch (cancelled: CancellationException) { throw cancelled }
-        catch (_: java.io.IOException) { message = "The focus session could not be saved. Please try again." }
+        catch (_: IOException) { message = "The focus session could not be saved. Please try again." }
         catch (_: IllegalStateException) { message = "Open Focus to resume the background timer." }
         catch (_: SecurityException) { message = "The background timer could not start. Check app permissions." }
     }
@@ -136,6 +260,30 @@ fun DayLoopApp(
         }
     }
     
+    LaunchedEffect(widgetRequest, widgetRequestVersion) {
+        val request = widgetRequest ?: return@LaunchedEffect
+        // Consume before dispatch so configuration changes do not replay timer commands.
+        onWidgetRequestConsumed()
+        if (settings.onboardingCompleted) {
+            when (request) {
+                "today", "plan", "focus" -> route = request
+                "add" -> openEditor()
+                "focus_start", "focus_pause", "focus_resume" -> {
+                    route = "focus"
+                    write {
+                        val instant = graph.timeProvider.now()
+                        when (request) {
+                            "focus_pause" -> focusStore.pause(instant)
+                            "focus_resume" -> focusStore.resume(instant)
+                            else -> focusStore.start(instant)
+                        }
+                        FocusService.start(graph.applicationContext)
+                    }
+                }
+            }
+        }
+    }
+
     // Mascot Gifts System - Milestone Checks
     LaunchedEffect(tasks, moment.date) {
         if (tasks != null && tasks!!.isNotEmpty()) {
@@ -157,141 +305,211 @@ fun DayLoopApp(
             } else if (showNotes) {
                 showNotes = false
             } else {
-                route = if (route == "editor") returnRoute else "today"
+                route = when (route) {
+                    "editor" -> returnRoute
+                    "saved_work" -> "plan"
+                    else -> "today"
+                }
             }
         }
     }
 
-    IdleCalendarHost(moment.date, tasks.orEmpty(), enabled = route != "welcome" && !busy) {
-        SettingsPullHost(onOpenSettings = { showAdvancedSettings = true }) {
-            @OptIn(ExperimentalSharedTransitionApi::class)
-            SharedTransitionLayout(Modifier.fillMaxSize()) {
-                AnimatedContent(
-                    targetState = route,
-                    modifier = Modifier.fillMaxSize(),
-                    transitionSpec = {
-                        fadeIn(tween(220)) togetherWith fadeOut(tween(220))
-                    },
-                    label = "routeChange"
-                ) { targetRoute ->
-                    when (targetRoute) {
-                        "welcome" -> com.dayloop.app.feature.onboarding.WelcomeScreen(
-                            saving = busy,
-                            onStart = { write { graph.settingsRepository.completeOnboarding(); route = "today" } },
-                            onClose = if (settings.onboardingCompleted) ({ if (!busy) route = "today" }) else null,
-                        )
-                        "today" -> TodayRoute(
-                            actionsEnabled = !busy,
-                            onTaskActions = { id, menu -> if (!busy) { actionTaskId = id.value; actionMenu = menu } },
-                            moment = moment,
-                            refreshKey = resumeVersion,
-                            focusMinutes = focus?.minutesOn(moment.date) ?: 0,
-                            focusStreak = focus?.streakOn(moment.date) ?: 0,
-                            isFocusActive = focus?.endsAt != null,
-                            onCompleteTask = { id -> write {
-                                graph.alarmCoordinator.completeTask(id, generated.firstOrNull { it.id == id })
-                            } },
-                            onAddTask = { if (!busy) openEditor() },
-                            onOpenSettings = { showAdvancedSettings = true },
-                            onOpenNotes = { showNotes = true },
-                            onEditTask = { openEditor(it.value) },
-                            onSubtaskToggle = { id, subId, completed -> write {
-                                tasks?.firstOrNull { it.id == id }?.let { task ->
-                                    val updated = task.subtasks.map { if (it.id == subId) it.copy(isCompleted = completed) else it }
-                                    graph.taskRepository.saveTask(task.copy(subtasks = updated))
-                                }
-                            } },
-                            onApplySuggestion = { suggestion -> write {
-                                val task = suggestion.task
-                                val nowDateTime = moment.localDateTime
-                                val updatedTask = task.copy(
-                                    schedule = TaskSchedule.TimeBlock(
-                                        startsAt = nowDateTime,
-                                        endsAt = nowDateTime.plusMinutes(25)
+    GuideHost(activeStep = activeStep, onAction = onGuideAction, nextAction = guideNextAction, busy = guideBusy) {
+        IdleCalendarHost(moment.date, tasks.orEmpty(), outfits, enabled = route != "welcome" && !busy) {
+            Box(Modifier.fillMaxSize()) {
+                @OptIn(ExperimentalSharedTransitionApi::class)
+                SharedTransitionLayout(Modifier.fillMaxSize()) {
+                    AnimatedContent(
+                        targetState = route,
+                        modifier = Modifier.fillMaxSize(),
+                        transitionSpec = {
+                            fadeIn(animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMedium)) togetherWith
+                            fadeOut(animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMedium))
+                        },
+                        label = "routeChange"
+                    ) { targetRoute ->
+                        when (targetRoute) {
+                            "welcome" -> WelcomeScreen(
+                                saving = busy || wardrobeTransfer.busy,
+                                onStart = { write { graph.settingsRepository.completeOnboarding(); route = "today" } },
+                                onClose = if (settings.onboardingCompleted) ({ if (!busy) route = "today" }) else null,
+                                onRestore = wardrobeTransfer.onImport
+                            )
+                            "today" -> TodayRoute(
+                                displayName = settings.displayName,
+                                actionsEnabled = !busy && !wardrobeTransfer.busy,
+                                onTaskActions = { id, menu -> if (!busy) { actionTaskId = id.value; actionMenu = menu } },
+                                moment = moment,
+                                refreshKey = resumeVersion,
+                                focusMinutes = focus?.minutesOn(moment.date) ?: 0,
+                                focusStreak = focus?.streakOn(moment.date) ?: 0,
+                                isFocusActive = focus?.endsAt != null,
+                                onCompleteTask = { id -> write {
+                                    graph.alarmCoordinator.completeTask(id, projectedTasks.firstOrNull { it.id == id })
+                                } },
+                                onAddTask = { if (!busy) openEditor() },
+                                onOpenNotes = { showNotes = true },
+                                onEditTask = { openEditor(it.value) },
+                                onImportWardrobe = wardrobeTransfer.onImport,
+                                onSubtaskToggle = { id, subId, completed -> write {
+                                    tasks?.firstOrNull { it.id == id }?.let { task ->
+                                        val updated = task.subtasks.map { if (it.id == subId) it.copy(isCompleted = completed) else it }
+                                        graph.taskRepository.saveTask(task.copy(subtasks = updated))
+                                    }
+                                } },
+                                onApplySuggestion = { suggestion -> write {
+                                    val task = suggestion.task
+                                    val nowDateTime = moment.localDateTime
+                                    val updatedTask = task.copy(
+                                        schedule = TaskSchedule.TimeBlock(
+                                            startsAt = nowDateTime,
+                                            endsAt = nowDateTime.plusMinutes(25)
+                                        )
                                     )
+                                    graph.alarmCoordinator.saveTask(updatedTask)
+                                } },
+                                onNaturalIntent = { intent -> write {
+                                    when (intent) {
+                                        is NaturalIntent.StartFocus -> {
+                                            intent.minutes?.let { focusStore.setDuration(FocusMode.WORK, it) }
+                                            focusStore.start(now)
+                                            FocusService.start(graph.applicationContext)
+                                            route = "focus"
+                                        }
+                                        is NaturalIntent.StartBreak -> {
+                                            val mode = if ((focus?.sets ?: 0) % (focus?.setsUntilLongBreak ?: 4) == 0) 
+                                                FocusMode.LONG_BREAK else FocusMode.SHORT_BREAK
+                                            intent.minutes?.let { focusStore.setDuration(mode, it) }
+                                            // Manual selection for natural intent
+                                            focusStore.selectMode(mode)
+                                            focusStore.start(now)
+                                            FocusService.start(graph.applicationContext)
+                                            route = "focus"
+                                        }
+                                        is NaturalIntent.AddTask -> {
+                                            val task = Task(TaskId.generate(), intent.title, schedule = TaskSchedule.AllDay(moment.date))
+                                            graph.alarmCoordinator.saveTask(task)
+                                            message = "Added task: ${intent.title}"
+                                        }
+                                    }
+                                } },
+                                onBottomNavItemSelected = navigate,
+                                homePresentation = settings.homePresentation,
+                                onReviewMissed = { if (!busy) route = "missed_review" },
+                                activeGuideStep = activeStep.takeIf { activeGuideKey == GuideDefinitions.Today || activeGuideKey == GuideDefinitions.FirstLaunch },
+                                guideNextAction = guideNextAction.takeIf { activeGuideKey == GuideDefinitions.Today || activeGuideKey == GuideDefinitions.FirstLaunch },
+                                guideBusy = guideBusy,
+                                onGuideAction = onGuideAction,
+                                sharedTransitionScope = this@SharedTransitionLayout,
+                                animatedVisibilityScope = this@AnimatedContent
+                            )
+                            "missed_review" -> {
+                                val tasksList = tasks.orEmpty()
+                                val snapshot = remember(tasksList, moment, generated) {
+                                    TodaySnapshotBuilder.build(tasksList, moment, generated)
+                                }
+                                MissedTaskReviewScreen(
+                                    missed = snapshot.missed,
+                                    busy = busy,
+                                    onBack = { if (!busy) route = "today" },
+                                    onKeepForToday = { id -> write {
+                                        snapshot.missed.find { it.taskId == id }?.task?.let { task ->
+                                            message = graph.alarmCoordinator.reviewTask(task, TaskReviewAction.KEEP_TODAY)
+                                        }
+                                    } },
+                                    onReschedule = { id -> if (!busy) openEditor(id.value) },
+                                    onSomeday = { id -> write {
+                                        snapshot.missed.find { it.taskId == id }?.task?.let { task ->
+                                            message = graph.alarmCoordinator.reviewTask(task, TaskReviewAction.SOMEDAY)
+                                        }
+                                    } },
+                                    onDismiss = { id -> write {
+                                        snapshot.missed.find { it.taskId == id }?.task?.let { task ->
+                                            message = graph.alarmCoordinator.reviewTask(task, TaskReviewAction.DISMISS)
+                                        }
+                                    } }
                                 )
-                                graph.alarmCoordinator.saveTask(updatedTask)
-                            } },
-                            onNaturalIntent = { intent -> write {
-                                when (intent) {
-                                    is NaturalIntent.StartFocus -> {
-                                        intent.minutes?.let { focusStore.setDuration(FocusMode.WORK, it) }
-                                        focusStore.start(now)
-                                        FocusService.start(graph.applicationContext)
-                                        route = "focus"
+                            }
+                            "plan" -> PlansRoute(
+                                onBottomNavItemSelected = navigate,
+                                onOpenNotes = { showNotes = true },
+                                onAddTask = { openEditor(project = it.value) },
+                                onEditTask = { openEditor(it.value) },
+                                onOpenSavedWork = { if (!busy) route = "saved_work" },
+                                activeGuideStep = activeStep.takeIf { activeGuideKey == GuideDefinitions.Plans },
+                                guideNextAction = guideNextAction.takeIf { activeGuideKey == GuideDefinitions.Plans },
+                                guideBusy = guideBusy,
+                                onGuideAction = onGuideAction
+                            )
+                            "saved_work" -> SavedWorkScreen(
+                                tasks = tasks.orEmpty(), busy = busy,
+                                onBack = { if (!busy) route = "plan" },
+                                onReschedule = { if (!busy) openEditor(it.value) },
+                                onRestore = { id -> write {
+                                    tasks?.firstOrNull { it.id == id }?.let { task ->
+                                        message = graph.alarmCoordinator.reviewTask(task, TaskReviewAction.RESTORE_TODAY)
                                     }
-                                    is NaturalIntent.StartBreak -> {
-                                        val mode = if ((focus?.sets ?: 0) % (focus?.setsUntilLongBreak ?: 4) == 0) 
-                                            FocusMode.LONG_BREAK else FocusMode.SHORT_BREAK
-                                        intent.minutes?.let { focusStore.setDuration(mode, it) }
-                                        // Manual selection for natural intent
-                                        focusStore.selectMode(mode)
-                                        focusStore.start(now)
-                                        FocusService.start(graph.applicationContext)
-                                        route = "focus"
+                                } },
+                            )
+                            "focus" -> FocusRoute(focusStore, now, navigate, 
+                                onOpenNotes = { showNotes = true },
+                                activeGuideStep = activeStep.takeIf { activeGuideKey == GuideDefinitions.Focus },
+                                guideNextAction = guideNextAction.takeIf { activeGuideKey == GuideDefinitions.Focus },
+                                guideBusy = guideBusy,
+                                onGuideAction = onGuideAction
+                            )
+                            "editor" -> {
+                                val projected = projectedTasks.firstOrNull { it.id.value == editId }
+                                val existing = tasks?.firstOrNull { it.id.value == editId }
+                                    ?.takeIf { projected == null || it.provenance == projected.provenance } ?: projected
+                                when {
+                                    editId != null && tasks == null -> DayLoopScreen { CircularProgressIndicator() }
+                                    editId != null && existing == null -> DayLoopScreen {
+                                        Column {
+                                            Text("This task is no longer available.")
+                                            TextButton(onClick = { route = returnRoute }) { Text("Back") }
+                                        }
                                     }
-                                    is NaturalIntent.AddTask -> {
-                                        val task = Task(TaskId.generate(), intent.title)
-                                        graph.alarmCoordinator.saveTask(task)
-                                        message = "Added task: ${intent.title}"
+                                    else -> key(editId, projectId) {
+                                        var draft by rememberSaveable { mutableStateOf(existing?.let {
+                                            TaskEditorDraft.fromTask(if (it.status == TaskStatus.SOMEDAY) it.keepForToday(moment.date) else it)
+                                        }
+                                            ?: TaskEditorDraft(allDayDate = moment.date.toString())) }
+                                        var chosenProject by rememberSaveable { mutableStateOf(existing?.projectId?.value ?: projectId) }
+                                        val draftTaskId = rememberSaveable { TaskId.generate().value }
+                                        TaskEditorScreen(
+                                            today = moment.date,
+                                            draft = draft,
+                                            onDraftChange = { if (!busy) draft = it },
+                                            existingTask = existing,
+                                            createTaskId = { TaskId(draftTaskId) },
+                                            modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().imePadding(),
+                                            onCancel = { if (!busy) route = returnRoute },
+                                            saving = busy,
+                                            projects = projects,
+                                            selectedProjectId = chosenProject,
+                                            onProjectSelected = { chosenProject = it },
+                                            onDelete = if (existing != null && existing.provenance == null) ({ confirmDelete = true }) else null,
+                                            onReopen = if (existing != null && existing.status != TaskStatus.ACTIVE) ({ write {
+                                                message = if (existing.status in listOf(TaskStatus.SOMEDAY, TaskStatus.SKIPPED)) {
+                                                    graph.alarmCoordinator.reviewTask(existing, TaskReviewAction.RESTORE_TODAY)
+                                                } else graph.alarmCoordinator.saveTask(existing.reopen())
+                                                route = returnRoute
+                                            } }) else null,
+                                            onEditSeries = { openEditor(it.value) },
+                                            onTaskSaved = { task -> write {
+                                                val updated = if (task.status in listOf(TaskStatus.SOMEDAY, TaskStatus.SKIPPED)) task.reopen() else task
+                                                message = graph.alarmCoordinator.saveTask(updated.copy(projectId = chosenProject?.let(::ProjectId)))
+                                                route = returnRoute
+                                            } },
+                                            activeGuideStep = activeStep.takeIf { activeGuideKey == GuideDefinitions.TaskEditor || activeGuideKey == GuideDefinitions.Scheduling },
+                                            guideNextAction = guideNextAction.takeIf { activeGuideKey == GuideDefinitions.TaskEditor || activeGuideKey == GuideDefinitions.Scheduling },
+                                            guideBusy = guideBusy,
+                                            onGuideAction = onGuideAction,
+                                            sharedTransitionScope = this@SharedTransitionLayout,
+                                            animatedVisibilityScope = this@AnimatedContent
+                                        )
                                     }
-                                }
-                            } },
-                            onBottomNavItemSelected = navigate,
-                            sharedTransitionScope = this@SharedTransitionLayout,
-                            animatedVisibilityScope = this@AnimatedContent
-                        )
-                        "plan" -> PlansRoute(
-                            onBottomNavItemSelected = navigate,
-                            onOpenSettings = { showAdvancedSettings = true },
-                            onOpenNotes = { showNotes = true },
-                            onAddTask = { openEditor(project = it.value) },
-                            onEditTask = { openEditor(it.value) },
-                        )
-                        "focus" -> FocusRoute(focusStore, now, navigate, 
-                            onOpenSettings = { showAdvancedSettings = true },
-                            onOpenNotes = { showNotes = true })
-                        "editor" -> {
-                            val projected = generated.firstOrNull { it.id.value == editId }
-                            val existing = tasks?.firstOrNull { it.id.value == editId }
-                                ?.takeIf { projected == null || it.provenance == projected.provenance } ?: projected
-                            when {
-                                editId != null && tasks == null -> DayLoopScreen { CircularProgressIndicator() }
-                                editId != null && existing == null -> DayLoopScreen {
-                                    Column {
-                                        Text("This task is no longer available.")
-                                        TextButton(onClick = { route = returnRoute }) { Text("Back") }
-                                    }
-                                }
-                                else -> key(editId, projectId) {
-                                    var draft by rememberSaveable { mutableStateOf(existing?.let { TaskEditorDraft.fromTask(it) }
-                                        ?: TaskEditorDraft(allDayDate = moment.date.toString())) }
-                                    var chosenProject by rememberSaveable { mutableStateOf(existing?.projectId?.value ?: projectId) }
-                                    val draftTaskId = rememberSaveable { TaskId.generate().value }
-                                    TaskEditorScreen(
-                                        today = moment.date,
-                                        draft = draft,
-                                        onDraftChange = { if (!busy) draft = it },
-                                        existingTask = existing,
-                                        createTaskId = { TaskId(draftTaskId) },
-                                        modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().imePadding(),
-                                        onCancel = { if (!busy) route = returnRoute },
-                                        saving = busy,
-                                        projects = projects,
-                                        selectedProjectId = chosenProject,
-                                        onProjectSelected = { chosenProject = it },
-                                        onDelete = if (existing != null && existing.provenance == null) ({ confirmDelete = true }) else null,
-                                        onReopen = if (existing?.status == TaskStatus.COMPLETED) ({ write {
-                                            message = graph.alarmCoordinator.saveTask(existing.copy(status = TaskStatus.ACTIVE))
-                                            route = returnRoute
-                                        } }) else null,
-                                        onTaskSaved = { task -> write {
-                                            message = graph.alarmCoordinator.saveTask(task.copy(projectId = chosenProject?.let(::ProjectId)))
-                                            route = returnRoute
-                                        } },
-                                        sharedTransitionScope = this@SharedTransitionLayout,
-                                        animatedVisibilityScope = this@AnimatedContent
-                                    )
                                 }
                             }
                         }
@@ -302,28 +520,92 @@ fun DayLoopApp(
     }
     AnimatedVisibility(
         visible = showAdvancedSettings,
-        enter = slideInVertically(initialOffsetY = { it }, animationSpec = tween(400, easing = FastOutSlowInEasing)),
-        exit = slideOutVertically(targetOffsetY = { it }, animationSpec = tween(400, easing = FastOutSlowInEasing))
+        enter = androidx.compose.animation.slideInHorizontally(initialOffsetX = { it }),
+        exit = androidx.compose.animation.slideOutHorizontally(targetOffsetX = { it })
     ) {
         AdvancedSettingsScreen(
             onDismiss = { showAdvancedSettings = false },
-            refreshKey = resumeVersion
+            refreshKey = resumeVersion,
+            replayEnabled = !busy && !guideBusy,
+            onReplayGuide = { key -> write {
+                val progress = graph.settingsRepository.observeGuideProgress(key).first()
+                check(graph.settingsRepository.updateGuideProgress(key, progress,
+                    GuideAction.Replay(GuideDefinitions.getSteps(key).first().id)))
+                
+                // Navigate to the appropriate screen if needed
+                route = when (key) {
+                    GuideDefinitions.FirstLaunch, GuideDefinitions.Today -> "today"
+                    GuideDefinitions.TaskEditor -> "editor"
+                    GuideDefinitions.Plans -> "plan"
+                    GuideDefinitions.Focus -> "focus"
+                    else -> route
+                }
+                showAdvancedSettings = false
+            } },
+            onReplayIntroduction = { write {
+                val key = GuideDefinitions.FirstLaunch
+                val progress = graph.settingsRepository.observeGuideProgress(key).first()
+                check(graph.settingsRepository.updateGuideProgress(key, progress,
+                    GuideAction.Replay(GuideDefinitions.getSteps(key).first().id)))
+                externalGuideEntry = false
+                route = "today"
+                showAdvancedSettings = false
+            } }
         )
     }
     AnimatedVisibility(
         visible = showNotes,
-        enter = slideInVertically(initialOffsetY = { it }, animationSpec = tween(400, easing = FastOutSlowInEasing)),
-        exit = slideOutVertically(targetOffsetY = { it }, animationSpec = tween(400, easing = FastOutSlowInEasing))
+        enter = slideInVertically(initialOffsetY = { it }, animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMedium)),
+        exit = slideOutVertically(targetOffsetY = { it }, animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMedium))
     ) {
         NotesScreen(
-            notes = settings.notes,
-            onAddNote = { write { graph.settingsRepository.addNote(it) } },
-            onDeleteNote = { write { graph.settingsRepository.deleteNote(it) } },
+            notes = notes,
+            onOpenNoteEditor = { noteToEdit ->
+                editingNote = noteToEdit
+                showNoteEditor = true
+            },
+            onDeleteNote = { noteId ->
+                write { graph.noteRepository.deleteNote(noteId) }
+            },
+            onTogglePinNote = { note ->
+                write { graph.noteRepository.saveNote(note.copy(isPinned = !note.isPinned)) }
+            },
             onBack = { showNotes = false }
         )
     }
+
+    AnimatedVisibility(
+        visible = showNoteEditor,
+        enter = slideInVertically(initialOffsetY = { it }, animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMedium)),
+        exit = slideOutVertically(targetOffsetY = { it }, animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMedium))
+    ) {
+        NoteEditorScreen(
+            initialNote = editingNote,
+            onSaveNote = { note ->
+                write { graph.noteRepository.saveNote(note) }
+            },
+            onConvertToTask = { title, description ->
+                write {
+                    val newTask = Task(
+                        id = TaskId(UUID.randomUUID().toString()),
+                        title = title,
+                        description = description,
+                        schedule = TaskSchedule.AllDay(LocalDate.now()),
+                        reminderPolicy = ReminderPolicy.normal(),
+                        priority = TaskPriority.NORMAL
+                    )
+                    graph.alarmCoordinator.saveTask(newTask)
+                    showNoteEditor = false
+                }
+            },
+            onDeleteNote = { noteId ->
+                write { graph.noteRepository.deleteNote(noteId) }
+            },
+            onBack = { showNoteEditor = false }
+        )
+    }
     actionTaskId?.let { id ->
-        val projected = generated.firstOrNull { it.id.value == id }
+        val projected = projectedTasks.firstOrNull { it.id.value == id }
         val task = tasks?.firstOrNull { it.id.value == id }
             ?.takeIf { projected == null || it.provenance == projected.provenance } ?: projected
         if (task != null) {
@@ -338,7 +620,7 @@ fun DayLoopApp(
                     actionTaskId = null
                 } },
                 onReopen = { write {
-                    message = graph.alarmCoordinator.saveTask(task.copy(status = TaskStatus.ACTIVE))
+                    message = graph.alarmCoordinator.saveTask(task.reopen())
                     actionTaskId = null
                 } },
                 onSnooze = { write {
@@ -357,6 +639,10 @@ fun DayLoopApp(
                     editId = task.id.value; returnRoute = route
                     actionTaskId = null; confirmDelete = true
                 },
+                onSkip = { write {
+                    graph.alarmCoordinator.saveTask(task.skip())
+                    actionTaskId = null
+                } }
             )
         } else if (tasks != null) {
             AlertDialog(onDismissRequest = { actionTaskId = null }, text = { Text("This task is no longer available.") },

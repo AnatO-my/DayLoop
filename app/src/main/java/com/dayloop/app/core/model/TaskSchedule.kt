@@ -2,6 +2,7 @@ package com.dayloop.app.core.model
 
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 sealed interface TaskSchedule {
     val kind: TaskScheduleKind
@@ -39,6 +40,7 @@ sealed interface TaskSchedule {
 
     data class CalendarRecurrence(
         val rule: RecurrenceRule,
+        val localTime: LocalTime? = null,
     ) : TaskSchedule {
         override val kind: TaskScheduleKind = TaskScheduleKind.CALENDAR_RECURRENCE
     }

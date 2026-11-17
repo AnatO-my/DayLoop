@@ -21,6 +21,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.time.DayOfWeek
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -29,7 +30,9 @@ internal fun Task.toEntity(): TaskEntity {
     val base = TaskEntity(
         id = id.value,
         title = title,
+        description = description,
         status = status.name,
+        completedAt = completedAt?.toEpochMilli(),
         priority = priority.name,
         reminderMode = reminderPolicy.mode.name,
         realertIntervalMillis = reminderPolicy.realertInterval?.toMillis(),
@@ -85,6 +88,7 @@ internal fun Task.toEntity(): TaskEntity {
             recurrenceStartsOn = taskSchedule.rule.startsOn.toString(),
             recurrenceEndsOn = taskSchedule.rule.endsOn?.toString(),
             recurrenceDaysOfWeek = taskSchedule.rule.daysOfWeek.toStorageString(),
+            recurrenceTime = taskSchedule.localTime?.toString(),
         )
     }
 }
@@ -92,7 +96,9 @@ internal fun Task.toEntity(): TaskEntity {
 internal fun TaskEntity.toDomain(): Task = Task(
     id = TaskId(id),
     title = title,
+    description = description,
     status = TaskStatus.valueOf(status),
+    completedAt = completedAt?.let(Instant::ofEpochMilli),
     priority = TaskPriority.valueOf(priority),
     schedule = toSchedule(),
     reminderPolicy = toReminderPolicy(),
@@ -152,6 +158,7 @@ private fun TaskEntity.toSchedule(): TaskSchedule? {
                 endsOn = recurrenceEndsOn?.let(LocalDate::parse),
                 daysOfWeek = recurrenceDaysOfWeek?.toDayOfWeekSet() ?: emptySet(),
             ),
+            localTime = recurrenceTime?.let(LocalTime::parse),
         )
     }
 }

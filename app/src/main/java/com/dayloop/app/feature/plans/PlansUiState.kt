@@ -14,4 +14,5 @@ data class PlansUiState(
 enum class PlansTab {
     PROJECTS,
     GOALS,
+    WORKOUTS,
 }

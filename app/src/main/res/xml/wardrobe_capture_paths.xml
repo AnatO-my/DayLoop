@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Private cache folder the device camera app writes one temporary wardrobe photo into. -->
+<paths>
+    <cache-path name="wardrobe_capture" path="wardrobe_capture/" />
+</paths>

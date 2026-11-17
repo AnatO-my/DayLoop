@@ -32,7 +32,7 @@ fun TemporalPickerField(label: String, value: String, kind: TemporalKind, onChan
     val display = if (kind == TemporalKind.DATE) parsedDate?.format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
         else parsedTime?.format(DateTimeFormatter.ofPattern("HH:mm"))
     Surface(onClick = { open = true }, enabled = enabled, modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
+        shape = MaterialTheme.shapes.small, color = MaterialTheme.colorScheme.surfaceContainerHigh) {
         Row(Modifier.heightIn(min = 64.dp).padding(horizontal = 14.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Column(Modifier.weight(1f)) {
@@ -62,7 +62,7 @@ fun TemporalPickerField(label: String, value: String, kind: TemporalKind, onChan
         val largeText = LocalDensity.current.fontScale > 1.2f
         var keyboard by rememberSaveable { mutableStateOf(largeText) }
         Dialog(onDismissRequest = { open = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-            Surface(Modifier.widthIn(max = 420.dp).fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(24.dp),
+            Surface(Modifier.widthIn(max = 420.dp).fillMaxWidth().padding(16.dp), shape = MaterialTheme.shapes.extraLarge,
                 color = MaterialTheme.colorScheme.surfaceContainer) {
                 Column(Modifier.padding(20.dp).verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {

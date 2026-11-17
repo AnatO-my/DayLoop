@@ -40,7 +40,7 @@ class AlarmNotificationActionProcessor(
 
         val now = timeProvider.now()
         if (task.status == TaskStatus.ACTIVE) {
-            taskRepository.saveTask(task.markCompleted())
+            taskRepository.saveTask(task.markCompleted(now))
         }
 
         val fired = fresh.markFired(now)

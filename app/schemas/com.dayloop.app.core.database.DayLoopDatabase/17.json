@@ -1,0 +1,760 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 17,
+    "identityHash": "293136b79a8949d4c720d8364665a541",
+    "entities": [
+      {
+        "tableName": "tasks",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `status` TEXT NOT NULL, `priority` TEXT NOT NULL, `schedule_kind` TEXT, `all_day_date` TEXT, `deadline_at` TEXT, `time_block_starts_at` TEXT, `time_block_ends_at` TEXT, `interval_every_millis` INTEGER, `interval_window_starts_at` TEXT, `interval_window_ends_at` TEXT, `interval_eligible_days` TEXT, `interval_starts_on` TEXT, `interval_ends_on` TEXT, `interval_anchor` TEXT, `recurrence_frequency` TEXT, `recurrence_every` INTEGER, `recurrence_starts_on` TEXT, `recurrence_ends_on` TEXT, `recurrence_days_of_week` TEXT, `reminder_mode` TEXT NOT NULL, `realert_interval_millis` INTEGER, `maximum_realerts` INTEGER NOT NULL, `snooze_allowed` INTEGER NOT NULL, `reschedule_allowed` INTEGER NOT NULL, `project_id` TEXT, `provenance_origin_type` TEXT, `provenance_rule_id` TEXT, `provenance_version` INTEGER, `subtasks_json` TEXT, `completed_at` INTEGER, `recurrence_time` TEXT, `description` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "priority",
+            "columnName": "priority",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scheduleKind",
+            "columnName": "schedule_kind",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "allDayDate",
+            "columnName": "all_day_date",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "deadlineAt",
+            "columnName": "deadline_at",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeBlockStartsAt",
+            "columnName": "time_block_starts_at",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeBlockEndsAt",
+            "columnName": "time_block_ends_at",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "intervalEveryMillis",
+            "columnName": "interval_every_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "intervalWindowStartsAt",
+            "columnName": "interval_window_starts_at",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "intervalWindowEndsAt",
+            "columnName": "interval_window_ends_at",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "intervalEligibleDays",
+            "columnName": "interval_eligible_days",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "intervalStartsOn",
+            "columnName": "interval_starts_on",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "intervalEndsOn",
+            "columnName": "interval_ends_on",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "intervalAnchor",
+            "columnName": "interval_anchor",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recurrenceFrequency",
+            "columnName": "recurrence_frequency",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recurrenceEvery",
+            "columnName": "recurrence_every",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "recurrenceStartsOn",
+            "columnName": "recurrence_starts_on",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recurrenceEndsOn",
+            "columnName": "recurrence_ends_on",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recurrenceDaysOfWeek",
+            "columnName": "recurrence_days_of_week",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "reminderMode",
+            "columnName": "reminder_mode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "realertIntervalMillis",
+            "columnName": "realert_interval_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "maximumRealerts",
+            "columnName": "maximum_realerts",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "snoozeAllowed",
+            "columnName": "snooze_allowed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rescheduleAllowed",
+            "columnName": "reschedule_allowed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "projectId",
+            "columnName": "project_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "provenanceOriginType",
+            "columnName": "provenance_origin_type",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "provenanceRuleId",
+            "columnName": "provenance_rule_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "provenanceVersion",
+            "columnName": "provenance_version",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "subtasksJson",
+            "columnName": "subtasks_json",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "completedAt",
+            "columnName": "completed_at",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "recurrenceTime",
+            "columnName": "recurrence_time",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "scheduled_occurrences",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `task_id` TEXT NOT NULL, `fire_at_epoch_millis` INTEGER NOT NULL, `generation` INTEGER NOT NULL, `status` TEXT NOT NULL, `created_at_epoch_millis` INTEGER NOT NULL, `updated_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskId",
+            "columnName": "task_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fireAtEpochMillis",
+            "columnName": "fire_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "generation",
+            "columnName": "generation",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "created_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMillis",
+            "columnName": "updated_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_scheduled_occurrences_task_id",
+            "unique": false,
+            "columnNames": [
+              "task_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_scheduled_occurrences_task_id` ON `${TABLE_NAME}` (`task_id`)"
+          },
+          {
+            "name": "index_scheduled_occurrences_status_fire_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "status",
+              "fire_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_scheduled_occurrences_status_fire_at_epoch_millis` ON `${TABLE_NAME}` (`status`, `fire_at_epoch_millis`)"
+          }
+        ]
+      },
+      {
+        "tableName": "alarm_diagnostic_entries",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `occurrence_id` TEXT, `task_id` TEXT, `event` TEXT NOT NULL, `exact` INTEGER, `message` TEXT, `created_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "occurrenceId",
+            "columnName": "occurrence_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "taskId",
+            "columnName": "task_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "event",
+            "columnName": "event",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exact",
+            "columnName": "exact",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "message",
+            "columnName": "message",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "created_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_alarm_diagnostic_entries_occurrence_id",
+            "unique": false,
+            "columnNames": [
+              "occurrence_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_alarm_diagnostic_entries_occurrence_id` ON `${TABLE_NAME}` (`occurrence_id`)"
+          },
+          {
+            "name": "index_alarm_diagnostic_entries_created_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "created_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_alarm_diagnostic_entries_created_at_epoch_millis` ON `${TABLE_NAME}` (`created_at_epoch_millis`)"
+          }
+        ]
+      },
+      {
+        "tableName": "persistent_reminder_escalations",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `task_id` TEXT NOT NULL, `source_occurrence_id` TEXT NOT NULL, `next_realert_at_epoch_millis` INTEGER, `realert_interval_millis` INTEGER NOT NULL, `maximum_realerts` INTEGER NOT NULL, `realerts_delivered` INTEGER NOT NULL, `status` TEXT NOT NULL, `created_at_epoch_millis` INTEGER NOT NULL, `updated_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskId",
+            "columnName": "task_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceOccurrenceId",
+            "columnName": "source_occurrence_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nextRealertAtEpochMillis",
+            "columnName": "next_realert_at_epoch_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "realertIntervalMillis",
+            "columnName": "realert_interval_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maximumRealerts",
+            "columnName": "maximum_realerts",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "realertsDelivered",
+            "columnName": "realerts_delivered",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "created_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMillis",
+            "columnName": "updated_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_persistent_reminder_escalations_task_id",
+            "unique": false,
+            "columnNames": [
+              "task_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_persistent_reminder_escalations_task_id` ON `${TABLE_NAME}` (`task_id`)"
+          },
+          {
+            "name": "index_persistent_reminder_escalations_source_occurrence_id",
+            "unique": false,
+            "columnNames": [
+              "source_occurrence_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_persistent_reminder_escalations_source_occurrence_id` ON `${TABLE_NAME}` (`source_occurrence_id`)"
+          },
+          {
+            "name": "index_persistent_reminder_escalations_status_next_realert_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "status",
+              "next_realert_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_persistent_reminder_escalations_status_next_realert_at_epoch_millis` ON `${TABLE_NAME}` (`status`, `next_realert_at_epoch_millis`)"
+          }
+        ]
+      },
+      {
+        "tableName": "goals",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `target_date` TEXT, `progress_policy` TEXT NOT NULL, `status` TEXT NOT NULL, `manual_progress` REAL NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "targetDate",
+            "columnName": "target_date",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "progressPolicy",
+            "columnName": "progress_policy",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "manualProgress",
+            "columnName": "manual_progress",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "projects",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `goal_id` TEXT, `title` TEXT NOT NULL, `status` TEXT NOT NULL, `protocol_type` TEXT, `protocol_active_days` INTEGER, `protocol_rest_days` INTEGER, `protocol_anchor_date` TEXT, `protocol_task_title` TEXT, `protocol_task_priority` TEXT, `version` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "goalId",
+            "columnName": "goal_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "protocolType",
+            "columnName": "protocol_type",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "protocolActiveDays",
+            "columnName": "protocol_active_days",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "protocolRestDays",
+            "columnName": "protocol_rest_days",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "protocolAnchorDate",
+            "columnName": "protocol_anchor_date",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "protocolTaskTitle",
+            "columnName": "protocol_task_title",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "protocolTaskPriority",
+            "columnName": "protocol_task_priority",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "version",
+            "columnName": "version",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "clothing_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `category` TEXT NOT NULL, `color_hex` TEXT, `is_archived` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "colorHex",
+            "columnName": "color_hex",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isArchived",
+            "columnName": "is_archived",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "outfit_records",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`date` TEXT NOT NULL, PRIMARY KEY(`date`))",
+        "fields": [
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "date"
+          ]
+        }
+      },
+      {
+        "tableName": "outfit_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`date` TEXT NOT NULL, `clothing_item_id` TEXT NOT NULL, PRIMARY KEY(`date`, `clothing_item_id`))",
+        "fields": [
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "clothingItemId",
+            "columnName": "clothing_item_id",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "date",
+            "clothing_item_id"
+          ]
+        }
+      },
+      {
+        "tableName": "wardrobe_media",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `file_name` TEXT NOT NULL, `mime_type` TEXT NOT NULL, `width` INTEGER NOT NULL, `height` INTEGER NOT NULL, `created_at` INTEGER NOT NULL, `labels_json` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fileName",
+            "columnName": "file_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mimeType",
+            "columnName": "mime_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "width",
+            "columnName": "width",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "height",
+            "columnName": "height",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "labelsJson",
+            "columnName": "labels_json",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "clothing_item_media",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`clothing_item_id` TEXT NOT NULL, `media_id` TEXT NOT NULL, `is_primary` INTEGER NOT NULL, PRIMARY KEY(`clothing_item_id`, `media_id`))",
+        "fields": [
+          {
+            "fieldPath": "clothingItemId",
+            "columnName": "clothing_item_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mediaId",
+            "columnName": "media_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isPrimary",
+            "columnName": "is_primary",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "clothing_item_id",
+            "media_id"
+          ]
+        }
+      },
+      {
+        "tableName": "outfit_media",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`date` TEXT NOT NULL, `media_id` TEXT NOT NULL, PRIMARY KEY(`date`, `media_id`))",
+        "fields": [
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mediaId",
+            "columnName": "media_id",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "date",
+            "media_id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '293136b79a8949d4c720d8364665a541')"
+    ]
+  }
+}

@@ -1,6 +1,34 @@
 # Learned Concepts Registry
 
+Wardrobe recognition and styling (2026-11-10), Level A, IMPLEMENTED/unverified on Android (teaching step waived by request): a model's output is a draft with per-field confidence, never a saved fact; below a threshold the honest result is "not sure" and the user chooses. Calibration measured on one data distribution does not transfer to another, so a single-source guess is capped. Explainable rules beat a learned scorer when no licensed training data exists. Optional details belong in an additive table so old rows stay valid. Sync safety comes from a three-way merge against the last agreed version, never last-write-wins.
+
+Unified Quick Add Presets (2026-09-22), Level B, VERIFIED: quick task capture supports instant schedule selection (`ALL_DAY`, `DEADLINE`, `TIME_BLOCK`, `INTERVAL`, `FOCUS`) via quick preset chips. The draft produces typed `TaskSchedule` and `ReminderPolicy` models and flags immediate Focus timer sessions without requiring a full-screen form. Unit tests in `QuickAddDraftTest` verified (7/7 passed).
+
+Guide ownership/layout (2026-09-22), Level B, IMPLEMENTED/unverified: one outer overlay owns the shared target registry while nested hosts pass through; fixed Scaffold chrome owns status-bar space, and saved outfit visibility follows loaded database state rather than an extra dismissal preference. Regression tests authored, not run.
+
+Authenticated file transfer (2026-09-21), Level A, IMPLEMENTED/unverified: password-derived AES-GCM keys authenticate a versioned bounded file before payload validation, and a Room transaction imports missing wardrobe records without replacing existing photo links; complete app recovery is a separate contract. Crypto/Room regression tests authored, not run.
+
+Small accessibility/polish pass (2026-09-21), Level C, IMPLEMENTED/unverified: a 48dp interactive checkbox may contain a smaller visual mark while retaining checked semantics and clipped feedback. Destructive confirmation must gate the actual callback, not merely acknowledge it afterward. Quantity resources handle singular/plural display. UI regression tests authored, not run.
+
+Small cleanup pass (2026-09-21), Level C, IMPLEMENTED/unverified: removing a caller's size override restores a shared control's accessible dimensions; enabled state must also reach destructive child actions. Replay is a guide-progress mutation, not a Welcome reset or user-data reset. Existing persistence errors prevent navigation. UI regression authored, not run.
+
+Guide delivery (2026-09-21), Level B, IMPLEMENTED/unverified: highlights need observable rectangles translated to their host, with disposal cleanup for lazy-list targets. Drawing must not steal the underlying action. Persisted progress, route eligibility and one-guide-per-session gating are separate concerns. Existing first-launch/Today integration hardened; regression tests authored, not run.
+
+Guide progress persistence (2026-09-21), Level B, IMPLEMENTED/unverified: preferences own versioned guide state, not task data. Atomic edits compare the full expected progress including a revision, preventing old callbacks from completing a replayed guide. Missing state is unseen; malformed state suppresses automatic offers, while IO failures propagate. Replay is explicit and does not reset Welcome. Transition/storage tests authored, including reopening the store and concurrent writes; not executed.
+
+Contextual guide design (2026-09-21), Level B, TAUGHT/planned: content coverage and presentation state are separate responsibilities. Guide progress needs stable IDs/versions and explicit skip/completion semantics; Welcome completion does not mean every workflow has been learned. Advancing a guide must never mutate user data or substitute for permission consent. Source-audited documentation created; runtime implementation remains pending.
+
+Description persistence (2026-09-20), Level B, IMPLEMENTED/unverified: editor state is not durable storage. A domain field must exist in the Room entity and both mapping directions. An additive nullable column preserves old rows without inventing missing values. Repository round trips and database close/reopen tests cover separate failure boundaries. Migration 13 to 14 added; tests authored but not run.
+
+Icon actions (2026-09-20), Level B, IMPLEMENTED/unverified: an icon replaces a visible label, not its accessible name. Material3 tooltips explain familiar commands on hold/hover; destructive confirmations and ambiguous choices retain text. Existing long-press actions must not be overwritten by tooltip gestures. Native vector drawables scale like SVGs, and clipping contains visual press feedback without intentionally shrinking touch targets. Device validation remains manual.
+
 This file prevents repeated teaching while preserving DayLoop's Guided Build approach.
+
+Rust FFI transition boundary (2026-11-10), Level B, VERIFIED: Kotlin serializes a bounded, versioned transition request and validates the reply before copying only Rust-owned state back onto an immutable task. The mapper has no Room, alarm, or UI authority; persistence must still reload and transactionally validate the source task. Three JVM checks cover exact fixture bytes and malformed-command protection; the focused `RustTaskTransitionProtocolTest` Gradle task passed on 2026-11-10.
+
+Missed-work review (2026-09-20), Level B, IMPLEMENTED/unverified: missed work is derived from time, not a stored status. Someday/Skipped are persisted decisions; overdue and review may overlap but progress counts each task once. Removing a Focus time block requires normalizing its reminder policy. Review mutations are serialized with alarm invalidation, while generated-task overrides retain instance identity instead of modifying the series. Reversible saved-work UI is part of the state transition, not optional recovery. Tests authored; no build/device execution.
+
+Completion timestamps (2026-09-20), Level B, IMPLEMENTED/unverified: scheduling says when work is intended; completedAt records when it actually finished. Store an Instant, project it through the viewer timezone, and keep unknown legacy dates null. Idempotent completion preserves the timestamp; reopen clears it. Nullable Room migration preserves rows without inventing history. Tests authored, not executed; this is latest-completion state, not an immutable event ledger.
 
 Focus decoupled selection (2026-09-09), Level B, IMPLEMENTED: decoupled `activeMode` from `mode` to allow viewing other timers without interruption. `finishIfDue` and `start` now explicitly track the running session. Build `app:assembleDebug` passed; manual verification pending.
 
@@ -89,10 +117,21 @@ A concept should normally receive a Level A explanation only once. After it reac
 | Task → Project → Goal modelling                       | VERIFIED    |                    10A | P10A-01 taught boundary; P10A-10 implemented `GoalProgressCalculator` with BINARY, COUNT, and MANUAL policies.                                                                                             |
 | Project Active/Rest phase protocol                    | VERIFIED    |                    10A | P10A-05 implemented `ProjectProtocol`; P10A-07 verified 3-study/3-rest scenario via JVM `ProjectScenarioTest`.                                                                                             |
 | Derived occurrence provenance                         | VERIFIED    |                    10A | P10A-03/P10A-09 implemented versioned `TaskProvenance` linked to `Project.version`, ensuring protocol updates invalidate stale derived tasks.                                                              |
+| Many-to-many relationship modelling                   | IMPLEMENTED |                     12 | Implemented many-to-many join between garments and daily outfit records using Room's `@Junction` and `@Relation` semantics.                                                                                |
+| Repository pattern for specialized features           | VERIFIED    |                     13 | Centralized wardrobe and outfit logic behind `OutfitRepository` to enforce date validation and separate domain logic from Room DAO specifics.                                                              |
+| JSON Backup versioning and expansion                 | IMPLEMENTED |                     13 | Extended `BackupManager` to serialize many-to-many relationships and wardrobe states into versioned encrypted backups with atomic restoration paths.                                                        |
+| App-managed media storage and metadata               | VERIFIED    |                     15 | Established pattern for copying external photos to internal app-managed storage, extracting dimensions, and maintaining metadata sync via Room join tables.                                                 |
+| Many-to-many visual history records                  | IMPLEMENTED |                     16 | Linked daily outfit records to multiple app-managed image files using a dedicated join table and composite Room relations for a visual clothing diary.                                                      |
 | LLM proposal → validator → user confirmation boundary | TAUGHT      |                     12 | Architectural principle established; implementation later.                                                                                                                                                 |
 | Android/Play permission-policy research workflow      | VERIFIED    |                      0 | P0-09 verified exact-alarm and full-screen-intent constraints from current official Android/Google Play sources.                                                                                           |
 
 ## Update rule
+HyperOS timer presentation (2026-09-20), Level B, IMPLEMENTED/source-checked: OEM templates are optional notification presentation; active-session icons and immutable PendingIntent snapshot identities use a persisted revision plus atomic DataStore validation to reject duplicate/stale controls without affecting canonical timer history.
+
+Widget picker previews (2026-09-19), Level B, IMPLEMENTED/source-checked: receiver labels name widgets; static density/night-qualified resources support OEM fallback, while Android 15+ previews reuse live layouts with fictional data and require explicit rate-limited publication independent of widget updates.
+
+Reference UI/widget application (2026-09-19), Level B, source-only: Glance needs its own responsive layouts and live state observation; explicit activity links reuse existing task/timer mutations without creating duplicate domain state or per-second background polling.
+
 
 Current Level B application (2026-09-08): connected hoisted UI events to transactional task/reminder persistence, saved navigation/drafts, and direct notification activity intents; added DataStore-backed focus deadlines and bounded daily totals. Source implemented only. Build, lint, tests and emulator execution were explicitly waived; no new verification claim is made.
 
@@ -102,8 +141,11 @@ After a teaching or implementation checkpoint:
 2. keep the note to one sentence;
 3. do not add a diary entry;
 4. if a concept changes materially, note the new phase and why Level A teaching is needed again.
+# Editorial styling follow-up (2026-11-05)
 
+Level C: shared theme roles propagate appearance without changing timer/storage behavior. OCR A is a bundled font resource; DataStore persists font/readable-body selection while typography maps headings and body separately. Icons retain accessible names and 48dp controls even when visible labels are omitted. Details and pending manual verification: docs/EDITORIAL_THEME_HANDOFF.md.
 
+# Rust migration foundation (2026-11-08)
 
-
+Level A, VERIFIED: a Rust domain engine must own only pure validated state and commands while Kotlin remains the sole Room/DataStore writer and Android platform adapter; a narrow, bounded versioned FFI boundary with explicit pointer validity rules prevents persistence, lifecycle, alarm, and UI concerns from crossing into Rust prematurely.
 

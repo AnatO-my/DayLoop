@@ -2,6 +2,9 @@ package com.dayloop.app.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
@@ -9,8 +12,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
-import androidx.core.graphics.toColorInt
 import androidx.core.view.WindowCompat
 import android.app.Activity
 import android.graphics.drawable.ColorDrawable
@@ -22,6 +23,7 @@ import com.dayloop.app.settings.AppPalette
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.runtime.staticCompositionLocalOf
+import com.dayloop.app.settings.AppFont
 
 val LocalReducedMotion = staticCompositionLocalOf { false }
 
@@ -45,89 +47,77 @@ fun DayLoopTheme(settings: AppSettings, content: @Composable () -> Unit) {
 }
 
 internal val LightColorScheme = lightColorScheme(
-    primaryFixed = CalmPressureLightPrimaryContainer, primaryFixedDim = CalmPressureLightPrimary,
-    onPrimaryFixed = CalmPressureLightOnPrimaryContainer, onPrimaryFixedVariant = CalmPressureLightOnSurfaceVariant,
-    secondaryFixed = CalmPressureLightSecondaryContainer, secondaryFixedDim = CalmPressureDarkSecondary,
-    onSecondaryFixed = CalmPressureLightOnSecondaryContainer, onSecondaryFixedVariant = CalmPressureLightOnSurfaceVariant,
-    tertiaryFixed = CalmPressureLightTertiaryContainer, tertiaryFixedDim = CalmPressureDarkTertiary,
-    onTertiaryFixed = CalmPressureLightOnTertiaryContainer, onTertiaryFixedVariant = CalmPressureDarkOnTertiary,
-    background = CalmPressureLightBackground,
-    onBackground = CalmPressureLightOnBackground,
-    surface = CalmPressureLightSurface,
-    onSurface = CalmPressureLightOnSurface,
-    surfaceVariant = CalmPressureLightSurfaceVariant,
-    onSurfaceVariant = CalmPressureLightOnSurfaceVariant,
-    primary = CalmPressureLightPrimary,
-    onPrimary = CalmPressureLightOnPrimary,
-    primaryContainer = CalmPressureLightPrimaryContainer,
-    onPrimaryContainer = CalmPressureLightOnPrimaryContainer,
-    secondary = CalmPressureLightSecondary,
-    onSecondary = CalmPressureLightOnSecondary,
-    secondaryContainer = CalmPressureLightSecondaryContainer,
-    onSecondaryContainer = CalmPressureLightOnSecondaryContainer,
-    tertiary = CalmPressureLightTertiary,
-    onTertiary = CalmPressureLightOnTertiary,
-    tertiaryContainer = CalmPressureLightTertiaryContainer,
-    onTertiaryContainer = CalmPressureLightOnTertiaryContainer,
-    outline = CalmPressureLightOutline,
-    error = CalmPressureLightError,
-    onError = CalmPressureLightOnError,
-    surfaceTint = CalmPressureLightPrimary,
-    surfaceDim = Color(0xFFDCE1D3),
-    surfaceBright = CalmPressureLightBackground,
+    primary = DayLoopAccent,
+    onPrimary = DayLoopOnAccent,
+    primaryContainer = DayLoopLightAccentSubtle,
+    onPrimaryContainer = DayLoopLightAccentText,
+    secondary = DayLoopCategoryMint,
+    onSecondary = DayLoopOnCategory,
+    secondaryContainer = DayLoopLightRaised,
+    onSecondaryContainer = DayLoopLightSecondaryText,
+    tertiary = DayLoopCategoryLavender,
+    onTertiary = DayLoopOnCategory,
+    background = DayLoopLightBackground,
+    onBackground = DayLoopLightText,
+    surface = DayLoopLightSurface,
+    onSurface = DayLoopLightText,
+    surfaceVariant = DayLoopLightRaised,
+    onSurfaceVariant = DayLoopLightSecondaryText,
+    outline = DayLoopLightMutedText,
+    outlineVariant = DayLoopLightDecorativeBorder,
+    error = DayLoopLightError,
+    onError = Color.White,
+    surfaceContainerLow = DayLoopLightRaised,
     surfaceContainerLowest = Color.White,
-    surfaceContainerLow = CalmPressureLightBackground,
-    surfaceContainer = Color(0xFFEEF2E5),
-    surfaceContainerHigh = Color(0xFFE7EBDD),
-    surfaceContainerHighest = Color(0xFFE1E6D7),
-    outlineVariant = Color(0xFFC5CBB9),
-    inverseSurface = CalmPressureDarkSurface,
-    inverseOnSurface = CalmPressureDarkOnSurface,
-    inversePrimary = CalmPressureDarkPrimary,
+    surfaceContainer = DayLoopLightRaised,
+    surfaceContainerHigh = DayLoopLightRaised,
+    surfaceContainerHighest = Color(0xFFDDE1E4),
+    tertiaryContainer = DayLoopCategoryLavender,
+    onTertiaryContainer = DayLoopOnCategory,
+    inverseSurface = Color(0xFF191A18),
+    inverseOnSurface = Color(0xFFF4F8F9),
+    inversePrimary = DayLoopAccent,
+    surfaceTint = Color.Transparent,
+    surfaceDim = Color(0xFFDDE1E4),
+    surfaceBright = Color.White,
     errorContainer = Color(0xFFFFDAD6),
     onErrorContainer = Color(0xFF410002),
 )
 
 internal val DarkColorScheme = darkColorScheme(
-    primaryFixed = CalmPressureLightPrimaryContainer, primaryFixedDim = CalmPressureLightPrimary,
-    onPrimaryFixed = CalmPressureLightOnPrimaryContainer, onPrimaryFixedVariant = CalmPressureLightOnSurfaceVariant,
-    secondaryFixed = CalmPressureLightSecondaryContainer, secondaryFixedDim = CalmPressureDarkSecondary,
-    onSecondaryFixed = CalmPressureLightOnSecondaryContainer, onSecondaryFixedVariant = CalmPressureLightOnSurfaceVariant,
-    tertiaryFixed = CalmPressureLightTertiaryContainer, tertiaryFixedDim = CalmPressureDarkTertiary,
-    onTertiaryFixed = CalmPressureLightOnTertiaryContainer, onTertiaryFixedVariant = CalmPressureDarkOnTertiary,
-    background = CalmPressureDarkBackground,
-    onBackground = CalmPressureDarkOnBackground,
-    surface = CalmPressureDarkSurface,
-    onSurface = CalmPressureDarkOnSurface,
-    surfaceVariant = CalmPressureDarkSurfaceVariant,
-    onSurfaceVariant = CalmPressureDarkOnSurfaceVariant,
-    primary = CalmPressureDarkPrimary,
-    onPrimary = CalmPressureDarkOnPrimary,
-    primaryContainer = CalmPressureDarkPrimaryContainer,
-    onPrimaryContainer = CalmPressureDarkOnPrimaryContainer,
-    secondary = CalmPressureDarkSecondary,
-    onSecondary = CalmPressureDarkOnSecondary,
-    secondaryContainer = CalmPressureDarkSecondaryContainer,
-    onSecondaryContainer = CalmPressureDarkOnSecondaryContainer,
-    tertiary = CalmPressureDarkTertiary,
-    onTertiary = CalmPressureDarkOnTertiary,
-    tertiaryContainer = CalmPressureDarkTertiaryContainer,
-    onTertiaryContainer = CalmPressureDarkOnTertiaryContainer,
-    outline = CalmPressureDarkOutline,
-    error = CalmPressureDarkError,
-    onError = CalmPressureDarkOnError,
-    surfaceTint = CalmPressureDarkPrimary,
-    surfaceDim = CalmPressureDarkBackground,
-    surfaceBright = Color(0xFF363C33),
-    surfaceContainerLowest = Color(0xFF0C100C),
-    surfaceContainerLow = CalmPressureDarkSurface,
-    surfaceContainer = Color(0xFF20251E),
-    surfaceContainerHigh = Color(0xFF292F26),
-    surfaceContainerHighest = CalmPressureDarkSurfaceVariant,
-    outlineVariant = Color(0xFF454D3E),
-    inverseSurface = CalmPressureLightSurface,
-    inverseOnSurface = CalmPressureLightOnSurface,
-    inversePrimary = Color(0xFF53660F),
+    primary = DayLoopAccent,
+    onPrimary = DayLoopOnAccent,
+    primaryContainer = DayLoopDarkAccentSubtle,
+    onPrimaryContainer = DayLoopDarkAccentText,
+    secondary = DayLoopCategoryMint,
+    onSecondary = DayLoopOnCategory,
+    secondaryContainer = DayLoopDarkRaised,
+    onSecondaryContainer = DayLoopDarkSecondaryText,
+    tertiary = DayLoopCategoryLavender,
+    onTertiary = DayLoopOnCategory,
+    background = DayLoopDarkBackground,
+    onBackground = DayLoopDarkText,
+    surface = DayLoopDarkSurface,
+    onSurface = DayLoopDarkText,
+    surfaceVariant = DayLoopDarkRaised,
+    onSurfaceVariant = DayLoopDarkSecondaryText,
+    outline = DayLoopDarkMutedText,
+    outlineVariant = DayLoopDarkDecorativeBorder,
+    error = DayLoopDarkError,
+    onError = Color.Black,
+    surfaceContainerLow = DayLoopDarkRaised,
+    surfaceContainerLowest = DayLoopDarkBackground,
+    surfaceContainer = DayLoopDarkSurface,
+    surfaceContainerHigh = DayLoopDarkRaised,
+    surfaceContainerHighest = Color(0xFF30363A),
+    tertiaryContainer = DayLoopCategoryLavender,
+    onTertiaryContainer = DayLoopOnCategory,
+    inverseSurface = Color(0xFFF4F8F9),
+    inverseOnSurface = Color(0xFF191A18),
+    inversePrimary = DayLoopLightAccentText,
+    surfaceTint = Color.Transparent,
+    surfaceDim = DayLoopDarkBackground,
+    surfaceBright = DayLoopDarkRaised,
     errorContainer = Color(0xFF93000A),
     onErrorContainer = Color(0xFFFFDAD6),
 )
@@ -144,33 +134,20 @@ internal fun ThemeMode.usesDarkTheme(systemDark: Boolean): Boolean = when (this)
 }
 
 @Composable
+@Suppress("UNUSED_PARAMETER")
 fun DayLoopTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     palette: AppPalette = AppPalette.MATCHA,
     fontWeightScale: Float = 1f,
-    font: com.dayloop.app.settings.AppFont = com.dayloop.app.settings.AppFont.JETBRAINS_MONO,
+    font: AppFont = AppFont.FUNNEL_DISPLAY,
     customColorHex: String? = null,
     content: @Composable () -> Unit,
 ) {
-    val baseTokens = if (darkTheme) CalmPressureDarkTokens else CalmPressureLightTokens
-    val normalized = com.dayloop.app.settings.normalizeHexColor(customColorHex)
-    val seed = normalized?.let { Color(it.toColorInt()) } ?: palette.seedColor()
-    val mapper = androidx.compose.runtime.remember(seed) { MatchaPalette(seed) }
-    val scheme = androidx.compose.runtime.remember(seed, darkTheme) {
-        mapper.scheme(if (darkTheme) DarkColorScheme else LightColorScheme)
-    }
+    val baseTokens = if (darkTheme) DayLoopDarkTokens else DayLoopLightTokens
+    // Palette stays fixed; the saved font preference remains user-selectable.
+    val scheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val tokens = baseTokens
 
-    val tokens = if (seed == Color(0xFFA8CF3D)) baseTokens else DayLoopTokens(
-        spacing = baseTokens.spacing, shapeScale = baseTokens.shapeScale,
-        colors = DayLoopColorTokens(
-            supportingText = scheme.onSurfaceVariant, quietAccent = scheme.secondary,
-            actionSurface = mapper.tone(baseTokens.colors.actionSurface),
-            onActionSurface = readable(mapper.tone(baseTokens.colors.onActionSurface), listOf(mapper.tone(baseTokens.colors.actionSurface))),
-            actionAccent = readable(seed, listOf(mapper.tone(baseTokens.colors.actionSurface))),
-            appField = mapper.tone(baseTokens.colors.appField), progressTrack = mapper.tone(baseTokens.colors.progressTrack),
-            warning = baseTokens.colors.warning,
-        ),
-    )
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
@@ -182,7 +159,7 @@ fun DayLoopTheme(
                     window.statusBarColor = background.toArgb()
                     @Suppress("DEPRECATION")
                     window.navigationBarColor = if (Build.VERSION.SDK_INT < 27) {
-                        CalmPressureDarkBackground.toArgb()
+                        DayLoopDarkBackground.toArgb()
                     } else background.toArgb()
                 }
                 WindowCompat.getInsetsController(window, view).apply {
@@ -197,6 +174,10 @@ fun DayLoopTheme(
         MaterialTheme(
             colorScheme = scheme,
             typography = scaledTypography(fontWeightScale, font),
+            shapes = Shapes(
+                extraSmall = RoundedCornerShape(4.dp), small = RoundedCornerShape(4.dp),
+                medium = RoundedCornerShape(4.dp), large = RoundedCornerShape(4.dp),
+                extraLarge = RoundedCornerShape(8.dp)),
             content = content,
         )
     }

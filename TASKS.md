@@ -1,6 +1,205 @@
 # DayLoop Task Backlog
 
+## Theme consistency pass (2026-11-10)
+- [x] Define missing text styles; shared button shape; theme corners; task-editor colour roles; outfit dialog restyle (source).
+- [ ] Compile and review on device in both themes: Task editor (subtask rows, save bar), Plans editors, date picker, Focus label using displaySmall, wardrobe buttons.
+- [ ] Decide: keep or remove the unused palette/custom-colour settings.
+- [ ] Decide one pattern for edit surfaces (sheet versus full screen versus alert dialog).
+- [ ] Move wardrobe UI text to string resources; enum labels and recommender sentences live in pure Kotlin and need a separate approach.
+
+## Wardrobe design ideas A-D and naming guide (2026-11-10)
+- [x] Quick-confirm sheet, several-items overview with draw-around, Today outfit idea with feedback, sync conflict screen (source); naming guide.
+- [ ] Compile second pass; generate and review schema 19; run MigrationTest.migrate18To19 and the 75 `core.outfit` unit tests in Gradle.
+- [ ] Device check: draw gesture versus page scroll, outline positions on rotated photos, Today idea flow, TalkBack on the tick list.
+- [ ] Modernise TodayLayoutRegressionTest with a case for the idea body once it has been seen on a device.
+- [ ] Sync decision (ADR 0006) before wiring SyncConflictDialog to anything.
+
+## Wardrobe recognition and styling (2026-11-10)
+- [x] Recognition schema, shape model, colour analysis, fusion with "not sure" handling; review-and-correct flow; details table and migration 17->18 (source).
+- [x] Explainable outfit recommender, Style this and Outfit ideas screens, camera capture (source).
+- [x] Sync core with three-way merge, idempotent retries and conflict parking (logic only; no transport).
+- [ ] Compile, run `com.dayloop.app.core.outfit.*` unit tests in Gradle, generate and review schema 18, run MigrationTest.migrate17To18 and WardrobeAttributesTest on a device.
+- [ ] Manual checklist in docs/WARDROBE_RECOGNITION_HANDOFF.md on disposable data, including upgrade from real v17 data.
+- [ ] Decide on network sync (ADR 0006); include item details in wardrobe export/import; move Today's suggestion card to OutfitRecommender.
+- [ ] Build a consented real-photo evaluation set and measure recognition before any model change.
+
+## Editorial theme (2026-11-05)
+- [x] Repair tooltip navigation sizing; verify P&Gs/Focus access on the physical device; implement wardrobe photo grid and supplied OCR A BT replacement.
+- [ ] Run NavigationLayoutRegressionTest and verify gallery photo creation/crop, filters, archive/restore and deletion on disposable data.
+- [x] Bundle Funnel Display under OFL; persist typography/readable-body preference; apply orange/neutral styling and compact navigation/settings. Legacy OCR A/SF Pro/Warping preference values fall back safely to Funnel Display for the public beta.
+- [ ] Build and run EditorialTypographyPreferencesTest and CalmPressureTokensTest; review small screens, large text, both themes, side-panel keyboard and tooltips manually.
+- [ ] Future custom clothes model: staged photo/description storage followed by evaluated extraction/classification with user confirmation; no inactive model controls in current settings.
+
+## Guide and Today Layout Repair (2026-09-22)
+- [x] Prevent nested guide hosts from duplicating overlays or shadowing target anchors.
+- [x] Pin Today header below status bar and reduce greeting size; remove duplicate metric anchor.
+- [x] Hide saved outfit prompt, keep Wardrobe shortcut and calendar review/edit; compact empty-state actions.
+- [ ] Run GuideHostTest and TodayLayoutRegressionTest; manually review both themes, large text, top scrolling, guide replay, calendar edit/clear and date rollover.
+- [ ] Older TodayScreenTest still asserts superseded checkbox/Score/Streak UI; modernize separately instead of treating those failures as this slice's regression.
+
+## Wardrobe Export Security (2026-09-21)
+- [x] Remove shared hard-coded password and backup logging; add password-protected system-file export/import.
+- [x] Clearly scope transfer to wardrobe text details and item-linked outfit dates; reject legacy CBC files.
+- [x] Authenticate and validate before atomic, non-destructive import; preserve existing records and photo links.
+- [ ] Run BackupCipherTest and WardrobeBackupTest; manually verify picker cancellation, wrong password, corrupt/oversized files, repeated import and process interruption.
+- [ ] Design complete app backup with tasks/projects/goals/settings/focus data, real image files and metadata, consistent snapshots and restore-time alarm/widget reconciliation. Current transfer does not cover these.
+- [ ] Audit/remove the unused destructive OutfitRepository.restoreAll API separately; it is no longer called by BackupManager.
+
+## Small UI and Documentation Cleanup (2026-09-21)
+- [x] Reconcile current guide docs with existing introduction replay.
+- [x] Enlarge subtask completion hit region without enlarging its visual mark; add checkbox semantics.
+- [x] Clarify task-editor action labels and project progress singular/plural resources.
+- [x] Confirm before clearing Recent Events.
+- [ ] Run SubtaskControlTest and IntroductionReplayTest; manually inspect count labels and dialog dismissal.
+
+## Small Cleanup Pass (2026-09-21)
+- [x] Reconcile duplicate implementation entries below without claiming tests passed.
+- [x] Confirm stale scheduling messages are absent; update the guide's outdated warning.
+- [x] Restore 48dp subtask removal control, clearer label/contrast and disabled-during-save behavior.
+- [x] Add More-header introduction replay icon; restart only that guide after persistence succeeds.
+- [ ] Run IntroductionReplayTest and manually check replay, busy state and subtask removal.
+- [x] Replace hard-coded password/log-only export with authenticated wardrobe-details transfer; photo files are explicitly excluded, and complete backup remains deferred above.
+
+## AI Wardrobe Cleanup (2026-09-21)
+- [x] Add ML Kit Subject Segmentation dependency and manifest metadata.
+- [x] Create `ClothingImageProcessor.kt` for background removal logic.
+- [x] Implement `importBitmap` in `WardrobeMediaRepository` and Room implementation.
+- [x] Add "Magic Clean" AI button and preview to `SimpleCropScreen.kt`.
+- [x] Update `WardrobeScreen.kt` to handle cleaned bitmap imports.
+- [ ] Manually verify background removal accuracy on real clothing photos.
+
+## Guide Delivery Hardening (2026-09-21)
+- [x] Fix Next progression, live target geometry/disposal, existing-user selection and interruption gating.
+- [x] Add definition/selection/placement and Compose host regressions (not run).
+- [ ] Run GuideDeliveryTest and GuideHostTest and manually inspect this latest revision.
+- [x] Add introduction replay access (manual verification pending).
+- [ ] Add replay selection for other guides, event-verified editor/save teaching and deferred offscreen-step delivery.
+
+## Contextual Guides (2026-09-21)
+- [x] Audit primary feature entry points and hidden gestures; create guide content and implementation checklist.
+- [x] Implement guide progress, skip and replay semantics separately from Welcome completion; tests authored.
+- [x] Implement anchored `GuideHost` UI engine and `guideTarget` modifiers.
+- [x] Implement first-launch/Today guide presentation with auto-start and repository wiring.
+- [ ] Run GuideProgressTest and GuideProgressPreferencesTest; compile before runtime integration acceptance.
+- [ ] Extend guides to task editor and scheduling after reconciling stale copy.
+- [ ] Audit secondary settings, backup photo coverage/restore entry, widgets and assistant guidance.
+- [ ] Manually verify first install, existing install, accessibility, interruptions and replay.
+
+## Wardrobe Visuals - Stage 2 (2026-09-20)
+- [x] Extend `OutfitRecord` with photo support.
+- [x] Implement `outfit_media` persistence and v16 migration.
+- [x] Add photo management to `OutfitDetailDialog`.
+- [x] Display outfit cover photos on Today screen.
+- [x] Add photo indicators to Idle Calendar.
+- [ ] Manually verify multiple photos per record and cover selection logic.
+
+## Wardrobe Visuals - Stage 1 (2026-09-20)
+- [x] Create `WardrobeMedia` domain and Room persistence (v15).
+- [x] Implement `WardrobeMediaRepository` for file management.
+- [x] Integrate Coil for image loading.
+- [x] Add gallery picker and thumbnails to `WardrobeScreen`.
+- [ ] Manually verify photo import from different sources and orientation correction.
+- [ ] Implement manual cropping logic in `SimpleCropScreen`.
+
+## Migration Coverage & Backup Hardening (2026-09-20)
+- [x] Extend `MigrationTest` to cover v11 -> v13 jumps (wardrobe tables and archiving).
+- [x] Update `BackupManager` to include wardrobe and outfit data in versioned backups.
+- [x] Implement atomic `restoreAll` in `OutfitRepository`.
+- [ ] Run instrumented `MigrationTest` and manually verify full backup/restore round-trip.
+
+## Description Persistence (2026-09-20)
+- [x] Persist task descriptions through Room entity and both mappings; register migration 13 to 14.
+- [x] Author save/edit/clear and migration/reopen regressions.
+- [ ] Build to export schema 14 and run repository/migration tests; manually verify description persistence.
+
+## Icon Actions (2026-09-20)
+- [x] Add native temporary tooltips to shared icon buttons.
+- [x] Replace routine wardrobe, outfit-editor and note creation labels with vector icons.
+- [x] Keep explicit wardrobe deletion confirmation and meaningful accessibility labels.
+- [ ] Manually verify tap versus hold, disabled states, screen-reader names and action outcomes.
+- [ ] Audit remaining text actions and undersized caller overrides without replacing domain choices or existing long-press gestures.
+
+## Wardrobe Hardening & Repository Refactor (2026-09-20)
+- [x] Introduce `OutfitRepository` interface and Room implementation.
+- [x] Add archiving support to clothing items with v12->13 migration.
+- [x] Implement suggestion previews on Today screen with "Wear this" confirmation.
+- [x] Refactor wardrobe management and outfit recording to use the new repository.
+- [ ] Manually verify suggestion drafts do not persist until user confirmation.
+- [ ] Manually verify archived items are hidden from suggestions but visible in history.
+
+## Outfit Sorter & Recorder (2026-09-20)
+- [x] Implement multi-category wardrobe persistence and transactional daily outfit recording with many-to-many join support.
+- [x] Build `OutfitSuggester` engine for composed ensemble picks across all available categories.
+- [x] Create immersive `WardrobeScreen` for clothing management and `OutfitDetailDialog` for historical editing.
+- [x] Integrate `TodayOutfitCard` on the home screen and enable interactive date tapping in `IdleScreen` calendar.
+- [ ] Manually verify suggestion randomness, many-to-many data integrity, interactive calendar navigation, and large-wardrobe scrolling.
+- [ ] Run `OutfitSuggesterTest` and full build verification when authorized.
+
+
+## Missed-work review (2026-09-20)
+- [x] Finish missed classification, non-duplicated Today/widget counts, review routes, Focus-safe task transitions and reminder cancellation wiring.
+- [x] Add recoverable Someday/Dismissed lists under P&Gs Saved work, with bring-to-today and editor rescheduling.
+- [ ] Manually review all four actions, navigation/back, busy state, persisted recovery, large text and light/dark mode.
+- [ ] Run TodayMissedTaskClassifierTest, TaskReviewTransitionTest, updated snapshot/UI-state tests, MissedTaskReviewScreenTest and AlarmResolutionPersistenceTest when authorized. Tests authored but not run.
+- [ ] Follow-up: define bounded historical recurrence backfill; current generator does not reconstruct unmaterialized past instances. Verify series/instance alarm ownership separately.
+
+
+## Completion timestamps (2026-09-20)
+- [x] Implement explicit completion time, nullable v9->10 migration, dated Today/widget/calendar projection and reopening reset.
+- [ ] Generate and commit Room schema 10 through an authorized build; run TaskCompletionTimeTest, TodayCompletedClassifierTest, GeneratedTaskConnectionTest and CompletionMigrationTest.
+- [ ] Manually verify late completion, next-day counts, duplicate completion, edit preservation and reopen/recomplete. Legacy unknown dates intentionally excluded from dated totals.
+- [ ] Deferred: immutable completion event history, backup timestamp preservation and calendar widget. Recurrence slice exists separately; latest timestamp is not a full event log.
+
+## HyperOS timer presentation (2026-09-20)
+- [ ] Manually accept Timer/Coffee/Armchair island icons, equal-width countdown, expanded Pause/Resume/End and notification-to-Focus navigation on Global HyperOS 3.
+- [ ] Check paused persistence, repeated/stale taps, active vs viewed mode, automatic transitions and End preserving earned history/sets.
+- [ ] Run FocusNotificationPresentationTest, HyperOsFocusNotificationTest and notification-command cases in FocusDurationTest when authorized. Tests authored, not executed; source/resource checks passed.
+- [ ] Follow-up: validate Xiaomi timerInfo timestamp semantics before replacing per-second digit updates; do not assume native Clock privileges or exact layout parity.
+
+## Widget refresh (2026-09-19)
+- [ ] Manually accept picker names/previews for Today, Goals and Focus in HyperOS; source and six static resources implemented, resource checks passed, generated previews not runtime-tested. See docs/WIDGET_PICKER_PREVIEWS_2026-09-19.md.
+- [ ] Review responsive Today compact/agenda, privacy, task links/completion and Add in launcher.
+- [ ] Review new Focus widget commands against existing timer, including cold/warm app and paused state.
+- [ ] Verify Goal proportional progress, theme changes and all minimum widget footprints.
+- [ ] Run widget mapper tests and compile when authorized; no build/device verification this slice.
+- [ ] Follow-up: configurable P&G Spotlight, Calendar after completion history, exact time-boundary refresh and optional native countdown.
+
+
+## Header and personalization review
+- [ ] Manually check Today last-row scrolling behind dock in both themes, large text and gesture/three-button navigation.
+- [ ] Check identical page titles, mascot tap/hold More access, Back dismissal and no bottom pull gesture.
+- [ ] Check Warping/JetBrains choice, display-name save/clear/restart and long names; tests added but not run.
+- [ ] Include displayName/font in a future complete backup implementation; existing BackupManager is partial.
+
+
+## Task and scheduling audit repairs
+- [ ] Review connection repair: all schedule inputs and validation, project/priority/reminder edits, generated Today tasks, Overdue, swipe/hold/subtask actions; run TaskScheduleRepairTest when authorized.
+- Completion timestamps: implemented; remaining tests and backup-history coverage are tracked in the Completion timestamps section.
+- Recurring task instances: implemented; verify completion/skip/series and alarm ownership, with historical backfill tracked under Missed-work review.
+- Missed all-day/time-block handling: implemented; review and Saved work verification are tracked above. A separate Inbox remains undecided.
+- [ ] Replace schedule draft booleans with one selection state and decide independent deadlines/repeat timing.
+- [ ] Choose goal COUNT weighting (tasks or milestones) rather than implicitly adding both.
+
+
+## Focus sound selector
+- [ ] Manually review shared sound dialog in normal/fullscreen timers: Off and all five sounds, large text, narrow display, light/dark, dismissal without changes, save-busy protection and live playback.
+- [ ] Run FocusSoundPickerTest when authorized; source-only implementation, no build/device operations performed.
+
+
+## Today notched metrics
+- [ ] Manually accept curved cutouts, arrow/card shared action, light/dark ripples and large-text layouts.
+- [ ] Verify Completed/Remaining sheets with empty/populated/live data and task-editor navigation; run TodayMetricTest when authorized.
+
+
 Only check a task after its acceptance criteria/tests are satisfied.
+
+## Reference UI adjustment (2026-09-17)
+- [ ] Manually review Today completed/remaining counts, violet/lime metrics, enlarged-text stacking and inverted task surfaces.
+- [ ] Review Focus daily minutes, full-width P&Gs cards, schedule/reminder grids and project picker.
+- [ ] Verify fixed reference colors and JetBrains Mono despite previously saved custom HEX/font settings; light/dark selection still works.
+- [ ] Verify plus above the dock on Today/P&Gs only, stable Today/P&Gs/Focus positions, repeated navigation and disabled states.
+- [ ] Run ReferenceUiTest when instrumentation is authorized. Tests authored, no build/device checks performed.
+This request supersedes earlier palette/HEX/font-selector customization work; stored preference fields remain for backup compatibility.
 
 ## Idle Calendar slice and deferred UI requests (2026-09-08)
 - [x] Manually accept Idle cover gestures, preserved underlying screen, portrait/landscape sizing, past-day theme colors and removal of both buttons. Implemented in source; fixed month clipping.
@@ -149,6 +348,8 @@ User exception (2026-09-07): skip verification runs for the remaining Phase 8 wo
 - [x] **P10A-10 Goal progress: choose/implement initial policies**. Implemented; verification waived. Added `GoalProgressCalculator` and Room v8 schema.
 
 ## Phase 11+ placeholders
+
+- [x] **Rust foundation**. Added `rust/` domain/engine/FFI workspace with validated task transitions, a bounded complete/reopen/skip ABI (nine passing Rust tests), arm64 instrumentation-library build wiring, and a test-only JNI fixture adapter. NDK output is AArch64 with expected exports and no C++ runtime dependency; the fresh matching debug/test APKs and `RustFfiLoadTest` passed on a physical arm64-v8a device (3 tests), including Kotlin/Rust differential checks for complete, reopen, and skip. A feature-gated transaction-level observer seam now performs optional shadow checks immediately before the canonical Room write; its default is a no-op and its bounded process-local diagnostics retain only command/outcome. The focused physical-device Room test passed for complete, reopen, and skip. Next: explicitly approve or reject a developer-only Rust bridge enablement; production routing remains prohibited.
 
 - [ ] **P11-UI Appearance confirmation**. Dark-theme implementation and screen audit completed 2026-09-08; 298 JVM tests and both APK builds passed. User will perform visual/interaction confirmation. Final lint and emulator execution remain pending after a test-runner dependency download timeout. See `docs/SCREEN_CONNECTION_AUDIT.md`.
 - [x] **P11-UI Today task flow connections (source only)**. Add/edit/save/project selection, completion/reopen/delete, saved draft identity and transactional reminder changes implemented 2026-09-08. Verification explicitly waived; user will report issues manually.

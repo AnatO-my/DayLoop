@@ -1,0 +1,922 @@
+{
+ "model_id": "dayloop-garment-shape",
+ "model_version": "1.0.0",
+ "dataset": "Fashion-MNIST (Zalando SE, MIT licence)",
+ "split": "official 10,000-image test set; 55,000 train / 5,000 validation (temperature only)",
+ "caveat": "In-distribution studio product images. Not a measure of accuracy on phone photos.",
+ "seed": 20261110,
+ "epochs": 24,
+ "temperature": 0.7977,
+ "parameters": 105866,
+ "torch": "2.15.0+cu132",
+ "train_seconds_cpu": 396.0,
+ "conditions": {
+  "device_input_lift_0.6": {
+   "n": 10000,
+   "top1": 0.8955,
+   "top2": 0.9734,
+   "top3": 0.9926,
+   "macro_f1": 0.8949,
+   "category_accuracy": 0.9578,
+   "ece_uncalibrated": 0.0246,
+   "ece_calibrated": 0.012,
+   "per_class": {
+    "T_SHIRT_TOP": {
+     "precision": 0.8628,
+     "recall": 0.824,
+     "f1": 0.843,
+     "support": 1000
+    },
+    "TROUSER": {
+     "precision": 0.985,
+     "recall": 0.986,
+     "f1": 0.9855,
+     "support": 1000
+    },
+    "PULLOVER": {
+     "precision": 0.7981,
+     "recall": 0.858,
+     "f1": 0.827,
+     "support": 1000
+    },
+    "DRESS": {
+     "precision": 0.8712,
+     "recall": 0.927,
+     "f1": 0.8983,
+     "support": 1000
+    },
+    "COAT": {
+     "precision": 0.8351,
+     "recall": 0.78,
+     "f1": 0.8066,
+     "support": 1000
+    },
+    "SANDAL": {
+     "precision": 0.9657,
+     "recall": 0.984,
+     "f1": 0.9747,
+     "support": 1000
+    },
+    "SHIRT": {
+     "precision": 0.7242,
+     "recall": 0.696,
+     "f1": 0.7098,
+     "support": 1000
+    },
+    "SNEAKER": {
+     "precision": 0.947,
+     "recall": 0.964,
+     "f1": 0.9554,
+     "support": 1000
+    },
+    "BAG": {
+     "precision": 0.9801,
+     "recall": 0.987,
+     "f1": 0.9836,
+     "support": 1000
+    },
+    "ANKLE_BOOT": {
+     "precision": 0.9824,
+     "recall": 0.949,
+     "f1": 0.9654,
+     "support": 1000
+    }
+   },
+   "confusion_matrix_rows_true_cols_pred": [
+    [
+     824,
+     0,
+     20,
+     36,
+     5,
+     1,
+     111,
+     0,
+     3,
+     0
+    ],
+    [
+     0,
+     986,
+     0,
+     11,
+     1,
+     0,
+     0,
+     0,
+     2,
+     0
+    ],
+    [
+     10,
+     0,
+     858,
+     10,
+     56,
+     0,
+     65,
+     0,
+     1,
+     0
+    ],
+    [
+     11,
+     6,
+     9,
+     927,
+     18,
+     1,
+     26,
+     0,
+     2,
+     0
+    ],
+    [
+     1,
+     1,
+     110,
+     44,
+     780,
+     2,
+     61,
+     0,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     984,
+     0,
+     15,
+     0,
+     1
+    ],
+    [
+     107,
+     6,
+     76,
+     34,
+     74,
+     0,
+     696,
+     0,
+     7,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     20,
+     0,
+     964,
+     0,
+     16
+    ],
+    [
+     2,
+     2,
+     2,
+     1,
+     0,
+     4,
+     2,
+     0,
+     987,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     1,
+     0,
+     7,
+     0,
+     39,
+     4,
+     949
+    ]
+   ],
+   "selective_prediction": {
+    "0.5": {
+     "type_coverage": 0.9716,
+     "type_accuracy_when_shown": 0.9095,
+     "category_coverage": 0.996,
+     "category_accuracy_when_shown": 0.9596
+    },
+    "0.6": {
+     "type_coverage": 0.925,
+     "type_accuracy_when_shown": 0.9286,
+     "category_coverage": 0.9773,
+     "category_accuracy_when_shown": 0.9669
+    },
+    "0.7": {
+     "type_coverage": 0.8736,
+     "type_accuracy_when_shown": 0.9485,
+     "category_coverage": 0.9545,
+     "category_accuracy_when_shown": 0.9751
+    },
+    "0.8": {
+     "type_coverage": 0.818,
+     "type_accuracy_when_shown": 0.9634,
+     "category_coverage": 0.9261,
+     "category_accuracy_when_shown": 0.9827
+    },
+    "0.9": {
+     "type_coverage": 0.7303,
+     "type_accuracy_when_shown": 0.9815,
+     "category_coverage": 0.8765,
+     "category_accuracy_when_shown": 0.9918
+    }
+   }
+  },
+  "raw_fashion_mnist": {
+   "n": 10000,
+   "top1": 0.8972,
+   "top2": 0.9735,
+   "top3": 0.9917,
+   "macro_f1": 0.8963,
+   "category_accuracy": 0.9572,
+   "ece_uncalibrated": 0.0307,
+   "ece_calibrated": 0.011,
+   "per_class": {
+    "T_SHIRT_TOP": {
+     "precision": 0.8592,
+     "recall": 0.83,
+     "f1": 0.8444,
+     "support": 1000
+    },
+    "TROUSER": {
+     "precision": 0.9743,
+     "recall": 0.985,
+     "f1": 0.9796,
+     "support": 1000
+    },
+    "PULLOVER": {
+     "precision": 0.8045,
+     "recall": 0.885,
+     "f1": 0.8429,
+     "support": 1000
+    },
+    "DRESS": {
+     "precision": 0.866,
+     "recall": 0.924,
+     "f1": 0.894,
+     "support": 1000
+    },
+    "COAT": {
+     "precision": 0.8618,
+     "recall": 0.767,
+     "f1": 0.8116,
+     "support": 1000
+    },
+    "SANDAL": {
+     "precision": 0.9711,
+     "recall": 0.974,
+     "f1": 0.9725,
+     "support": 1000
+    },
+    "SHIRT": {
+     "precision": 0.7381,
+     "recall": 0.699,
+     "f1": 0.718,
+     "support": 1000
+    },
+    "SNEAKER": {
+     "precision": 0.9365,
+     "recall": 0.974,
+     "f1": 0.9549,
+     "support": 1000
+    },
+    "BAG": {
+     "precision": 0.9762,
+     "recall": 0.986,
+     "f1": 0.9811,
+     "support": 1000
+    },
+    "ANKLE_BOOT": {
+     "precision": 0.9814,
+     "recall": 0.948,
+     "f1": 0.9644,
+     "support": 1000
+    }
+   },
+   "confusion_matrix_rows_true_cols_pred": [
+    [
+     830,
+     1,
+     15,
+     34,
+     2,
+     2,
+     107,
+     0,
+     7,
+     2
+    ],
+    [
+     0,
+     985,
+     2,
+     11,
+     0,
+     0,
+     0,
+     0,
+     2,
+     0
+    ],
+    [
+     14,
+     1,
+     885,
+     11,
+     41,
+     1,
+     47,
+     0,
+     0,
+     0
+    ],
+    [
+     9,
+     19,
+     10,
+     924,
+     13,
+     0,
+     23,
+     0,
+     2,
+     0
+    ],
+    [
+     1,
+     1,
+     106,
+     54,
+     767,
+     0,
+     69,
+     0,
+     2,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     974,
+     0,
+     20,
+     1,
+     5
+    ],
+    [
+     110,
+     2,
+     80,
+     33,
+     67,
+     0,
+     699,
+     0,
+     9,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     15,
+     0,
+     974,
+     0,
+     11
+    ],
+    [
+     2,
+     2,
+     2,
+     0,
+     0,
+     5,
+     2,
+     1,
+     986,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     6,
+     0,
+     45,
+     1,
+     948
+    ]
+   ],
+   "selective_prediction": {
+    "0.5": {
+     "type_coverage": 0.9688,
+     "type_accuracy_when_shown": 0.9115,
+     "category_coverage": 0.9956,
+     "category_accuracy_when_shown": 0.9594
+    },
+    "0.6": {
+     "type_coverage": 0.9255,
+     "type_accuracy_when_shown": 0.9313,
+     "category_coverage": 0.9766,
+     "category_accuracy_when_shown": 0.9682
+    },
+    "0.7": {
+     "type_coverage": 0.8736,
+     "type_accuracy_when_shown": 0.9507,
+     "category_coverage": 0.9541,
+     "category_accuracy_when_shown": 0.9768
+    },
+    "0.8": {
+     "type_coverage": 0.816,
+     "type_accuracy_when_shown": 0.9638,
+     "category_coverage": 0.9267,
+     "category_accuracy_when_shown": 0.984
+    },
+    "0.9": {
+     "type_coverage": 0.7352,
+     "type_accuracy_when_shown": 0.9793,
+     "category_coverage": 0.8797,
+     "category_accuracy_when_shown": 0.9916
+    }
+   }
+  },
+  "pure_silhouette": {
+   "n": 10000,
+   "top1": 0.8647,
+   "top2": 0.9636,
+   "top3": 0.9893,
+   "macro_f1": 0.8642,
+   "category_accuracy": 0.9407,
+   "ece_uncalibrated": 0.0293,
+   "ece_calibrated": 0.0148,
+   "per_class": {
+    "T_SHIRT_TOP": {
+     "precision": 0.8313,
+     "recall": 0.798,
+     "f1": 0.8143,
+     "support": 1000
+    },
+    "TROUSER": {
+     "precision": 0.9809,
+     "recall": 0.974,
+     "f1": 0.9774,
+     "support": 1000
+    },
+    "PULLOVER": {
+     "precision": 0.7294,
+     "recall": 0.795,
+     "f1": 0.7608,
+     "support": 1000
+    },
+    "DRESS": {
+     "precision": 0.8512,
+     "recall": 0.887,
+     "f1": 0.8688,
+     "support": 1000
+    },
+    "COAT": {
+     "precision": 0.7545,
+     "recall": 0.707,
+     "f1": 0.73,
+     "support": 1000
+    },
+    "SANDAL": {
+     "precision": 0.9547,
+     "recall": 0.97,
+     "f1": 0.9623,
+     "support": 1000
+    },
+    "SHIRT": {
+     "precision": 0.6701,
+     "recall": 0.646,
+     "f1": 0.6578,
+     "support": 1000
+    },
+    "SNEAKER": {
+     "precision": 0.9386,
+     "recall": 0.947,
+     "f1": 0.9428,
+     "support": 1000
+    },
+    "BAG": {
+     "precision": 0.9664,
+     "recall": 0.979,
+     "f1": 0.9727,
+     "support": 1000
+    },
+    "ANKLE_BOOT": {
+     "precision": 0.9672,
+     "recall": 0.944,
+     "f1": 0.9555,
+     "support": 1000
+    }
+   },
+   "confusion_matrix_rows_true_cols_pred": [
+    [
+     798,
+     3,
+     20,
+     40,
+     4,
+     0,
+     128,
+     0,
+     7,
+     0
+    ],
+    [
+     1,
+     974,
+     0,
+     20,
+     2,
+     1,
+     0,
+     0,
+     2,
+     0
+    ],
+    [
+     7,
+     0,
+     795,
+     9,
+     102,
+     0,
+     86,
+     0,
+     1,
+     0
+    ],
+    [
+     23,
+     7,
+     13,
+     887,
+     36,
+     1,
+     29,
+     0,
+     4,
+     0
+    ],
+    [
+     1,
+     2,
+     164,
+     49,
+     707,
+     2,
+     73,
+     0,
+     2,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     970,
+     0,
+     24,
+     1,
+     5
+    ],
+    [
+     128,
+     5,
+     95,
+     35,
+     78,
+     0,
+     646,
+     0,
+     13,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     1,
+     25,
+     0,
+     947,
+     0,
+     27
+    ],
+    [
+     2,
+     2,
+     3,
+     1,
+     7,
+     4,
+     2,
+     0,
+     979,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     1,
+     0,
+     13,
+     0,
+     38,
+     4,
+     944
+    ]
+   ],
+   "selective_prediction": {
+    "0.5": {
+     "type_coverage": 0.962,
+     "type_accuracy_when_shown": 0.8831,
+     "category_coverage": 0.9946,
+     "category_accuracy_when_shown": 0.9432
+    },
+    "0.6": {
+     "type_coverage": 0.8961,
+     "type_accuracy_when_shown": 0.9108,
+     "category_coverage": 0.9658,
+     "category_accuracy_when_shown": 0.9557
+    },
+    "0.7": {
+     "type_coverage": 0.8291,
+     "type_accuracy_when_shown": 0.9355,
+     "category_coverage": 0.9335,
+     "category_accuracy_when_shown": 0.9673
+    },
+    "0.8": {
+     "type_coverage": 0.7531,
+     "type_accuracy_when_shown": 0.9583,
+     "category_coverage": 0.89,
+     "category_accuracy_when_shown": 0.9791
+    },
+    "0.9": {
+     "type_coverage": 0.6461,
+     "type_accuracy_when_shown": 0.9791,
+     "category_coverage": 0.8265,
+     "category_accuracy_when_shown": 0.9885
+    }
+   }
+  },
+  "device_input_inverted_texture": {
+   "n": 10000,
+   "top1": 0.8798,
+   "top2": 0.966,
+   "top3": 0.9911,
+   "macro_f1": 0.8794,
+   "category_accuracy": 0.9508,
+   "ece_uncalibrated": 0.0376,
+   "ece_calibrated": 0.0077,
+   "per_class": {
+    "T_SHIRT_TOP": {
+     "precision": 0.8642,
+     "recall": 0.808,
+     "f1": 0.8351,
+     "support": 1000
+    },
+    "TROUSER": {
+     "precision": 0.9869,
+     "recall": 0.978,
+     "f1": 0.9824,
+     "support": 1000
+    },
+    "PULLOVER": {
+     "precision": 0.7816,
+     "recall": 0.809,
+     "f1": 0.7951,
+     "support": 1000
+    },
+    "DRESS": {
+     "precision": 0.8501,
+     "recall": 0.919,
+     "f1": 0.8832,
+     "support": 1000
+    },
+    "COAT": {
+     "precision": 0.7806,
+     "recall": 0.779,
+     "f1": 0.7798,
+     "support": 1000
+    },
+    "SANDAL": {
+     "precision": 0.9397,
+     "recall": 0.982,
+     "f1": 0.9604,
+     "support": 1000
+    },
+    "SHIRT": {
+     "precision": 0.6995,
+     "recall": 0.668,
+     "f1": 0.6834,
+     "support": 1000
+    },
+    "SNEAKER": {
+     "precision": 0.9431,
+     "recall": 0.944,
+     "f1": 0.9435,
+     "support": 1000
+    },
+    "BAG": {
+     "precision": 0.975,
+     "recall": 0.976,
+     "f1": 0.9755,
+     "support": 1000
+    },
+    "ANKLE_BOOT": {
+     "precision": 0.976,
+     "recall": 0.935,
+     "f1": 0.9551,
+     "support": 1000
+    }
+   },
+   "confusion_matrix_rows_true_cols_pred": [
+    [
+     808,
+     1,
+     21,
+     49,
+     5,
+     1,
+     110,
+     0,
+     5,
+     0
+    ],
+    [
+     0,
+     978,
+     0,
+     17,
+     1,
+     1,
+     1,
+     0,
+     2,
+     0
+    ],
+    [
+     5,
+     1,
+     809,
+     9,
+     92,
+     0,
+     84,
+     0,
+     0,
+     0
+    ],
+    [
+     15,
+     7,
+     8,
+     919,
+     20,
+     1,
+     29,
+     0,
+     1,
+     0
+    ],
+    [
+     0,
+     1,
+     114,
+     46,
+     779,
+     2,
+     58,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     982,
+     0,
+     17,
+     0,
+     1
+    ],
+    [
+     106,
+     1,
+     78,
+     39,
+     95,
+     0,
+     668,
+     0,
+     13,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     34,
+     0,
+     944,
+     0,
+     22
+    ],
+    [
+     1,
+     2,
+     5,
+     1,
+     6,
+     4,
+     5,
+     0,
+     976,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     1,
+     0,
+     20,
+     0,
+     40,
+     4,
+     935
+    ]
+   ],
+   "selective_prediction": {
+    "0.5": {
+     "type_coverage": 0.9639,
+     "type_accuracy_when_shown": 0.8991,
+     "category_coverage": 0.9938,
+     "category_accuracy_when_shown": 0.9533
+    },
+    "0.6": {
+     "type_coverage": 0.9068,
+     "type_accuracy_when_shown": 0.9205,
+     "category_coverage": 0.97,
+     "category_accuracy_when_shown": 0.9635
+    },
+    "0.7": {
+     "type_coverage": 0.8413,
+     "type_accuracy_when_shown": 0.9402,
+     "category_coverage": 0.9385,
+     "category_accuracy_when_shown": 0.9734
+    },
+    "0.8": {
+     "type_coverage": 0.7674,
+     "type_accuracy_when_shown": 0.9603,
+     "category_coverage": 0.903,
+     "category_accuracy_when_shown": 0.9824
+    },
+    "0.9": {
+     "type_coverage": 0.669,
+     "type_accuracy_when_shown": 0.9812,
+     "category_coverage": 0.8436,
+     "category_accuracy_when_shown": 0.9922
+    }
+   }
+  }
+ },
+ "weights_sha256": "e182af2f6807a498ab95311c1a29acc5e21226145217400a14b25f0b86b5410a",
+ "weights_bytes": 423576,
+ "parity_fixture_accuracy": 0.92
+}

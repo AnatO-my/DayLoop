@@ -6,6 +6,9 @@ import com.dayloop.app.core.database.DayLoopDatabase
 import com.dayloop.app.core.model.Task
 import com.dayloop.app.core.model.TaskId
 import com.dayloop.app.core.model.TaskStatus
+import com.dayloop.app.core.rust.NoOpRustTaskTransitionShadowObserver
+import com.dayloop.app.core.rust.RustTaskTransitionProtocol
+import com.dayloop.app.core.rust.RustTaskTransitionShadowObserver
 import java.time.Duration
 import java.time.Instant
 
@@ -16,6 +19,15 @@ data class AlarmActionCommit(
 )
 
 class RoomAlarmStateStore(private val database: DayLoopDatabase) {
+    private var rustShadow: RustTaskTransitionShadowObserver = NoOpRustTaskTransitionShadowObserver
+
+    /** Internal-only developer/test seam; production construction always starts disabled. */
+    internal constructor(
+        database: DayLoopDatabase,
+        rustShadow: RustTaskTransitionShadowObserver,
+    ) : this(database) {
+        this.rustShadow = rustShadow
+    }
     suspend fun accept(delivery: AlarmDelivery, now: Instant): AlarmDeliveryResult = database.withTransaction {
         val row = database.scheduledOccurrenceDao().getById(delivery.occurrenceId.value)
             ?: return@withTransaction AlarmDeliveryResult.StaleMissing(delivery.occurrenceId)
@@ -43,7 +55,8 @@ class RoomAlarmStateStore(private val database: DayLoopDatabase) {
                 AlarmNotificationActionResult.Stale(occurrence.id))
             when (command.action) {
                 AlarmNotificationAction.COMPLETE -> {
-                    database.taskDao().upsert(task.markCompleted().toEntity())
+                    rustShadow.observe(task, RustTaskTransitionProtocol.Command.COMPLETE, now)
+                    database.taskDao().upsert(task.markCompleted(now).toEntity())
                     AlarmActionCommit(AlarmNotificationActionResult.Completed(occurrence.id, task.id), cancelTaskRows(task.id, now))
                 }
                 AlarmNotificationAction.SNOOZE -> {
@@ -75,12 +88,14 @@ class RoomAlarmStateStore(private val database: DayLoopDatabase) {
         val stored = database.taskDao().getById(taskId.value)?.toDomain()
         val task = stored?.takeIf { generatedTask == null || it.provenance == generatedTask.provenance }
             ?: generatedTask ?: return@withTransaction emptyList()
-        database.taskDao().upsert(task.markCompleted().toEntity())
+        stored?.let { rustShadow.observe(it, RustTaskTransitionProtocol.Command.COMPLETE, now) }
+        database.taskDao().upsert(task.markCompleted(now).toEntity())
         cancelTaskRows(taskId, now)
     }
 
     suspend fun saveTask(task: Task, now: Instant, next: ScheduledOccurrence? = null): List<ScheduledOccurrenceId> = database.withTransaction {
         val previous = database.taskDao().getById(task.id.value)?.toDomain()
+        previous?.shadowCommandFor(task)?.let { rustShadow.observe(previous, it, now) }
         val invalidates = previous != null && (previous.schedule != task.schedule ||
             previous.reminderPolicy != task.reminderPolicy || previous.status != task.status)
         val cancelled = if (invalidates) cancelTaskRows(task.id, now) else emptyList()
@@ -107,5 +122,15 @@ class RoomAlarmStateStore(private val database: DayLoopDatabase) {
                 database.persistentReminderEscalationDao().upsert(chain.resolve(maxOf(now, chain.createdAt)).toEntity())
             }
         return rows.map { it.id }
+    }
+
+    private fun Task.shadowCommandFor(updated: Task): RustTaskTransitionProtocol.Command? = when {
+        status != TaskStatus.COMPLETED && updated.status == TaskStatus.COMPLETED ->
+            RustTaskTransitionProtocol.Command.COMPLETE
+        status != TaskStatus.ACTIVE && updated.status == TaskStatus.ACTIVE ->
+            RustTaskTransitionProtocol.Command.REOPEN
+        status != TaskStatus.SKIPPED && updated.status == TaskStatus.SKIPPED ->
+            RustTaskTransitionProtocol.Command.SKIP
+        else -> null
     }
 }

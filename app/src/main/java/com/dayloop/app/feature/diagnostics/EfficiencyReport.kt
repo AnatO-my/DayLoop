@@ -14,7 +14,6 @@ import com.dayloop.app.feature.onboarding.MascotMood
 import com.dayloop.app.settings.UsageStats
 import com.dayloop.app.ui.components.DayLoopIconButton
 import com.dayloop.app.ui.components.DayLoopScreen
-import com.dayloop.app.ui.designsystem.DayLoopHeader
 import com.dayloop.app.ui.theme.dayLoopTokens
 
 @Composable
@@ -37,15 +36,15 @@ fun EfficiencyReport(
                 Text("Efficiency Report", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
             }
             
-            Spacer(Modifier.height(tokens.spacing.contentGap))
+            Spacer(Modifier.height(tokens.spacing.sectionGap))
             
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(tokens.shapeScale.cardCorner),
                 color = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             ) {
-                Column(Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(Modifier.padding(tokens.spacing.cardPadding), horizontalAlignment = Alignment.CenterHorizontally) {
                     DayLoopMascot(
                         modifier = Modifier.size(120.dp),
                         mood = MascotMood.SUGGESTING,
@@ -58,7 +57,7 @@ fun EfficiencyReport(
                 }
             }
             
-            Spacer(Modifier.height(tokens.spacing.contentGap))
+            Spacer(Modifier.height(tokens.spacing.sectionGap))
             
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 MetricRow("Total Focus Time", "${focusMinutes}m")
@@ -71,7 +70,7 @@ fun EfficiencyReport(
             Text(
                 "Compared to a 5-minute video call, DayLoop uses 90% less energy to keep your focus sessions active.",
                 style = MaterialTheme.typography.bodySmall,
-                color = tokens.colors.supportingText
+                color = tokens.colors.mutedText
             )
         }
     }

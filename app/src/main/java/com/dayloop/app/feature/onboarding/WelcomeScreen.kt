@@ -13,12 +13,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.dayloop.app.R
 import com.dayloop.app.ui.components.*
+import com.dayloop.app.ui.theme.DayLoopTheme
 
 @Composable
-fun WelcomeScreen(saving: Boolean, onStart: () -> Unit, onClose: (() -> Unit)? = null) {
+fun WelcomeScreen(
+    saving: Boolean,
+    onStart: () -> Unit,
+    onClose: (() -> Unit)? = null,
+    onRestore: (() -> Unit)? = null
+) {
     DayLoopScreen(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
         Column(Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -26,8 +33,15 @@ fun WelcomeScreen(saving: Boolean, onStart: () -> Unit, onClose: (() -> Unit)? =
             Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(24.dp)) {
-            onClose?.let { close ->
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                if (onRestore != null) {
+                    TextButton(onClick = onRestore, enabled = !saving) {
+                        Text("Restore backup")
+                    }
+                } else {
+                    Spacer(Modifier.width(1.dp))
+                }
+                onClose?.let { close ->
                     DayLoopIconButton(
                         resource = R.drawable.ic_action_close,
                         label = "Close welcome",
@@ -65,6 +79,14 @@ fun WelcomeScreen(saving: Boolean, onStart: () -> Unit, onClose: (() -> Unit)? =
             }
             Spacer(Modifier.height(8.dp))
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun WelcomeScreenPreview() {
+    DayLoopTheme {
+        WelcomeScreen(saving = false, onStart = {})
     }
 }
 

@@ -12,8 +12,12 @@ data class TodaySnapshot(
     val next: List<TodayItem> = emptyList(),
     val anytime: List<TodayItem> = emptyList(),
     val completed: List<TodayItem> = emptyList(),
+    val missed: List<TodayItem> = emptyList(),
 ) {
-    val unresolved: List<TodayItem> = overdue + now + next + anytime
+    // Review overlaps overdue deadlines; count each task once across both views.
+    val unresolved: List<TodayItem> = (overdue + now + next + anytime + missed).distinctBy { it.taskId }
+
+    val hasMissedTasks: Boolean = missed.isNotEmpty()
 
     val unresolvedCount: Int = unresolved.size
 
@@ -35,11 +39,17 @@ data class TodaySnapshot(
     val isEmpty: Boolean = totalCount == 0
 
     init {
+        require(missed.all { it.task.status == TaskStatus.ACTIVE }) {
+            "Only active tasks can need missed-work review."
+        }
         require(unresolved.all { item -> item.task.status == TaskStatus.ACTIVE }) {
             "Only active tasks can appear in unresolved Today sections."
         }
         require(completed.all { item -> item.task.status == TaskStatus.COMPLETED }) {
             "Only completed tasks can appear in the completed Today section."
+        }
+        require(missed.map { it.taskId }.distinct().size == missed.size) {
+            "A task can appear only once in missed-work review."
         }
         requireNoDuplicateTasks()
     }
@@ -50,6 +60,7 @@ data class TodaySnapshot(
         TodaySection.NEXT -> next
         TodaySection.ANYTIME -> anytime
         TodaySection.COMPLETED -> completed
+        TodaySection.MISSED -> missed.filterNot { item -> overdue.any { it.taskId == item.taskId } }
     }
 
     private fun requireNoDuplicateTasks() {
@@ -66,6 +77,7 @@ data class TodaySnapshot(
             TodaySection.NEXT,
             TodaySection.ANYTIME,
             TodaySection.COMPLETED,
+            TodaySection.MISSED,
         )
     }
 }
@@ -108,4 +120,5 @@ enum class TodaySection {
     NEXT,
     ANYTIME,
     COMPLETED,
+    MISSED,
 }

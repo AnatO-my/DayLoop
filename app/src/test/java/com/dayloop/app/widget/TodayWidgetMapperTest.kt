@@ -11,6 +11,25 @@ import java.time.LocalDate
 class TodayWidgetMapperTest {
 
     @Test
+    fun `anytime tasks fill both agenda slots with accurate labels`() {
+        val first = TodayItem(Task(TaskId("a"), "Read"))
+        val second = TodayItem(Task(TaskId("b"), "Write"))
+        val state = TodaySnapshot(date = LocalDate.of(2026, 9, 19), anytime = listOf(first, second)).toWidgetState()
+        assertEquals("ANYTIME", state.nowTask?.section)
+        assertEquals("ANYTIME", state.nextTask?.section)
+        assertEquals("b", state.nextTask?.id?.value)
+    }
+
+    @Test
+    fun `overdue is not relabeled now and completion count is retained`() {
+        val task = TodayItem(Task(TaskId("a"), "Read"))
+        val state = TodaySnapshot(date = LocalDate.of(2026, 9, 19), overdue = listOf(task),
+            completed = listOf(TodayItem(Task(TaskId("b"), "Write").markCompleted(java.time.Instant.EPOCH)))).toWidgetState()
+        assertEquals("OVERDUE", state.nowTask?.section)
+        assertEquals(1, state.completedCount)
+    }
+
+    @Test
     fun `maps empty snapshot to empty widget state`() {
         val date = LocalDate.of(2026, 9, 7)
         val snapshot = TodaySnapshot(date = date)

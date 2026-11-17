@@ -8,16 +8,20 @@ import org.junit.Test
 class CalmPressureTokensTest {
     @Test
     fun spacingTokensUseStableFoundationValues() {
-        assertEquals(24.dp, CalmPressureLightTokens.spacing.screenPadding)
-        assertEquals(16.dp, CalmPressureLightTokens.spacing.contentGap)
-        assertEquals(8.dp, CalmPressureLightTokens.spacing.compactGap)
+        listOf(DayLoopLightTokens, DayLoopDarkTokens).forEach { tokens ->
+            assertEquals(24.dp, tokens.spacing.pageMargin)
+            assertEquals(24.dp, tokens.spacing.sectionGap)
+            assertEquals(16.dp, tokens.spacing.cardPadding)
+            assertEquals(12.dp, tokens.spacing.itemGap)
+            assertEquals(8.dp, tokens.spacing.relatedGap)
+        }
     }
 
     @Test
     fun lightAndDarkTokensKeepDistinctSupportingColors() {
         assertNotEquals(
-            CalmPressureLightTokens.colors.supportingText,
-            CalmPressureDarkTokens.colors.supportingText,
+            DayLoopLightTokens.colors.secondaryText,
+            DayLoopDarkTokens.colors.secondaryText,
         )
     }
 }

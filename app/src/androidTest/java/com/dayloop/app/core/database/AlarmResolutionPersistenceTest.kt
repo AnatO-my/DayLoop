@@ -5,6 +5,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.dayloop.app.core.alarms.*
 import com.dayloop.app.core.model.*
+import com.dayloop.app.core.rust.RustTaskTransitionProtocol
+import com.dayloop.app.core.rust.RustTaskTransitionShadowObserver
 import com.dayloop.app.repository.*
 import java.time.Duration
 import java.time.Instant
@@ -66,5 +68,53 @@ class AlarmResolutionPersistenceTest {
         store.accept(AlarmDelivery(occurrence.id, 1), now)
         assertTrue(store.act(AlarmNotificationCommand(AlarmNotificationAction.COMPLETE,
             AlarmDelivery(occurrence.id, 1)), now, Duration.ofMinutes(10)).result is AlarmNotificationActionResult.Completed)
+    }
+
+    @Test fun somedayStopsRemindersAndRoundTripsWithoutCompletionCredit() = runBlocking {
+        val cancelled = store.saveTask(task.moveToSomeday(), now)
+        assertTrue(occurrence.id in cancelled)
+        val saved = requireNotNull(RoomTaskRepository(database.taskDao()).getTask(task.id))
+        assertEquals(TaskStatus.SOMEDAY, saved.status)
+        assertNull(saved.schedule)
+        assertNull(saved.completedAt)
+        assertTrue(RoomPersistentReminderEscalationRepository(database).getActiveEscalations().isEmpty())
+        assertTrue(store.accept(AlarmDelivery(occurrence.id, 1), now) is AlarmDeliveryResult.StaleGeneration)
+        store.saveTask(saved.keepForToday(java.time.LocalDate.of(2026, 9, 7)), now)
+        assertEquals(TaskStatus.ACTIVE, RoomTaskRepository(database.taskDao()).getTask(task.id)?.status)
+    }
+
+    @Test fun dismissStopsRemindersWithoutDeletingTheTask() = runBlocking {
+        store.saveTask(task.skip(), now)
+        assertEquals(TaskStatus.SKIPPED, RoomTaskRepository(database.taskDao()).getTask(task.id)?.status)
+        assertTrue(RoomScheduledOccurrenceRepository(database.scheduledOccurrenceDao()).getScheduledOccurrences().isEmpty())
+        assertTrue(RoomPersistentReminderEscalationRepository(database).getActiveEscalations().isEmpty())
+    }
+
+    @Test fun shadowObserverSeesFreshSourcesWithoutChangingRoomTransitions() = runBlocking {
+        val observations = mutableListOf<Pair<TaskStatus, RustTaskTransitionProtocol.Command>>()
+        val shadowedStore = RoomAlarmStateStore(database, RustTaskTransitionShadowObserver { source, command, observedAt ->
+            assertEquals(now, observedAt)
+            observations += source.status to command
+        })
+
+        shadowedStore.act(
+            AlarmNotificationCommand(AlarmNotificationAction.COMPLETE, AlarmDelivery(occurrence.id, 1)),
+            now,
+            Duration.ofMinutes(10),
+        )
+        val completed = requireNotNull(RoomTaskRepository(database.taskDao()).getTask(task.id))
+        shadowedStore.saveTask(completed.reopen(), now)
+        val reopened = requireNotNull(RoomTaskRepository(database.taskDao()).getTask(task.id))
+        shadowedStore.saveTask(reopened.skip(), now)
+
+        assertEquals(
+            listOf(
+                TaskStatus.ACTIVE to RustTaskTransitionProtocol.Command.COMPLETE,
+                TaskStatus.COMPLETED to RustTaskTransitionProtocol.Command.REOPEN,
+                TaskStatus.ACTIVE to RustTaskTransitionProtocol.Command.SKIP,
+            ),
+            observations,
+        )
+        assertEquals(TaskStatus.SKIPPED, RoomTaskRepository(database.taskDao()).getTask(task.id)?.status)
     }
 }

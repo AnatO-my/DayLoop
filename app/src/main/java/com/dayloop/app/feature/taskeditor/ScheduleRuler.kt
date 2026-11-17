@@ -10,8 +10,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.dp
 import kotlin.math.abs
@@ -27,6 +29,7 @@ internal fun ScheduleRuler(start: Int, end: Int, limit: Int, enabled: Boolean,
     val track = MaterialTheme.colorScheme.surfaceContainerHighest
     val ink = MaterialTheme.colorScheme.onPrimary
     val line = MaterialTheme.colorScheme.outline
+    val haptic = LocalHapticFeedback.current
     fun move(delta: Int) {
         val shift = delta.coerceIn(-start, limit - end)
         onChange(start + shift, end + shift)
@@ -55,14 +58,15 @@ internal fun ScheduleRuler(start: Int, end: Int, limit: Int, enabled: Boolean,
                     else -> false
                 }
             }.focusable(enabled)
-            .pointerInput(enabled, limit) {
+            .pointerInput(enabled, limit, haptic) {
                 if (!enabled) return@pointerInput
                 var originStart = 0
                 var originEnd = 0
                 var accumulated = 0f
+                var lastDelta = 0
                 var mode = 0
                 detectDragGestures(onDragStart = { point ->
-                    originStart = latestStart; originEnd = latestEnd; accumulated = 0f
+                    originStart = latestStart; originEnd = latestEnd; accumulated = 0f; lastDelta = 0
                     val left = originStart.toFloat() / limit * size.width
                     val right = originEnd.toFloat() / limit * size.width
                     val hit = 24.dp.toPx()
@@ -77,6 +81,10 @@ internal fun ScheduleRuler(start: Int, end: Int, limit: Int, enabled: Boolean,
                         pointer.consume()
                         accumulated += amount.x / size.width.coerceAtLeast(1) * limit
                         val delta = (accumulated / 15).roundToInt() * 15
+                        if (delta != lastDelta) {
+                            lastDelta = delta
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        }
                         when (mode) {
                             1 -> change((originStart + delta).coerceIn(0, originEnd - 1), originEnd)
                             2 -> change(originStart, (originEnd + delta).coerceIn(originStart + 1, limit))

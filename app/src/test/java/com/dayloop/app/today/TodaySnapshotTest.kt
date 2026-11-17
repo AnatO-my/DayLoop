@@ -34,6 +34,7 @@ class TodaySnapshotTest {
                 TodaySection.NEXT,
                 TodaySection.ANYTIME,
                 TodaySection.COMPLETED,
+                TodaySection.MISSED,
             ),
             TodaySnapshot.sectionsInDisplayOrder,
         )

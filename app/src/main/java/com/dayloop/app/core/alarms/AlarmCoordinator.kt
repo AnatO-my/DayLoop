@@ -8,6 +8,8 @@ import com.dayloop.app.time.TimeProvider
 import java.time.Duration
 import java.time.ZoneId
 import com.dayloop.app.core.model.Task
+import com.dayloop.app.core.model.TaskReviewAction
+import com.dayloop.app.today.TodayMissedTaskClassifier
 
 class AlarmCoordinator(
     private val store: RoomAlarmStateStore,
@@ -64,13 +66,38 @@ class AlarmCoordinator(
     }
 
     suspend fun saveTask(task: Task): String? = AlarmMutationLock.run {
+        saveTaskLocked(task)
+    }
+
+    suspend fun reviewTask(expected: Task, action: TaskReviewAction): String? = AlarmMutationLock.run {
+        val current = tasks.getTask(expected.id) ?: expected.takeIf { it.provenance != null }
+            ?: return@run "This task is no longer available."
+        if (current != expected) return@run "This task changed. Please review it again."
+        val now = clock.now().atZone(ZoneId.systemDefault()).toLocalDateTime()
+        if (action == TaskReviewAction.RESTORE_TODAY) {
+            if (current.status !in listOf(TaskStatus.SOMEDAY, TaskStatus.SKIPPED)) {
+                return@run "This task has already been restored."
+            }
+        } else if (TodayMissedTaskClassifier().classify(listOf(current), now, now.toLocalDate()).isEmpty()) {
+            return@run "This task no longer needs review."
+        }
+        val updated = when (action) {
+            TaskReviewAction.KEEP_TODAY, TaskReviewAction.RESTORE_TODAY -> current.keepForToday(now.toLocalDate())
+            TaskReviewAction.SOMEDAY -> current.moveToSomeday()
+            TaskReviewAction.DISMISS -> current.skip()
+        }
+        saveTaskLocked(updated)
+    }
+
+    // Caller owns AlarmMutationLock; never nest the public save operation.
+    private suspend fun saveTaskLocked(task: Task): String? {
         val previous = tasks.getTask(task.id)
         val timingChanged = previous == null || previous.schedule != task.schedule ||
             previous.reminderPolicy != task.reminderPolicy || previous.status != task.status
         val now = clock.now()
         val next = if (timingChanged) NextOccurrenceCalculator().calculate(task, now, ZoneId.systemDefault()) else null
         store.saveTask(task, now, next).forEach { scheduler.cancel(it); notifications.cancel(it) }
-        when (val result = next?.let { scheduler.schedule(it) }) {
+        return when (val result = next?.let { scheduler.schedule(it) }) {
             is AlarmScheduleResult.Rejected -> "Task saved. Open More to repair reminder delivery."
             is AlarmScheduleResult.Scheduled -> if (result.exact) null else "Task saved. Reminder timing may be approximate."
             else -> null

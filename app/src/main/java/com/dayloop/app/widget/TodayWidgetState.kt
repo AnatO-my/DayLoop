@@ -7,6 +7,7 @@ data class TodayWidgetState(
     val nowTask: WidgetTask? = null,
     val nextTask: WidgetTask? = null,
     val dateLabel: String = "",
+    val completedCount: Int = 0,
 )
 
 data class WidgetTask(

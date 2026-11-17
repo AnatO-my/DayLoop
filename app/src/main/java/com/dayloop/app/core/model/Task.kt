@@ -1,6 +1,8 @@
 package com.dayloop.app.core.model
 
 import java.util.UUID
+import java.time.Instant
+import java.time.LocalDate
 
 @JvmInline
 value class TaskId(val value: String) {
@@ -22,6 +24,8 @@ data class Subtask(
 enum class TaskStatus {
     ACTIVE,
     COMPLETED,
+    SKIPPED,
+    SOMEDAY,
 }
 
 enum class TaskPriority(val rank: Int) {
@@ -41,7 +45,9 @@ data class Task(
     val reminderPolicy: ReminderPolicy = ReminderPolicy.normal(),
     val projectId: ProjectId? = null,
     val subtasks: List<Subtask> = emptyList(),
+    val description: String? = null,
     val provenance: TaskProvenance? = null,
+    val completedAt: Instant? = null,
 ) {
     init {
         require(title.isNotBlank()) { "Task title must not be blank." }
@@ -50,7 +56,21 @@ data class Task(
         }
     }
 
-    fun markCompleted(): Task = copy(status = TaskStatus.COMPLETED)
+    fun markCompleted(at: Instant): Task = if (status == TaskStatus.COMPLETED) this
+        else copy(status = TaskStatus.COMPLETED, completedAt = at)
+
+    fun skip(): Task = copy(status = TaskStatus.SKIPPED, completedAt = null)
+
+    fun moveToSomeday(): Task = copy(status = TaskStatus.SOMEDAY, schedule = null,
+        completedAt = null, reminderPolicy = untimedReminderPolicy())
+
+    fun keepForToday(date: LocalDate): Task = copy(status = TaskStatus.ACTIVE,
+        schedule = TaskSchedule.AllDay(date), completedAt = null, reminderPolicy = untimedReminderPolicy())
+
+    private fun untimedReminderPolicy(): ReminderPolicy =
+        if (reminderPolicy.mode == ReminderMode.FOCUS) ReminderPolicy.normal() else reminderPolicy
+
+    fun reopen(): Task = copy(status = TaskStatus.ACTIVE, completedAt = null)
 
     fun withSchedule(schedule: TaskSchedule): Task = copy(schedule = schedule)
 

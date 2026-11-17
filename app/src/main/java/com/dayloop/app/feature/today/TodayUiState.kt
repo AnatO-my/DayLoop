@@ -1,5 +1,6 @@
 package com.dayloop.app.feature.today
 
+import com.dayloop.app.core.calendar.CalendarEvent
 import com.dayloop.app.core.model.ProjectId
 import com.dayloop.app.core.model.TaskId
 import com.dayloop.app.core.model.Subtask
@@ -16,6 +17,7 @@ private val TodayUnresolvedSections = listOf(
     TodaySection.NOW,
     TodaySection.NEXT,
     TodaySection.ANYTIME,
+    TodaySection.MISSED,
 )
 
 data class TodayUiState(
@@ -26,16 +28,19 @@ data class TodayUiState(
     val isFocusActive: Boolean = false,
     val assistantSuggestions: List<AssistantSuggestion> = emptyList(),
     val now: LocalDateTime = LocalDateTime.now(),
+    val calendarEvents: List<CalendarEvent> = emptyList(),
 ) {
     val title: String = "Today"
     val dateLabel: String = snapshot.date.format(TodayDateFormatter)
     val isEmpty: Boolean = snapshot.isEmpty
     val dayStatus: TodayDayStatus = snapshot.dayStatus
+    val hasMissedTasks: Boolean = snapshot.hasMissedTasks
+    val missedCount: Int = snapshot.missed.size
     
     val mascotMood: MascotMood = when {
         assistantSuggestions.isNotEmpty() -> MascotMood.SUGGESTING
         isFocusActive -> MascotMood.FOCUSED
-        snapshot.itemsIn(TodaySection.OVERDUE).isNotEmpty() -> MascotMood.OVERWHELMED
+        snapshot.hasMissedTasks || snapshot.itemsIn(TodaySection.OVERDUE).isNotEmpty() -> MascotMood.OVERWHELMED
         dayStatus == TodayDayStatus.COMPLETE -> MascotMood.ACCOMPLISHED
         now.hour >= 23 || now.hour < 6 -> MascotMood.SLEEPY
         focusStreak >= 5 || (now.hour in 6..9) -> MascotMood.ENERGETIC
@@ -146,4 +151,5 @@ private fun TodaySection.displayTitle(): String = when (this) {
     TodaySection.NEXT -> "Next"
     TodaySection.ANYTIME -> "Anytime"
     TodaySection.COMPLETED -> "Completed"
+    TodaySection.MISSED -> "Missed work"
 }

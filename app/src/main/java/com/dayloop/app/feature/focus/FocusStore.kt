@@ -34,6 +34,7 @@ data class FocusState(
     val setsUntilLongBreak: Int = 4,
     val preferredSound: FocusSound = FocusSound.NONE,
     val lastSessionReflection: String? = null,
+    val notificationRevision: Long = 0,
 ) {
     fun durationFor(mode: FocusMode): Long = durations[mode] ?: mode.seconds
     fun secondsAt(now: Instant): Long = endsAt?.let {
@@ -70,6 +71,7 @@ class FocusStore internal constructor(private val data: DataStore<Preferences>) 
                 prefs[ActiveMode] = state.mode.name
             }
             prefs[End] = now.plusSeconds(seconds).toEpochMilli()
+            prefs.advanceNotificationRevision()
         }
     }
 
@@ -79,6 +81,7 @@ class FocusStore internal constructor(private val data: DataStore<Preferences>) 
             val state = read(prefs)
             prefs[Remaining] = state.secondsAt(now)
             prefs.remove(End)
+            prefs.advanceNotificationRevision()
         }
     }
 
@@ -86,6 +89,35 @@ class FocusStore internal constructor(private val data: DataStore<Preferences>) 
         val current = read(prefs)
         if (current.endsAt == null && current.activeMode != null && current.remaining > 0) {
             prefs[End] = now.plusSeconds(current.remaining).toEpochMilli()
+            prefs.advanceNotificationRevision()
+        }
+    }
+
+    internal suspend fun applyNotificationCommand(command: FocusNotificationCommand, token: String, now: Instant) {
+        data.edit { prefs ->
+            val current = read(prefs)
+            if (current.activeMode == null || current.notificationToken() != token) return@edit
+            if (current.endsAt?.let { !now.isBefore(it) } == true) return@edit
+            when (command) {
+                FocusNotificationCommand.PAUSE -> {
+                    val end = current.endsAt ?: return@edit
+                    // Let finishIfDue settle an elapsed session instead of pausing its successor.
+                    if (!now.isBefore(end)) return@edit
+                    prefs[Remaining] = current.secondsAt(now)
+                    prefs.remove(End)
+                }
+                FocusNotificationCommand.RESUME -> {
+                    if (current.endsAt != null || current.remaining <= 0) return@edit
+                    prefs[End] = now.plusSeconds(current.remaining).toEpochMilli()
+                }
+                FocusNotificationCommand.END -> {
+                    prefs.remove(End)
+                    prefs.remove(ActiveMode)
+                    prefs[Remaining] = current.durationFor(current.mode)
+                    prefs[SessionDuration] = current.durationFor(current.mode)
+                }
+            }
+            prefs.advanceNotificationRevision()
         }
     }
     suspend fun reset(mode: FocusMode) = data.edit { prefs ->
@@ -99,6 +131,7 @@ class FocusStore internal constructor(private val data: DataStore<Preferences>) 
         if (isActive) {
             prefs.remove(ActiveMode)
             prefs.remove(End)
+            prefs.advanceNotificationRevision()
         }
     }
 
@@ -112,6 +145,7 @@ class FocusStore internal constructor(private val data: DataStore<Preferences>) 
             if (current.mode == mode && current.endsAt == null) {
                 prefs[Remaining] = seconds
                 prefs[SessionDuration] = seconds
+                prefs.advanceNotificationRevision()
             }
         }
     }
@@ -148,6 +182,7 @@ class FocusStore internal constructor(private val data: DataStore<Preferences>) 
             prefs[SessionDuration] = duration
             prefs[Remaining] = duration
             prefs[End] = now.plusSeconds(duration).toEpochMilli()
+            prefs.advanceNotificationRevision()
         }
     }
 
@@ -178,7 +213,11 @@ class FocusStore internal constructor(private val data: DataStore<Preferences>) 
         val lastReflection = prefs[LastReflection]
         return FocusState(mode, activeMode, (prefs[Remaining] ?: sessionDuration).coerceIn(0, sessionDuration),
             prefs[End]?.let(Instant::ofEpochMilli), history, durations, sessionDuration, sets, setsUntilLongBreak,
-            preferredSound, lastReflection)
+            preferredSound, lastReflection, prefs[NotificationRevision] ?: 0L)
+    }
+
+    private fun MutablePreferences.advanceNotificationRevision() {
+        this[NotificationRevision] = (this[NotificationRevision] ?: 0L) + 1L
     }
 
     companion object {
@@ -192,6 +231,7 @@ class FocusStore internal constructor(private val data: DataStore<Preferences>) 
         private val SetsUntilLongBreak = intPreferencesKey("sets_until_long_break")
         private val PreferredSound = stringPreferencesKey("preferred_sound")
         private val LastReflection = stringPreferencesKey("last_reflection")
+        private val NotificationRevision = longPreferencesKey("notification_revision")
         private fun durationKey(mode: FocusMode) = longPreferencesKey("duration_${mode.name}")
         @Volatile private var instance: FocusStore? = null
         fun get(context: Context): FocusStore = instance ?: synchronized(this) {

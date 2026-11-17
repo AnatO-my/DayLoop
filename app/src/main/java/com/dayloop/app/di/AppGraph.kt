@@ -3,10 +3,19 @@ package com.dayloop.app.di
 import android.content.Context
 import com.dayloop.app.core.alarms.AlarmScheduler
 import com.dayloop.app.core.backup.BackupManager
+import com.dayloop.app.core.calendar.CalendarContractManager
+import com.dayloop.app.core.database.ClothingDao
+import com.dayloop.app.core.database.OutfitDao
 import com.dayloop.app.repository.AlarmDiagnosticsRepository
+import com.dayloop.app.repository.AndroidCalendarSyncRepository
+import com.dayloop.app.repository.CalendarSyncRepository
+import com.dayloop.app.repository.NoteRepository
+import com.dayloop.app.repository.OutfitRepository
 import com.dayloop.app.repository.PersistentReminderEscalationRepository
+import com.dayloop.app.repository.RoomNoteRepository
 import com.dayloop.app.repository.ScheduledOccurrenceRepository
 import com.dayloop.app.repository.TaskRepository
+import com.dayloop.app.repository.WardrobeMediaRepository
 import com.dayloop.app.time.TimeProvider
 import com.dayloop.app.today.TodayAssistant
 import com.dayloop.app.today.NaturalIntentParser
@@ -33,6 +42,24 @@ interface AppGraph {
         get() = error("Widget state reconciler is not configured")
     val goalRepository: com.dayloop.app.repository.GoalRepository
     val projectRepository: com.dayloop.app.repository.ProjectRepository
+    val workoutRoutineRepository: com.dayloop.app.repository.WorkoutRoutineRepository
+        get() = error("Workout routines are not configured")
+    val outfitRepository: OutfitRepository
+    val wardrobeMediaRepository: WardrobeMediaRepository
+    val noteRepository: NoteRepository
+        get() = RoomNoteRepository(error("NoteDao not provided"))
+    val calendarSyncRepository: CalendarSyncRepository
+        get() = AndroidCalendarSyncRepository(
+            CalendarContractManager(applicationContext)
+        )
+    val wardrobeAttributesRepository: com.dayloop.app.repository.WardrobeAttributesRepository
+        get() = error("Wardrobe attributes are not configured")
+    val outfitFeedbackRepository: com.dayloop.app.repository.OutfitFeedbackRepository
+        get() = error("Outfit feedback is not configured")
+    val garmentRecognizer: com.dayloop.app.core.outfit.recognition.GarmentRecognizer
+        get() = error("Garment recognition is not configured")
+    val clothingDao: ClothingDao
+    val outfitDao: OutfitDao
     val todayAssistant: TodayAssistant
         get() = TodayAssistant()
     val backupManager: BackupManager

@@ -1,5 +1,114 @@
 # Project State
 
+## Public beta typography update (2026-11-17)
+
+Removed the prohibited SF Pro and unverified OCR A/Warping resources from the
+public-beta path. Funnel Display is now the OFL-licensed display-font default;
+JetBrains Mono remains the readable body option. Persisted legacy font values
+fall back safely to Funnel Display. The release still requires a clean build,
+test/device gate, signing decision and artifact publication.
+
+## Commercial Suite Upgrade: Notes Engine & Google Calendar Integration (2026-11-10)
+
+Upgraded DayLoop into a full productivity suite:
+1. **System Audit & Architecture**: Authored `docs/SYSTEM_AUDIT_AND_ARCHITECTURE.md` and updated `ARCHITECTURE.md` covering offline-first architecture, component interactions, and commercial productivity app parity.
+2. **Commercial Note Engine**: Replaced primitive DataStore note strings with Room database `NoteEntity` (version 21, `MIGRATION_20_21`), `NoteDao`, `NoteRepository`, `NoteEditorScreen` (with title, tags, pin toggle, and "Convert Note to Task"), and `NotesScreen` Notes Hub (real-time search, tag chips, pinned section).
+3. **Google Calendar Integration**: Integrated Android `CalendarContract` provider with `CalendarContractManager`, `CalendarSyncRepository`, `CalendarSyncSettingsScreen`, calendar permissions in `AndroidManifest.xml`, and timeline overlay on `TodayScreen`.
+Registered `noteRepository` and `calendarSyncRepository` in `AppGraph` and `DefaultAppGraph`.
+
+## Theme consistency pass (2026-11-10)
+
+Source audit of all screens, then fixes: five undefined text styles added to Type.kt (displayLarge, displaySmall, titleMedium, titleSmall, labelMedium); `DayLoopButton`/`DayLoopOutlinedButton` added and used across wardrobe screens so buttons share the theme's 4dp corners; literal 12-28dp corners in Plans, Task editor, settings pull-down, date picker and option grid replaced with theme shapes; Task editor's fixed black/white replaced with theme roles (inverse surfaces), fixing white-on-white subtask rows and input text in light theme; task sheet container follows the theme; OutfitDetailDialog restyled (behaviour unchanged). NOT COMPILED, not seen on a device. Not done: palette setting decision, single edit-surface pattern, string resources, colorScheme-to-token sweep in Focus. Originals: build/wardrobe-ai-backup-20261110c. Theme rules: docs/wardrobe/NAMING_GUIDE.md section 11.
+
+## Wardrobe design ideas A-D and naming guide (2026-11-10)
+
+Implemented the four reference designs: quick-confirm sheet for confident single items; several-items photo overview with numbered outlines, tick list and draw-around; Today outfit idea from `OutfitRecommender` with context chips, Next idea, Why and Not-for-me feedback (new table `outfit_feedback`, schema 18->19, device-only); sync conflict screen with field-by-field choices (not reachable: no sync transport). Added docs/wardrobe/NAMING_GUIDE.md. First-pass Android code compiled in a local build (schema 18 generated and matches its migration). 75 pure-Kotlin JVM tests pass outside Gradle. Second-pass Android code and TodayScreen edits are NOT COMPILED; schema 19 not generated; no device run. Legacy Today card path kept for callers that pass no idea state. Next single action: `:app:compileDebugKotlin :app:testDebugUnitTest`, then the second-pass section of docs/WARDROBE_RECOGNITION_HANDOFF.md.
+
+## Wardrobe recognition and styling (2026-11-10)
+
+Added on-device clothing recognition (Fashion-MNIST shape CNN in plain Kotlin + ML Kit labels/segmentation + colour analysis) with an editable review before save, per-item details in new table `clothing_item_attributes` (schema 17->18, additive), explainable `OutfitRecommender` with Style this / Outfit ideas screens, camera capture via a non-exported FileProvider, and a transport-free sync core. No new dependencies or permissions; no network use. 56 pure-Kotlin JVM tests passed outside Gradle. Compose/Room/ML Kit code is NOT COMPILED; Gradle, schema 18 export, instrumentation and device checks NOT RUN. Real-photo accuracy unmeasured. Today's suggestion card and wardrobe export are unchanged. Next single action: `:app:compileDebugKotlin :app:testDebugUnitTest`, then follow docs/WARDROBE_RECOGNITION_HANDOFF.md.
+
+## Rust domain foundation (2026-11-08)
+
+Created a standalone Rust workspace containing validated task/schedule/reminder domain types, pure task transition commands, a versioned bounded C ABI for complete/reopen/skip, arm64 Android test-library build wiring, and a test-only C JNI adapter. Kotlin remains the sole Android UI, Room/DataStore, alarm, notification, widget, and ML Kit owner; no production mutation or user-data migration was attempted. Rust formatting, Clippy with warnings denied, and nine Rust tests passed; the NDK produced AArch64 libraries with expected Rust/JNI exports and no C++ runtime dependency. The fresh Android test APK built successfully, and `RustFfiLoadTest` passed on the connected arm64-v8a device (library load plus complete-transition fixture, 2 tests). See `docs/RUST_FOUNDATION.md` and `rust/fixtures/task_transition_v1.md`. Next single action: define a Kotlin-to-Rust mapper for one non-production transition and add differential fixture coverage before production routing.
+
+The Kotlin `RustTaskTransitionProtocol` now encodes and validates the same bounded v1 transition wire format without loading native code or changing Room/UI behavior. Its three JVM tests cover fixture bytes, immutable result projection, and wrong-command rejection. The focused `:app:testDebugUnitTest --tests com.dayloop.app.core.rust.RustTaskTransitionProtocolTest` verification completed successfully on 2026-11-10 (8m 10s). `RustFfiLoadTest` differentially compares Rust/JNI and Kotlin complete, reopen, and skip transitions; after rebuilding and installing matching debug and test APKs, all three ARM64 instrumentation cases passed on 2026-11-10. Production task mutations remain Kotlin/Room-owned. Next single action: design a transaction-level adapter that can be feature-gated and shadow-checked before any production routing.
+
+`RustTaskTransitionShadowAdapter` is now the disabled-by-default, no-write transaction boundary design. Given a Room-reloaded source task, it can compare a bridge result against the current Kotlin transition and report match/divergence/rejection without changing persistence or Android effects. Its focused JVM test suite passed on 2026-11-10 (3 tests, 0 failures). No persistent shadow telemetry is needed until a feature-gated production bridge exists. Next single action: decide whether to add an in-memory, developer-only shadow diagnostic when that bridge is introduced.
+
+## Navigation repair and wardrobe gallery (2026-11-06)
+
+Fixed tooltip-wrapper Row sizing that hid P&Gs/Focus; physical-device screenshots verified navigation destinations. Implemented reference wardrobe grid/filter/photo creation, wardrobe-door icon, compact project rows and Focus/calendar refinements. Replaced OCR A with user OCR A BT binary, preserving enum/preferences. Build and adb updates successful including replacement font. Navigation regression authored, not run. Photo mutation flows remain manual verification. See docs/EDITORIAL_THEME_HANDOFF.md.
+
+## Editorial theme and OCR A (2026-11-05)
+
+Applied black/charcoal-orange shared tokens, bundled user OCR A, saved readable-body typography option, compact Today/progress/project styling, distinct icon navigation and grouped Advanced side panel. Existing feature actions retained. Font hash and vector XML checked; no build/test/device execution. Added typography persistence regression and updated spacing expectation. Manual visual review remains. Handoff: docs/EDITORIAL_THEME_HANDOFF.md.
+
+## High-Polish UI/UX Upgrade (2026-09-22)
+
+Completed the 4-phase High-Polish UI/UX upgrade matching top-tier consumer apps:
+1. **Tactile Haptics & Press Scale**: Created `DayLoopTouchEffects.kt` with `bounceClick()` spring scaling and haptic feedback across buttons, icon buttons, pill tabs, and `TaskGestureRow` swipe thresholds.
+2. **Context-Preserving Quick Add**: Embedded `QuickAddBar` directly onto `TodayScreen` for inline, context-preserving quick task creation with schedule preset chips.
+3. **Spring Physics**: Upgraded navigation animations and list item placement to use physics-based spring curves (`Spring.DampingRatioLowBouncy`).
+4. **Shimmer Skeleton Loaders**: Created `ShimmerSkeleton.kt` with animated shimmer gradients replacing full-screen progress spinners during data loads.
+All unit tests passed successfully (`QuickAddDraftTest` 7/7).
+
+## Unified Quick Add Presets (2026-09-22)
+
+Unified quick task capture and quick alarms by expanding `QuickAddDraft` and `QuickAddBar` with quick schedule chips: `Today` (All-Day), `Due +1h` (Deadline), `1h Block` (Time Block), `Every 45m` (Interval), and `⚡ Focus` (Focus Timer). Submitting a task with a preset automatically sets the corresponding `TaskSchedule` and `ReminderPolicy`, and emits `startFocus` when Focus mode is selected. Verified unit tests for `QuickAddDraftTest` (7/7 passed).
+
+## Guide Duplication and Today Space (2026-09-22)
+
+Confirmed app-level plus screen-level GuideHost instances drew the same guide twice and shadowed target registries. Nested hosts now pass through to the outer registry/overlay; standalone screens still host guides. Removed duplicate TODAY_SUMMARY target from outfit card. Today header is now a status-bar-safe fixed Scaffold top bar; greeting uses headlineMedium. Outfit prompt waits for storage loading, disappears after a saved record (including photo-only records), and leaves only a Wardrobe shortcut; calendar date taps still open outfit details. Empty wardrobe no longer shows disabled Suggest/Record controls, and Import is a tooltip icon alongside a single-line Wardrobe button. Suggestion preview resets at date changes. Added nested-host and Today layout/record/loading regressions; updated stale missing-target assertion. Tests/build/device NOT RUN per manual-review preference. Source checks only. Next: manual replay on Today/P&Gs, scroll near status bar, and save/edit/clear outfit via calendar; run GuideHostTest and TodayLayoutRegressionTest. Handoff: docs/TODAY_GUIDE_LAYOUT_HANDOFF.md.
+
+## Wardrobe Export Security (2026-09-21)
+
+Removed the hard-coded password and log-only backup output. More now offers explicitly scoped wardrobe-details export/import through the system file picker, with user password/confirmation, background IO, bounded reads and no credential saved-instance persistence. Versioned AES-GCM authenticates files before strict payload validation. Room exports a consistent snapshot and imports missing items/dates in one transaction; existing edits and photo links remain untouched. Legacy unauthenticated CBC files are rejected. This is NOT full-app backup: tasks, settings, focus/history, photo files/metadata and photo-only outfit dates are excluded. Old documentation claiming complete backup or atomic restoreAll was inaccurate; the unused legacy repository restoreAll remains outside this flow. Crypto and Room/parser tests authored, NOT RUN. Scoped source/call-site and whitespace checks only; no build/device execution. Next single action: manually validate export/import and run the named tests in docs/WARDROBE_TRANSFER_HANDOFF.md. Full-app/media backup remains deferred.
+
+## Small UI and Documentation Cleanup (2026-09-21)
+
+Updated stale guide/replay status documents. Subtask completion now keeps its 24dp visual inside a 48dp clipped, accessible checkbox target with checked/disabled semantics; clarified Task settings/Add subtask icon names. Project progress uses quantity-aware resources (1 task versus multiple tasks); Today already handled singular remaining counts and Focus uses min/Set labels. Recent Events Clear now requires explicit confirmation; Cancel/Back/outside do not clear. Added subtask and confirmation instrumentation regressions, not run. Source/XML checks only; no build/device checks. Next: manually verify this pass. Backup password/export risk remains separate and unresolved.
+
+## Small Cleanup Pass (2026-09-21)
+
+Reconciled duplicate timestamp/recurrence/missed-work implementation backlog entries and stale four-tab review wording. Confirmed obsolete schedule warnings already removed by current work; updated guide notes. Subtask remove now uses the shared 48dp default, descriptive accessibility label, better contrast and enabled guard. More header has an introduction-replay icon wired through Diagnostics/AdvancedSettings to revision-guarded guide persistence, navigating only after success; Welcome/tasks/timers remain unchanged. Added IntroductionReplayTest, not run. Source checks only; no build/device execution. Flagged current hard-coded backup password and log-only export as urgent follow-up, not fixed. Next: manually validate these small changes, then address backup security/export usability.
+
+## First-launch and Today Guide Delivery (2026-09-21)
+
+Continued the existing partial GuideDefinitions/GuideUi/TodayRoute implementation. Fixed Next advancing to itself, made target rectangles observable and disposable, translated them into host coordinates, constrained the panel by measured height, retained skip/next for absent targets, and kept highlighted controls tappable. First launch is eligible only for new Welcome sessions or saved in-progress orientation; existing users get Today instead. DayLoopApp gates delivery behind foreground/route/loading/modal/timer/external-entry conditions and stops guide cascades after skip/completion. Progress writes are guarded, failures surface through the app error dialog, and overlays wait for persisted IN_PROGRESS. Added definition/selection/placement and Compose host regressions; NOT RUN. Source reviewed; existing unrelated Today whitespace remains. No build/emulator/device checks. Next single action: manually validate this slice, then add a replay entry. Other feature guides and event-verified editor/save teaching remain pending. See docs/GUIDE_DELIVERY_HANDOFF.md.
+
+## Today Guide Integration (2026-09-21)
+
+Implemented anchored walkthrough engine with `GuideHost` overlay and `guideTarget` modifier. Defined versioned steps for first-launch and Today guides (navigation, creation, metrics, gestures and More). Integrated `GuideHost` into `TodayScreen` with automatic first-use triggering, reactive progress observation and revision-guarded repository updates. Extended `DayLoopMainNav` and `DayLoopPageHeader` to support guide-target anchors. Verified with a successful Kotlin build; runtime behavior and visual alignment remain pending.
+
+## Guide Progress Foundation (2026-09-21)
+
+Implemented versioned GuideKey/GuideProgress/GuideAction and atomic native-preference persistence via SettingsRepository. Explicit start/advance/skip/complete/replay, revision-guarded writes, independent guide versions, malformed-state suppression and propagated IO failures. No task/Room/Welcome/route changes and no visible guides. Added model and DataStore tests including reopen, concurrency and write failure; authored only, not run per manual-validation preference. Source/scoped whitespace review only. Next single action: first-launch/Today guide delivery integration with interrupt/deep-link safety; see docs/CONTEXTUAL_GUIDES_IMPLEMENTATION_PLAN.md. Manual build/test verification remains pending.
+
+## Contextual Guides Checkpoint (2026-09-21)
+
+Created docs/DAYLOOP_FUNCTIONALITY_GUIDES.md and docs/CONTEXTUAL_GUIDES_IMPLEMENTATION_PLAN.md from targeted current-screen reads. Covers first launch, Today gestures, editing/scheduling, missed work, P&Gs, Focus, wardrobe/photos, outfit history, calendar and More; marks secondary-feature audits pending. Flagged stale recurrence copy in TaskSettingsFields. Documentation only: no runtime guide UI, progress storage or replay implemented; no build/device operations. Next single action: define and test versioned guide progress separately from onboardingCompleted; preserve current user data and notification/widget routes.
+
+## Wardrobe Visuals - Stage 2 (2026-09-20)
+
+Extended outfit records to support visual history: added `outfit_media` join table (v15->v16 migration) to link daily records to images. Updated `OutfitRecord` domain model to include photos. Refactored `OutfitRepository` to handle transactional recording of items and media together. Interactive `OutfitDetailDialog` now supports adding full-outfit photos via gallery picker and displays image thumbnails. `TodayOutfitCard` shows the primary cover photo for the daily ensemble, and the `IdleScreen` calendar includes visual indicators (dots) for dates with attached photos. Verified with `:app:compileDebugKotlin`.
+
+## Wardrobe Visuals - Stage 1 (2026-09-20)
+
+Implemented foundational photo storage for the wardrobe system: added `wardrobe_media` and `clothing_item_media` tables (v14->v15 migration) to track image metadata and item associations. Integrated **Coil** for efficient image loading. Created `WardrobeMediaRepository` to manage physical file imports into app-managed internal storage (`files/wardrobe/`). Updated `WardrobeScreen` with a gallery picker and thumbnail previews for clothing items. Verified with successful build and `OutfitSuggesterTest`. Next: Stage 2 - Linking full-outfit photos to dated records.
+
+## Migration Coverage & Backup Hardening (2026-09-20)
+
+Ensured data integrity for wardrobe and outfit records: extended `MigrationTest` to verify Room schema jumps from v11 through v13, including table creation and archival column addition. Updated `BackupManager` to include full wardrobe items (with archive state) and daily outfit records in encrypted backups. Added transactional `restoreAll` to `OutfitRepository` for atomic recovery. Verified with successful build and JVM tests. Next: run instrumented migration tests on a device/emulator to confirm schema validation.
+
+## Task Description Persistence (2026-09-20)
+
+Fixed dropped task descriptions: TaskEntity now stores nullable description, both task mappings carry it, database version is 14 with registered non-destructive MIGRATION_13_14. Existing rows retain all data and receive null descriptions; previously discarded text is unrecoverable. Added repository save/edit/clear regression and migration/reopen instrumentation coverage; extended the completion migration test's registered path to current version. Source checks only; no build/tests/device execution per manual-review preference. Schema 14 export awaits the next authorized build. Next: build and manually save, reopen, edit and clear a task description, then run repository and migration tests.
+
+## Icon Actions Update (2026-09-20)
+
+Implemented shared hold-to-explain tooltips on DayLoopIconButton and icon-only routine wardrobe, outfit-editor and note actions. Added archive/restore vectors and wardrobe delete confirmation. Existing custom long-press gestures remain unchanged. Handoff: `docs/ICON_ACTIONS_HANDOFF.md`. Vector XML parses; source reviewed. Build/tests/device validation not run per manual-review preference. Existing unrelated whitespace findings were left untouched. Next action: manually verify tooltip gestures, accessibility, and these actions before extending the icon convention to further screens.
+
 ## Current phase
 **Phase 11 — Product Quality, Accessibility and Battery Discipline**
 
@@ -7,7 +116,43 @@
 **Context manifest:** `contexts/phase-11.context.md`
 
 ## Status
-Non-Material Design System foundation (2026-09-14): Started architectural shift to remove Google Material dependency. Created `DayLoopDesignSystem.kt` with custom `DayLoopColors`, `DayLoopTypography`, and `DayLoopShapes`. Implemented `MatchaCard` using `GenericShape` to match the distinctive geometric style of Reference 2. Created standalone `DayLoopText` and `DayLoopBox` primitives to enable a purely handcrafted UI.
+Wardrobe Hardening & Repository Refactor (2026-09-20): introduced `OutfitRepository` to centralize wardrobe and outfit recording logic. Added `isArchived` to clothing items with v11->13 Room migration; archived items remain in history but are excluded from new suggestions. Suggestion UX on Today screen now uses transient draft previews with "Wear this" confirmation rather than immediate persistence. Refactored `TodayScreen`, `WardrobeScreen`, and `OutfitDetailDialog` to use the repository and support archiving/unarchiving. Verified with `:app:compileDebugKotlin`.
+
+Outfit Sorter & Recorder (2026-09-20): finished the supplied plan's partial implementation. Old all-day tasks, past deadlines and blocks at/after their end enter review. Overdue deadlines remain visible; missed work contributes once to remaining counts/widgets and prevents false day-complete state. Keep today/Reschedule/Someday/Dismiss are wired; P&Gs Saved work exposes Someday and Dismissed with restore/reschedule. Coordinator guards stale review decisions under the alarm lock and uses existing transactional reminder invalidation. Focus policies normalize when removing time blocks. Current generated recurrence tasks resolve in app/widget actions; series remain unchanged. New domain/UI/persistence regressions authored; source/scoped whitespace checks passed, no builds/tests/device operations. Current schema is 11 from existing recurrence work; no extra migration needed for text status values. See docs/MISSED_WORK_REVIEW_HANDOFF.md. Historical unmaterialized recurrence backfill remains out of scope.
+
+Completion timestamps (2026-09-20): added nullable Task.completedAt/Room completed_at and registered non-destructive v9->10 migration. Completion uses the injected action time; repeated completion preserves it, reopening clears it. Today/widget snapshot and idle calendar use actual completion day in the viewer timezone rather than schedule dates. Legacy completed rows remain completed with unknown date, excluded from dated summaries. Latest completion only, not an immutable audit log; recurrence instances and focus streaks unchanged. Regression and migration/round-trip tests authored, not run. Scoped diff check passed; unrelated existing whitespace warnings untouched. No build/emulator/device operations. Schema 10 export awaits authorized build. See docs/COMPLETION_TIMESTAMPS_2026-09-20.md.
+
+HyperOS timer presentation (2026-09-20): implemented icon + equal-width digit summary (Xiaomi template 6), expanded highlighted countdown/actions (template 13), Lucide Timer/Coffee/Armchair vectors with bundled ISC attribution. Paused notification remains with Resume/End; tap routes to Focus; mode follows active session. Added atomic snapshot/revision-guarded notification commands and persistent notification_revision preference; End preserves history/sets. Immediate foreground placeholder avoids waiting on OEM/DataStore reads. Three unit regressions and expanded instrumentation tests authored, not run. Source/XML/resource and diff checks passed; no build/emulator/device operations. Existing one-second update cadence retained. See docs/HYPEROS_TIMER_HANDOFF_2026-09-20.md. Next: manual Global HyperOS 3 acceptance after user builds/updates.
+
+Recurring task instances (2026-09-20): Implemented individual task instances for recurring schedules. Added `TaskStatus.SKIPPED` and `Task.skip()` support. Updated `CalendarRecurrence` with optional `localTime` and updated `NextOccurrenceCalculator` to handle recurring alarms. Created `RecurrenceOccurrenceGenerator` and updated `TodaySnapshotBuilder` to merge virtual instances with stored overrides. Added Room migration v10->11 for `recurrence_time`. Updated Today and Editor UI to support "Skip" and "Edit series" actions. Verified with unit tests.
+
+Plans & Goals UI refinement (2026-09-19): Replaced cramped `DayLoopPillTabRow` pickers in Project and Goal editors with `DayLoopOptionGrid`. Status, Goal, Priority, and Progress options now use a responsive 2-column grid layout, preventing text truncation and aligning with the Task Settings design. Verified with `:app:compileDebugKotlin`.
+
+Widget picker previews (2026-09-19): distinct DayLoop Today/Goals/Focus labels; six density-aware light/dark PNG fallbacks and previewLayout wiring replace launcher-icon placeholders. Each widget now shares its live Content with fictional, action-free providePreview content. MainActivity publishes Android 15+ previews when theme/revision changes or previews are missing, preserving successful publication stamps and falling back on errors/rate limiting. Existing provider classes, minimum dimensions, live data/actions and supplied older Today artwork retained. Resource/pixel checks passed and static images inspected; no Gradle/build/emulator/device operations. Handoff: docs/WIDGET_PICKER_PREVIEWS_2026-09-19.md. Next: manual HyperOS picker review after user builds/updates and opens app once.
+
+Widgets slice (2026-09-19): responsive Today compact/agenda now uses repository-backed snapshot/project generation, correct section labels, privacy-aware completion, task links and Add. Goal progress is proportional; theme follows app. New Focus widget shows current mode, running finish time or paused remaining time, minutes today, and opens Focus for explicit start/pause/resume actions. Project changes now trigger widget refresh; 30-minute platform fallback added. Two mapper tests authored, source/XML checks only; no build/device operations. See docs/WIDGET_REFRESH_2026-09-19.md for architecture, caveats and manual checklist. Next: launcher review and authorized compile/tests; P&G configuration and Calendar remain deferred.
+
+Widget metadata hardening (2026-09-19): Added `android:description` to widget receivers in `AndroidManifest.xml` to complement the `appwidget-provider` XML. Integrated `preview-today.png` as a formal `today_widget_preview` resource and added a `previewLayout` for the Today widget. Updated labels to `DayLoop: Today` to confirm discovery.
+
+Widget metadata fix (2026-09-19): Corrected the `android:description` attribute in widget XML files (previously mislabeled as `descriptionRes`), resolving a resource linking failure. Verified the fix with a successful `:app:assembleDebug` build.
+
+Widget metadata (2026-09-19): Defined clear labels and descriptions for Today, Goal, and Focus widgets in a new `strings.xml`. Updated `AndroidManifest.xml` and `appwidget-provider` metadata to use these resources and added the app icon as a placeholder preview image for the widget picker.
+
+Build repair (2026-09-19): Fixed `WidgetUi.kt` compilation by adding the missing `androidx.glance.appwidget.action.actionStartActivity` import for `Intent` overloads. Corrected `TodayWidgetMapperTest` validation and `TodayUiStateTest` string mismatches. `:app:compileDebugKotlin` and affected unit tests now pass.
+
+Main-screen header/personalization repair (2026-09-17): Today list draws through the previously clipped bottom dock region with measured Scaffold bottom padding in scroll content; dock remains opaque only inside its pill/buttons. Removed SettingsPullHost from app rendering (file retained unused); shared DayLoopPageHeader on Today/P&Gs/Focus opens More by mascot tap or hold. Shared headlineLarge role and 56dp minimum header. Advanced appearance now exposes Warping/JetBrains Mono and a validated, DataStore-persisted displayName; Today observes it via AppSettings, falls back to Hello, and fixes singular task grammar. Name preference is not exported by the existing partial BackupManager. Updated/added tests, source checks only, no build/device checks. Next: manual dock scroll, mascot accessibility, font switching and name persistence review.
+
+Token test correction (2026-09-17): CalmPressureTokensTest.kt now uses DayLoopLightTokens/DayLoopDarkTokens, current spacing roles/values and secondaryText. Production theme unchanged; test file/class name retained. Source checked only; tests/build not run.
+
+Task/schedule repair slice 1 (2026-09-17): restored editor date/time/block/interval/calendar-rule fields, priority/project/reminder settings, visible validation errors, reopen and disabled save/delete states. Conflicting draft flags now reject instead of silently choosing precedence. Today includes generated project tasks, renders all existing visible groups including Overdue, and reconnects swipe/hold/subtask callbacks. Natural-intent AddTask now assigns the current planning date. Added TaskScheduleRepairTest (3 cases); not run. No build/device checks. Remaining audit findings are NOT fixed: completion timestamps/history, repeat instances/Today projection, missed-work/inbox policy, goal progress weighting and single schedule-state refactor. Next single action: manual regression of this connection repair, then design completion-history migration.
+
+Focus sound selector (2026-09-17): replaced cramped emoji circles in normal and fullscreen timers with shared FocusSoundPicker.kt. A full-width Background sound/current-value row opens a scrollable radio-choice dialog; Off maps to NONE. Selection uses existing persistence/playback callbacks, no preview playback or timer changes. Fullscreen now receives busy to disable sound changes during saves. Two tests authored in FocusSoundPickerTest.kt, not executed; no build/emulator/device checks. Next: manual narrow-screen, large-text, theme, selection/dismissal and running-timer sound review.
+
+Today notched metrics (2026-09-17): replaced the two summary surfaces with concave-corner cards and a single accessible card/arrow action. Completed and Remaining open live task detail sheets; remaining includes overdue/now/next/anytime. Removed scheduled-only inline expansion, kept existing editor callbacks, and corrected snapshot-date/project-title refresh dependencies. Source review only; two regression tests authored but not run, no build/device operations. Resume details: docs/TODAY_NOTCHED_CARDS_HANDOFF.md. Next single action: manually review geometry, ripples and populated sheet navigation, then authorize compile/tests if desired.
+
+Reference UI adjustment (2026-09-17): Today now shows equal-height violet Completed and lime Remaining metrics (stacked at narrow widths/large text); focused minutes are presented on Focus. Fixed reference light/dark palette and JetBrains Mono override legacy color/font preferences without deleting stored backups. Removed palette/HEX/saved-palette/font-selector UI; retained System/Light/Dark, weight, assistant and reduced motion. Task surfaces invert (light tasks on dark background, dark tasks on light background), with separate compact metadata. P&Gs heading/navigation label, separate Projects/Goals tabs, full-width compact project cards. Navigation uses a rounded four-slot pill; centered plus sits above it on Today/P&Gs only. Schedule/reminder grids show full selectable labels; project field opens full-name selection dialog. Three regression tests authored, not run. No build, emulator, install/uninstall or device checks; manual acceptance pending. See docs/UI_REFERENCE_REVISION_2026-09-17.md.
+
+Material 3 Design System (2026-09-14): Confirmed Material 3 and standard DayLoop components as the UI foundation. Reverted a non-Material "Matcha" spike to preserve compatibility with standard Material components while maintaining the brand's visual identity through custom tokens and icons. Preserved mascot depth, focus sounds, and technical hardening from Phase 12.
 
 Phase 12: The Sentient Loop (2026-09-13): implemented deep mascot personality with `SLEEPY`, `ENERGETIC`, and `STARGAZING` moods. Added `FocusHeartbeat` haptic feedback in `FocusService`. Created `NaturalIntentParser` for on-device natural language planning. Upgraded Mascot Modal with unread "Gifts" (milestone rewards) and a Chat UI for instant task/timer actions. Synced mascot mood to `TodayWidget` and created a new `GoalWidget`.
 
@@ -399,7 +544,7 @@ Phase 10A is complete. Phase 11 hardening is in progress: battery & performance 
 - `benchmark/src/main/java/com/dayloop/benchmark/StartupBenchmark.kt`
 
 ## Next single action
-- Await manual acceptance of Focus duration editing using `docs/UI_MANUAL_REVIEW.md`. Other UI slices and build/test/lint/install/emulator execution require a new request.
+- Manually accept missed-work review and P&Gs Saved work using docs/MISSED_WORK_REVIEW_HANDOFF.md; run the authored tests/build only when authorized. Completion migration acceptance (now through schema 11), timer/widget acceptance and historical recurring occurrence policy remain pending.
 
 ## Do not start yet
 Do not start mascot animation, background auto-start, AI planner, cloud backend/authentication, calendar write sync, or cross-platform work without the corresponding user request.

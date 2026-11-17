@@ -2,6 +2,7 @@ package com.dayloop.app.widget
 
 import android.content.Context
 import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.updateAll
 import androidx.glance.appwidget.state.updateAppWidgetState
 import com.dayloop.app.DayLoopApplication
 import com.dayloop.app.core.model.Goal
@@ -32,10 +33,12 @@ class WidgetStateReconciler(
             taskRepository.observeTasks(),
             settingsRepository.settings,
             focusStore.state,
-            app.appGraph.goalRepository.observeGoals()
-        ) { tasks, settings, focus, goals ->
+            app.appGraph.goalRepository.observeGoals(),
+            app.appGraph.projectRepository.observeProjects()
+        ) { tasks, settings, focus, goals, projects ->
             val moment = TodayMoment(timeProvider.now(), ZoneId.systemDefault())
-            val snapshot = TodaySnapshotBuilder.build(tasks, moment)
+            val snapshot = TodaySnapshotBuilder.build(tasks, moment,
+                com.dayloop.app.core.projects.ProjectOccurrenceGenerator().generateFor(projects, moment))
             
             // Derive mood for widget
             val suggestions: List<AssistantSuggestion> = if (settings.aiAssistantEnabled) {
@@ -56,6 +59,7 @@ class WidgetStateReconciler(
 
             updateTodayWidget(snapshot, settings.widgetPrivacyEnabled, mascotMood)
             updateGoalWidget(goals, tasks)
+            FocusWidget().updateAll(context)
         }.collectLatest { }
     }
 

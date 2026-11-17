@@ -13,6 +13,7 @@ import com.dayloop.app.R
 import com.dayloop.app.today.AssistantSuggestion
 import com.dayloop.app.today.SuggestionType
 import com.dayloop.app.ui.components.DayLoopIcon
+import com.dayloop.app.ui.components.DayLoopIconButton
 import com.dayloop.app.ui.theme.dayLoopTokens
 
 @Composable
@@ -34,7 +35,7 @@ fun TodayAssistantCard(
 
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(tokens.shapeScale.comfortableCorner),
+        shape = RoundedCornerShape(tokens.shapeScale.cardCorner),
         color = containerColor,
         contentColor = contentColor,
         tonalElevation = 2.dp
@@ -59,17 +60,13 @@ fun TodayAssistantCard(
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
                 )
-                IconButton(
+                DayLoopIconButton(
+                    resource = R.drawable.ic_action_close,
+                    label = "Dismiss",
                     onClick = onDismiss,
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    DayLoopIcon(
-                        resource = R.drawable.ic_action_close,
-                        description = "Dismiss",
-                        tint = contentColor.copy(alpha = 0.6f),
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
+                    tint = contentColor.copy(alpha = 0.6f),
+                    modifier = Modifier.size(32.dp)
+                )
             }
 
             Text(

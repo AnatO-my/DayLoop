@@ -9,6 +9,8 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.AudioAttributes
+import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
 import com.dayloop.app.R
@@ -28,6 +30,15 @@ data class ReminderCapabilities(
     val exactAlarmsAllowed: Boolean,
 )
 
+/** Android framework checks reduced to a pure policy seam for regression coverage. */
+internal object ReminderCapabilityPolicy {
+    fun notificationsAllowed(apiLevel: Int, runtimeGranted: Boolean, systemEnabled: Boolean): Boolean =
+        (apiLevel < 33 || runtimeGranted) && systemEnabled
+
+    fun exactAlarmsAllowed(apiLevel: Int, canScheduleExactAlarms: Boolean): Boolean =
+        apiLevel < 31 || canScheduleExactAlarms
+}
+
 class ReminderNotifications(
     private val context: Context,
     private val settings: SettingsRepository,
@@ -38,26 +49,43 @@ class ReminderNotifications(
 
     fun createChannels() {
         manager.createNotificationChannel(NotificationChannel(REMINDER_CHANNEL, "Reminders",
-            NotificationManager.IMPORTANCE_HIGH))
+            NotificationManager.IMPORTANCE_HIGH).apply {
+            val audioAttributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+            setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION), audioAttributes)
+            enableVibration(true)
+        })
         manager.createNotificationChannel(NotificationChannel(ALARM_CHANNEL, "Alarm reminders",
             NotificationManager.IMPORTANCE_HIGH).apply {
             description = "Opt-in alarm-style reminders"
+            val audioAttributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_ALARM)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+            setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM), audioAttributes)
+            enableVibration(true)
+            vibrationPattern = longArrayOf(0, 500, 200, 500)
         })
     }
 
     fun capabilities(): ReminderCapabilities {
         createChannels()
-        val permission = Build.VERSION.SDK_INT < 33 ||
+        val notificationPermissionGranted = Build.VERSION.SDK_INT < 33 ||
             context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
         val alarmChannel = manager.getNotificationChannel(ALARM_CHANNEL)
+        val canScheduleExactAlarms = Build.VERSION.SDK_INT < 31 ||
+            context.getSystemService(AlarmManager::class.java).canScheduleExactAlarms()
         return ReminderCapabilities(
-            notificationsAllowed = permission && manager.areNotificationsEnabled(),
+            notificationsAllowed = ReminderCapabilityPolicy.notificationsAllowed(
+                Build.VERSION.SDK_INT, notificationPermissionGranted, manager.areNotificationsEnabled()),
             reminderChannelEnabled = manager.getNotificationChannel(REMINDER_CHANNEL)?.importance != NotificationManager.IMPORTANCE_NONE,
             alarmChannelEnabled = alarmChannel?.importance != NotificationManager.IMPORTANCE_NONE,
             alarmChannelHighImportance = (alarmChannel?.importance ?: 0) >= NotificationManager.IMPORTANCE_HIGH,
             fullScreenAllowed = Build.VERSION.SDK_INT < 34 || manager.canUseFullScreenIntent(),
-            exactAlarmsAllowed = Build.VERSION.SDK_INT < 31 ||
-                context.getSystemService(AlarmManager::class.java).canScheduleExactAlarms(),
+            exactAlarmsAllowed = ReminderCapabilityPolicy.exactAlarmsAllowed(
+                Build.VERSION.SDK_INT, canScheduleExactAlarms),
         )
     }
 
@@ -88,7 +116,10 @@ class ReminderNotifications(
             .setCategory(if (alarmStyle) Notification.CATEGORY_ALARM else Notification.CATEGORY_REMINDER)
             .setVisibility(if (preferences.lockScreenPrivacyEnabled) Notification.VISIBILITY_PRIVATE else Notification.VISIBILITY_PUBLIC)
             .setPublicVersion(publicVersion)
-            .setContentIntent(content).setAutoCancel(false).setOnlyAlertOnce(false)
+            .setContentIntent(content)
+            .setOngoing(alarmStyle)
+            .setAutoCancel(false)
+            .setOnlyAlertOnce(false)
         
         builder.addAction(action("Done", AlarmNotificationAction.COMPLETE, actionOccurrence))
         if (task.reminderPolicy.snoozeAllowed) {
@@ -145,8 +176,8 @@ class ReminderNotifications(
     private fun tag(id: ScheduledOccurrenceId) = "reminder:${id.value}"
 
     companion object {
-        const val REMINDER_CHANNEL = "dayloop.reminders"
-        const val ALARM_CHANNEL = "dayloop.alarm_reminders"
+        const val REMINDER_CHANNEL = "dayloop.reminders.v2"
+        const val ALARM_CHANNEL = "dayloop.alarm_reminders.v2"
         const val EXTRA_ID = "reminder_occurrence_id"
         const val EXTRA_GENERATION = "reminder_generation"
     }

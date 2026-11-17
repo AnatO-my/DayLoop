@@ -47,7 +47,7 @@ internal fun PlanningIconPicker(selected: String, enabled: Boolean, onSelect: (S
         Surface(
             onClick = { if (enabled) showDialog = true },
             enabled = enabled,
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+            shape = MaterialTheme.shapes.small,
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -79,7 +79,7 @@ internal fun PlanningIconPicker(selected: String, enabled: Boolean, onSelect: (S
                                 onSelect(icon.name)
                                 showDialog = false
                             },
-                            shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+                            shape = MaterialTheme.shapes.small,
                             color = if (icon.name == selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
                             modifier = Modifier.fillMaxWidth()
                         ) {

@@ -11,8 +11,18 @@ import androidx.room.RoomDatabase
         PersistentReminderEscalationEntity::class,
         GoalEntity::class,
         ProjectEntity::class,
+        ClothingItemEntity::class,
+        OutfitEntity::class,
+        OutfitItemCrossRef::class,
+        WardrobeMediaEntity::class,
+        ClothingMediaEntity::class,
+        OutfitMediaEntity::class,
+        ClothingAttributesEntity::class,
+        OutfitFeedbackEntity::class,
+        WorkoutRoutineEntity::class,
+        NoteEntity::class,
     ],
-    version = 9,
+    version = 21,
     exportSchema = true,
 )
 abstract class DayLoopDatabase : RoomDatabase() {
@@ -27,4 +37,18 @@ abstract class DayLoopDatabase : RoomDatabase() {
     abstract fun goalDao(): GoalDao
 
     abstract fun projectDao(): ProjectDao
+
+    abstract fun clothingDao(): ClothingDao
+
+    abstract fun outfitDao(): OutfitDao
+
+    abstract fun wardrobeMediaDao(): WardrobeMediaDao
+
+    abstract fun clothingAttributesDao(): ClothingAttributesDao
+
+    abstract fun outfitFeedbackDao(): OutfitFeedbackDao
+
+    abstract fun workoutRoutineDao(): WorkoutRoutineDao
+
+    abstract fun noteDao(): NoteDao
 }

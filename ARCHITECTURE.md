@@ -80,8 +80,23 @@ core:database
   OccurrenceEntity
   CompletionEntity
   AlarmLogEntity
+  NoteEntity                   # Added in Note Engine Upgrade
+  GoalEntity
+  ProjectEntity
+  ClothingItemEntity
+  OutfitEntity
   DAOs
   mappers
+
+core:calendar                  # Added in Calendar Integration Upgrade
+  CalendarContractManager
+  CalendarEvent
+  CalendarSyncRepository
+
+core:notes                     # Added in Note Engine Upgrade
+  Note
+  NoteRepository
+  NoteDao
 
 core:recurrence
   NextOccurrenceCalculator

@@ -1,5 +1,11 @@
 package com.dayloop.app.feature.idle
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
+import com.dayloop.app.ui.theme.dayLoopTokens
+import com.dayloop.app.feature.outfit.OutfitDetailDialog
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,6 +38,8 @@ import com.dayloop.app.core.model.*
 import com.dayloop.app.feature.onboarding.DayLoopMascot
 import com.dayloop.app.feature.onboarding.MascotMood
 import com.dayloop.app.settings.ThemeMode
+import com.dayloop.app.ui.guides.GuideTargets
+import com.dayloop.app.ui.guides.guideTarget
 import java.time.LocalDate
 import java.time.DayOfWeek
 import java.time.format.DateTimeFormatter
@@ -39,14 +47,14 @@ import java.time.format.TextStyle
 
 
 @Composable
-fun IdleScreen(date: LocalDate, tasks: List<Task>, onExit: () -> Unit) {
+fun IdleScreen(date: LocalDate, tasks: List<Task>, outfits: List<OutfitRecord>, onExit: () -> Unit) {
     Dialog(onDismissRequest = onExit, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        IdleScreenContent(date, tasks, onExit)
+        IdleScreenContent(date, tasks, outfits, onExit)
     }
 }
 
 @Composable
-internal fun IdleScreenContent(date: LocalDate, tasks: List<Task>, onExit: () -> Unit) {
+internal fun IdleScreenContent(date: LocalDate, tasks: List<Task>, outfits: List<OutfitRecord>, onExit: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     val threshold = with(LocalDensity.current) { 64.dp.toPx() }
     val exit by rememberUpdatedState(onExit)
@@ -59,6 +67,7 @@ internal fun IdleScreenContent(date: LocalDate, tasks: List<Task>, onExit: () ->
         Surface(
             modifier = Modifier
                 .fillMaxSize()
+                .border(1.dp, colors.outline)
                 .semantics { paneTitle = "Idle calendar"; dismiss { onExit(); true } }
                 .pointerInput(threshold) {
                     var distance = 0f
@@ -72,35 +81,36 @@ internal fun IdleScreenContent(date: LocalDate, tasks: List<Task>, onExit: () ->
                     }
                 },
             color = colors.background,
-            shape = RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)
+            shape = RoundedCornerShape(0.dp)
         ) {
             // CalendarFace receives the inner padding so its text and layout remain safely
             // clear of the status bar/notch while the background covers the entire top edge.
             CalendarFace(
                 date = date,
                 tasks = tasks,
+                outfits = outfits,
                 modifier = Modifier
                     .fillMaxSize()
                     .statusBarsPadding()
                     .navigationBarsPadding()
-                    .padding(horizontal = 20.dp, vertical = 24.dp)
+                    .padding(horizontal = MaterialTheme.dayLoopTokens.spacing.pageMargin, vertical = 24.dp)
             )
         }
     }
 }
 
 @Composable
-internal fun CalendarFace(date: LocalDate, tasks: List<Task>, modifier: Modifier = Modifier) {
-    BoxWithConstraints(modifier.testTag("calendar-face")) {
+internal fun CalendarFace(date: LocalDate, tasks: List<Task>, outfits: List<OutfitRecord>, modifier: Modifier = Modifier) {
+    BoxWithConstraints(modifier.testTag("calendar-face").guideTarget(GuideTargets.CALENDAR_DOTS)) {
         if (maxWidth > maxHeight) {
             Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                 CalendarHeading(date, Modifier.weight(1f).fillMaxHeight())
-                CalendarDots(date, tasks, Modifier.weight(1f).fillMaxHeight())
+                CalendarDots(date, tasks, outfits, Modifier.weight(1f).fillMaxHeight())
             }
         } else {
             Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(28.dp)) {
                 CalendarHeading(date, Modifier.weight(0.52f).fillMaxWidth())
-                CalendarDots(date, tasks, Modifier.weight(0.48f).fillMaxWidth())
+                CalendarDots(date, tasks, outfits, Modifier.weight(0.48f).fillMaxWidth())
             }
         }
     }
@@ -114,11 +124,6 @@ private fun CalendarHeading(date: LocalDate, modifier: Modifier) {
     Column(modifier, verticalArrangement = Arrangement.Bottom) {
         Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.BottomStart) {
             Column(horizontalAlignment = Alignment.Start) {
-                DayLoopMascot(
-                    modifier = Modifier.size(120.dp),
-                    mood = MascotMood.STARGAZING
-                )
-                Spacer(Modifier.height(16.dp))
                 BasicText(date.dayOfMonth.toString(), modifier = Modifier.testTag("calendar-day"),
                     style = MaterialTheme.typography.displayLarge.copy(color = colors.onBackground,
                         fontWeight = FontWeight.Bold, lineHeight = TextUnit.Unspecified),
@@ -140,21 +145,25 @@ private fun CalendarHeading(date: LocalDate, modifier: Modifier) {
 }
 
 @Composable
-private fun CalendarDots(date: LocalDate, tasks: List<Task>, modifier: Modifier) {
+private fun CalendarDots(date: LocalDate, tasks: List<Task>, outfits: List<OutfitRecord>, modifier: Modifier) {
+    var selectedDateForOutfit by remember { mutableStateOf<LocalDate?>(null) }
+
+    if (selectedDateForOutfit != null) {
+        OutfitDetailDialog(date = selectedDateForOutfit!!, onDismiss = { selectedDateForOutfit = null })
+    }
+
     val colors = MaterialTheme.colorScheme
     val locale = LocalConfiguration.current.locales[0]
     val first = date.withDayOfMonth(1)
     val offset = first.dayOfWeek.value - 1
     val weeks = (offset + date.lengthOfMonth() + 6) / 7
-    val past = if (colors.background.luminance() < 0.5f) Color(0xFFE8E8E8) else Color(0xFF002A32)
-    val completedDays = remember(tasks) { tasks.filter { it.status == TaskStatus.COMPLETED }.mapNotNull {
-        when (val schedule = it.schedule) {
-            is TaskSchedule.AllDay -> schedule.date
-            is TaskSchedule.Deadline -> schedule.dueAt.toLocalDate()
-            is TaskSchedule.TimeBlock -> schedule.startsAt.toLocalDate()
-            else -> null
-        }
+    val past = if (colors.background.luminance() < 0.5f) Color(0xFFE8E8E8) else Color(0xFF30363A)
+    val zoneId = java.time.ZoneId.systemDefault()
+    val completedDays = remember(tasks, zoneId) { tasks.filter { it.status == TaskStatus.COMPLETED }.mapNotNull {
+        it.completedAt?.atZone(zoneId)?.toLocalDate()
     }.toSet() }
+    val photoDays = remember(outfits) { outfits.filter { it.photos.isNotEmpty() }.map { it.date }.toSet() }
+    
     val density = LocalDensity.current
     val labelPixels = with(density) { (24.dp * fontScale).roundToPx() }
     val gapPixels = with(density) { 3.dp.roundToPx() }
@@ -162,10 +171,11 @@ private fun CalendarDots(date: LocalDate, tasks: List<Task>, modifier: Modifier)
     val gap = with(density) { gapPixels.toDp() }
     BoxWithConstraints(modifier, contentAlignment = Alignment.TopCenter) {
         // Quantise once: independent dp rounding otherwise squeezes the final cell in a row.
-        val pixels = with(density) { kotlin.math.floor(calendarDiameter(maxWidth.roundToPx().toFloat(),
-            maxHeight.roundToPx().toFloat(), weeks, gapPixels.toFloat(), labelPixels.toFloat())).toInt() }
+        val pixels = with(density) { maxOf(kotlin.math.floor(calendarDiameter(maxWidth.roundToPx().toFloat(),
+            maxHeight.roundToPx().toFloat(), weeks, gapPixels.toFloat(), labelPixels.toFloat())).toInt(), 48.dp.roundToPx()) }
         val diameter = with(density) { pixels.toDp() }
         val gridWidth = with(density) { (pixels * 7 + gapPixels * 6).toDp() }
+        Box(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), contentAlignment = Alignment.TopCenter) {
         Column(Modifier.width(gridWidth)) {
             Row(Modifier.fillMaxWidth().height(labels), horizontalArrangement = Arrangement.spacedBy(gap)) {
                 repeat(7) { i ->
@@ -191,16 +201,24 @@ private fun CalendarDots(date: LocalDate, tasks: List<Task>, modifier: Modifier)
                             }
                             Box(Modifier.size(diameter).background(color, CircleShape)
                                 .then(if (!actual) Modifier.border(1.dp, colors.onBackground.copy(alpha = 0.14f), CircleShape) else Modifier)
+                                .then(if (actual && cellDate != null) Modifier.clickable { selectedDateForOutfit = cellDate } else Modifier)
                                 .testTag("calendar-cell-${week * 7 + column}")
                                 .semantics {
                                     if (actual) contentDescription = "$cellDate" +
                                             when { cellDate == date -> ", today"; cellDate!!.isBefore(date) -> ", past day"; else -> ", upcoming" } +
-                                            if (cellDate in completedDays) ", scheduled work completed" else ""
-                                })
+                                            if (cellDate in completedDays) ", work completed" else ""
+                                },
+                                contentAlignment = Alignment.BottomCenter
+                            ) {
+                                if (cellDate != null && cellDate in photoDays) {
+                                    Box(Modifier.padding(bottom = 4.dp).size(4.dp).background(colors.onPrimary, CircleShape))
+                                }
+                            }
                         }
                     }
                 }
             }
+        }
         }
     }
 }
@@ -219,6 +237,7 @@ internal fun IdleScreenContentPreview() {
             IdleScreenContent(
                 date = LocalDate.now(),
                 tasks = emptyList(),
+                outfits = emptyList(),
                 onExit = {}
             )
         }

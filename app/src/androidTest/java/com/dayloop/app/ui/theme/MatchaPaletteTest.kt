@@ -11,7 +11,7 @@ class MatchaPaletteTest {
         val mapper = MatchaPalette(Color(0xFFA8CF3D))
         assertEquals(LightColorScheme, mapper.scheme(LightColorScheme))
         assertEquals(DarkColorScheme, mapper.scheme(DarkColorScheme))
-        assertEquals(CalmPressureLightAppField, mapper.tone(CalmPressureLightAppField))
+        assertEquals(DayLoopLightBackground, mapper.tone(DayLoopLightBackground))
     }
 
     @Test fun completeRolePairsRemainReadableForExtremeAndChromaticSeeds() {

@@ -2,7 +2,7 @@
 
 > A today-first Android task system that prioritises execution, reliable alarms, interval tasks, time-blocked tasks, and explicit daily closure.
 
-**Status:** Project scaffold / product-definition stage  
+**Status:** Developer pre-release (`0.2.0-beta.1`). The app is offline-first and usable for local task, focus, planning, wardrobe, note and widget workflows; device-level verification remains required before a store release.
 **Primary workspace:** Android Studio  
 **Primary platform:** Android first  
 **Language:** Kotlin  
@@ -61,6 +61,21 @@ The defining feature is an escalation-capable reminder system. A task may be con
 - [`TASKS.md`](TASKS.md) — executable project task backlog.
 - [`agents/`](agents/) — specialised agent instructions for planning, implementation, review and QA.
 - [`docs/adr/`](docs/adr/) — architecture decision records.
+
+## Developer pre-release
+
+The public beta is a developer APK, not a Play Store-ready release. Install it
+only on a test device and do not rely on it as the sole copy of important data.
+Build the matching debug app and instrumentation APK with:
+
+```powershell
+.\scripts\capture-rust-androidtest.ps1 `
+  -OutputPath .\app\build\rust-shadow-room-build-output.txt
+```
+
+The currently bundled display typeface is OFL-licensed Funnel Display; readable
+body text uses OFL-licensed JetBrains Mono. SF Pro, OCR A, and Warping binaries
+are intentionally not release assets.
 
 ## Suggested initial package namespace
 

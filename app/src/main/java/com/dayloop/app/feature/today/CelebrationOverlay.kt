@@ -1,5 +1,7 @@
 package com.dayloop.app.feature.today
 
+import androidx.compose.material3.MaterialTheme
+import com.dayloop.app.ui.theme.dayLoopTokens
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +19,7 @@ fun CelebrationOverlay(
 ) {
     if (!active) return
 
+    val confettiInfo = MaterialTheme.dayLoopTokens.colors.info
     val particles = remember {
         List(50) {
             ConfettiParticle(
@@ -26,7 +29,7 @@ fun CelebrationOverlay(
                     Color(0xFFA8CF3D), // DayLoop Lime
                     Color(0xFF54DDA2), // Emerald
                     Color(0xFFF4A7BF), // Rose
-                    Color(0xFF6200EE)  // Purple
+                    confettiInfo  // DayLoop info
                 ).random(),
                 speed = 0.01f + Random.nextFloat() * 0.02f,
                 rotationSpeed = Random.nextFloat() * 5f,

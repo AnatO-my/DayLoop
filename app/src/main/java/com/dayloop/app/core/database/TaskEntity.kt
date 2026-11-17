@@ -69,4 +69,10 @@ data class TaskEntity(
     val provenanceVersion: Long? = null,
     @ColumnInfo(name = "subtasks_json")
     val subtasksJson: String? = null,
+    @ColumnInfo(name = "completed_at")
+    val completedAt: Long? = null,
+    @ColumnInfo(name = "recurrence_time")
+    val recurrenceTime: String? = null,
+    @ColumnInfo(name = "description")
+    val description: String? = null,
 )

@@ -13,14 +13,14 @@ class GeneratedTaskConnectionTest {
         provenance = TaskProvenance("PROJECT_RULE", "SIMPLE_PHASE_CYCLE", 1))
 
     @Test fun savedCompletionReplacesProjectedTask() {
-        val result = TodaySnapshotBuilder.build(listOf(task.markCompleted()), moment, listOf(task))
+        val result = TodaySnapshotBuilder.build(listOf(task.markCompleted(moment.instant)), moment, listOf(task))
         assertEquals(1, result.totalCount)
         assertEquals(1, result.completedCount)
     }
 
     @Test fun obsoleteCompletionDoesNotCompleteANewProtocolVersion() {
         val updated = task.copy(provenance = task.provenance!!.copy(version = 2))
-        val result = TodaySnapshotBuilder.build(listOf(task.markCompleted()), moment, listOf(updated))
+        val result = TodaySnapshotBuilder.build(listOf(task.markCompleted(moment.instant)), moment, listOf(updated))
         assertEquals(1, result.totalCount)
         assertEquals(0, result.completedCount)
     }

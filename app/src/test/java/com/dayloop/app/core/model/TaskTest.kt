@@ -53,7 +53,7 @@ class TaskTest {
             title = "Plan the day",
         )
 
-        val completed = task.markCompleted()
+        val completed = task.markCompleted(java.time.Instant.EPOCH)
 
         assertEquals(TaskStatus.ACTIVE, task.status)
         assertEquals(TaskStatus.COMPLETED, completed.status)
@@ -71,7 +71,7 @@ class TaskTest {
             status = TaskStatus.COMPLETED,
         )
 
-        assertEquals(task, task.markCompleted())
+        assertEquals(task, task.markCompleted(java.time.Instant.EPOCH))
     }
 
     @Test

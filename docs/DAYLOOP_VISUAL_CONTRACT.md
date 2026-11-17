@@ -1,5 +1,11 @@
 # DayLoop Visual Contract
 
+> Historical reference only. The active contract is
+> [`EDITORIAL_VISUAL_CONTRACT.md`](EDITORIAL_VISUAL_CONTRACT.md), which defines
+> Editorial Field Notes: orange/charcoal accents, neutral surfaces, sharp
+> 2–8dp geometry, 24dp page margins, globally selected typography, and the
+> edit-surface rule. Do not use the matcha specification below for new work.
+
 This document is the reusable visual contract for DayLoop UI implementation prompts and Compose design work. It translates the accepted inspiration boards into stable product and implementation direction so later screens can be built consistently without redesigning after feature completion.
 
 ## Purpose

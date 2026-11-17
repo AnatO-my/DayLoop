@@ -114,7 +114,7 @@ class PersistentReminderEscalationProcessorTest {
     fun missingCompletedAndNormalTasksCannotStartChain() = runBlocking {
         val fixture = Fixture()
         val originalTask = fixture.task!!
-        for (task in listOf(null, originalTask.markCompleted(),
+        for (task in listOf(null, originalTask.markCompleted(java.time.Instant.EPOCH),
             originalTask.withReminderPolicy(ReminderPolicy.normal()))) {
             fixture.task = task
             val result = fixture.processor().processAcceptedDelivery(fixture.occurrence)

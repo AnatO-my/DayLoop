@@ -41,7 +41,7 @@ internal class MatchaPalette(private val seed: Color) {
         val bright = tone(base.surfaceBright)
         val dim = tone(base.surfaceDim)
         val surfaces = listOf(background, surface, variant, low, container, high, highest, lowest, bright, dim)
-        val primary = readable(if (base.primary == CalmPressureLightPrimary) seed else tone(base.primary), surfaces)
+        val primary = readable(if (base.primary == DayLoopAccent) seed else tone(base.primary), surfaces)
         val secondary = readable(tone(base.secondary), surfaces)
         val tertiary = readable(tone(base.tertiary), surfaces)
         val primaryContainer = tone(base.primaryContainer)

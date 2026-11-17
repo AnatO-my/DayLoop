@@ -26,6 +26,24 @@ class DataStoreSettingsRepositoryTest {
     }
 
     @Test
+    fun displayNameTrimsAndCanBeCleared() = runTest {
+        val repository = createRepository()
+        repository.setDisplayName("  Ada  ")
+        assertEquals("Ada", repository.settings.first().displayName)
+        repository.setDisplayName("")
+        assertEquals("", repository.settings.first().displayName)
+    }
+
+    @Test
+    fun invalidDisplayNameDoesNotReplaceSavedName() = runTest {
+        val repository = createRepository()
+        repository.setDisplayName("Ada")
+        val result = runCatching { repository.setDisplayName("x".repeat(41)) }
+        assertEquals(true, result.isFailure)
+        assertEquals("Ada", repository.settings.first().displayName)
+    }
+
+    @Test
     fun themeModePersistsIndependentlyFromTaskDatabase() = runTest {
         val repository = createRepository()
 
@@ -71,6 +89,15 @@ class DataStoreSettingsRepositoryTest {
     }
 
     @Test
+    fun homePresentationPersistsIndependentlyFromTaskDatabase() = runTest {
+        val repository = createRepository()
+
+        repository.setHomePresentation(HomePresentation.SIGNAL_GRID)
+
+        assertEquals(HomePresentation.SIGNAL_GRID, repository.settings.first().homePresentation)
+    }
+
+    @Test
     fun invalidStoredEnumValuesFallBackToSafeDefaults() = runTest {
         val dataStore = PreferenceDataStoreFactory.createWithPath(
             scope = backgroundScope,
@@ -80,6 +107,7 @@ class DataStoreSettingsRepositoryTest {
             preferences[stringPreferencesKey("theme_mode")] = "NEON"
             preferences[stringPreferencesKey("default_reminder_mode")] = "LOUD"
             preferences[stringPreferencesKey("week_start")] = "FUNDAY"
+            preferences[stringPreferencesKey("home_presentation")] = "HYPER_BUBBLY"
         }
         val repository = DataStoreSettingsRepository(dataStore)
 

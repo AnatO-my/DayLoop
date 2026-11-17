@@ -21,6 +21,16 @@ import java.util.UUID
 class DataStoreSettingsRepository(
     private val dataStore: DataStore<Preferences>,
 ) : SettingsRepository {
+    private val guideProgress = GuideProgressPreferences(dataStore)
+    // Keep the previous style's font preference intact for rollback.
+    private val EDITORIAL_FONT = stringPreferencesKey("editorial_font")
+    private val READABLE_BODY = booleanPreferencesKey("readable_body_text")
+
+    override fun observeGuideProgress(key: GuideKey): Flow<GuideProgress> = guideProgress.observe(key)
+
+    override suspend fun updateGuideProgress(key: GuideKey, expected: GuideProgress, action: GuideAction): Boolean =
+        guideProgress.update(key, expected, action)
+
     override val settings: Flow<AppSettings> = dataStore.data
         .catch { exception ->
             if (exception is IOException) {
@@ -44,7 +54,10 @@ class DataStoreSettingsRepository(
                 reducedMotion = preferences[REDUCED_MOTION] ?: false,
                 fontWeightScale = preferences[FONT_WEIGHT_SCALE]?.takeIf { it.isFinite() }?.coerceIn(0.5f, 1.5f) ?: 1f,
                 customColorHex = normalizeHexColor(preferences[CUSTOM_COLOR_HEX]),
-                font = preferences[FONT].toEnumOrDefault(AppFont.JETBRAINS_MONO),
+                font = preferences[EDITORIAL_FONT].toEnumOrDefault(AppFont.FUNNEL_DISPLAY),
+                readableBodyText = preferences[READABLE_BODY] ?: true,
+                homePresentation = preferences[HOME_PRESENTATION].toEnumOrDefault(HomePresentation.EDITORIAL),
+                displayName = preferences[DISPLAY_NAME].orEmpty(),
                 aiAssistantEnabled = preferences[AI_ASSISTANT_ENABLED] ?: true,
                 hapticHeartbeatEnabled = preferences[HAPTIC_HEARTBEAT_ENABLED] ?: true,
                 planningIcons = preferences.asMap().entries.filter { it.key.name.startsWith("planning_icon:") }
@@ -90,7 +103,16 @@ class DataStoreSettingsRepository(
         }
     }
 
-    override suspend fun setFont(font: AppFont) { dataStore.edit { it[FONT] = font.name } }
+    override suspend fun setFont(font: AppFont) { dataStore.edit { it[EDITORIAL_FONT] = font.name } }
+    override suspend fun setReadableBodyText(enabled: Boolean) { dataStore.edit { it[READABLE_BODY] = enabled } }
+    override suspend fun setHomePresentation(presentation: HomePresentation) {
+        dataStore.edit { it[HOME_PRESENTATION] = presentation.name }
+    }
+    override suspend fun setDisplayName(name: String) {
+        val normalized = name.trim()
+        require(normalized.length <= 40 && normalized.none { it.isISOControl() })
+        dataStore.edit { it[DISPLAY_NAME] = normalized }
+    }
 
     override suspend fun setPlanningIcon(key: String, icon: String) {
         require(key.startsWith("project:") || key.startsWith("goal:"))
@@ -323,6 +345,7 @@ class DataStoreSettingsRepository(
     private companion object {
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val FONT = stringPreferencesKey("app_font")
+        val DISPLAY_NAME = stringPreferencesKey("display_name")
         val PALETTE = stringPreferencesKey("app_palette")
         val TEXT_SCALE = floatPreferencesKey("app_text_scale")
         val REDUCED_MOTION = booleanPreferencesKey("reduced_motion")
@@ -343,6 +366,7 @@ class DataStoreSettingsRepository(
         val LAST_APP_OPEN_TIMESTAMP = longPreferencesKey("last_app_open_timestamp")
         val BACKGROUND_SERVICE_SECONDS = longPreferencesKey("background_service_seconds")
         val GIFTS = stringPreferencesKey("app_mascot_gifts")
+        val HOME_PRESENTATION = stringPreferencesKey("home_presentation")
     }
 }
 

@@ -128,7 +128,7 @@ fun SettingsPullHost(
             Surface(
                 modifier = Modifier
                     .graphicsLayer { translationY = offsetY }
-                    .clip(RoundedCornerShape(20.dp)),
+                    .clip(MaterialTheme.shapes.extraLarge),
                 color = MaterialTheme.colorScheme.secondaryContainer,
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                 tonalElevation = 4.dp

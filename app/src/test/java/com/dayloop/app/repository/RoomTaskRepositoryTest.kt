@@ -33,6 +33,20 @@ import org.junit.Test
 
 class RoomTaskRepositoryTest {
     @Test
+    fun descriptionsSurviveSaveEditAndClear() = runBlocking {
+        val repository = RoomTaskRepository(FakeTaskDao())
+        val task = Task(id = TaskId("description"), title = "Read", description = "First line\nSecond line")
+        repository.saveTask(task)
+        assertEquals(task, repository.getTask(task.id))
+        for (description in listOf("Updated description", "", null)) {
+            val updated = task.copy(description = description)
+            repository.saveTask(updated)
+            assertEquals(updated, repository.getTask(task.id))
+            assertEquals(description, repository.observeTask(task.id).first()?.description)
+        }
+    }
+
+    @Test
     fun saveAndGetTaskRoundTripsDomainModelThroughEntityMapper() = runBlocking {
         val repository = RoomTaskRepository(FakeTaskDao())
         val task = Task(

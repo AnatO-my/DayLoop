@@ -71,6 +71,7 @@ data class TaskEditorDraft(
     val reminderSnoozeAllowed: Boolean = true,
     val reminderRescheduleAllowed: Boolean = true,
     val subtasks: List<Subtask> = emptyList(),
+    val notes: String? = null,
     val errorMessage: String? = null,
     val deadlineErrorMessage: String? = null,
     val timeBlockErrorMessage: String? = null,
@@ -269,6 +270,7 @@ data class TaskEditorDraft(
                 schedule = schedule,
                 reminderPolicy = reminderPolicy,
                 subtasks = subtasks,
+                description = notes,
             ),
         )
     }
@@ -295,11 +297,14 @@ data class TaskEditorDraft(
                 schedule = schedule,
                 reminderPolicy = reminderPolicy,
                 subtasks = subtasks,
+                description = notes,
             ),
         )
     }
 
     private fun editorSchedule(existingIntervalRule: IntervalRule? = null): EditorScheduleResult = when {
+        listOf(deadlineEnabled, timeBlockEnabled, intervalEnabled, recurrenceEnabled).count { it } > 1 ->
+            EditorScheduleResult.Invalid("Choose one schedule type", ScheduleErrorTarget.DATE)
         recurrenceEnabled -> recurrenceSchedule()
         intervalEnabled -> intervalSchedule(existingIntervalRule)
         timeBlockEnabled -> timeBlockSchedule()
@@ -611,6 +616,7 @@ data class TaskEditorDraft(
                 reminderSnoozeAllowed = reminderPolicy.snoozeAllowed,
                 reminderRescheduleAllowed = reminderPolicy.rescheduleAllowed,
                 subtasks = task.subtasks,
+                notes = task.description,
             )
         }
     }

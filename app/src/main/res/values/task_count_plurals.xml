@@ -1,0 +1,6 @@
+<resources>
+    <plurals name="project_task_progress">
+        <item quantity="one">%1$d of %2$d task</item>
+        <item quantity="other">%1$d of %2$d tasks</item>
+    </plurals>
+</resources>

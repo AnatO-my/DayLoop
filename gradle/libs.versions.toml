@@ -9,13 +9,18 @@ composeMaterial3 = "1.4.0"
 composeUi = "1.11.1"
 coroutines = "1.9.0"
 datastore = "1.2.1"
+coil = "2.7.0"
+mlkit-subject-segmentation = "16.0.0-beta1"
+mlkit-image-labeling = "17.0.9"
 espresso = "3.7.0"
 glance = "1.2.0"
 junit = "4.13.2"
 room = "2.8.4"
 uiautomator = "2.3.0"
+exifinterface = "1.4.0"
 
 [libraries]
+androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterface", version.ref = "exifinterface" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "composeUi" }
 androidx-compose-animation-graphics = { group = "androidx.compose.animation", name = "animation-graphics", version.ref = "composeUi" }
@@ -37,8 +42,12 @@ androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espres
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestExtJunit" }
 androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidxTestRunner" }
 androidx-test-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
+mlkitSubjectSegmentation = { group = "com.google.android.gms", name = "play-services-mlkit-subject-segmentation", version.ref = "mlkit-subject-segmentation" }
+mlkitImageLabeling = { group = "com.google.mlkit", name = "image-labeling", version.ref = "mlkit-image-labeling" }
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 
 [bundles]
@@ -49,6 +58,7 @@ androidx-compose = [
     "androidx-compose-material3",
     "androidx-compose-ui",
     "androidx-compose-ui-tooling-preview",
+    "coil-compose",
 ]
 androidx-compose-debug = [
     "androidx-compose-ui-test-manifest",

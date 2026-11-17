@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.PowerManager
 import android.provider.Settings
 
 class CapabilityRepairFlow(private val context: Context) {
@@ -31,12 +32,31 @@ class CapabilityRepairFlow(private val context: Context) {
 
     fun fullScreenIntentSettingsIntent(): Intent? {
         return if (Build.VERSION.SDK_INT >= 34) {
-            // There isn't a direct "request full screen" intent like exact alarm, 
-            // usually it's managed via Notification Channel importance or 
-            // the "Special app access" section.
-            applicationDetailsIntent()
+            Intent(
+                Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
+                Uri.parse("package:${context.packageName}"),
+            )
         } else {
             null
+        }
+    }
+
+    fun batteryOptimizationSettingsIntent(): Intent {
+        return if (Build.VERSION.SDK_INT >= 23) {
+            Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                data = Uri.parse("package:${context.packageName}")
+            }
+        } else {
+            applicationDetailsIntent()
+        }
+    }
+
+    fun isIgnoringBatteryOptimizations(): Boolean {
+        return if (Build.VERSION.SDK_INT >= 23) {
+            val pm = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+            pm?.isIgnoringBatteryOptimizations(context.packageName) ?: true
+        } else {
+            true
         }
     }
 

@@ -84,7 +84,7 @@ class TodayScreenTest {
         val task = Task(
             id = TaskId("update"),
             title = "Send update",
-        ).markCompleted()
+        ).markCompleted(java.time.Instant.EPOCH)
 
         composeRule.setContent {
             DayLoopTheme {

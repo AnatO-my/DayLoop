@@ -32,11 +32,11 @@ class TodayUiStateTest {
         assertEquals("0m", state.focusTimeValue)
         assertEquals("Focus", state.focusTimeMetricLabel)
         assertEquals("0", state.streakValue)
-        assertEquals("Streak", state.streakMetricLabel)
+        assertEquals("Focus streak", state.streakMetricLabel)
         assertEquals("0", state.completedMetricValue)
         assertEquals("Done", state.completedMetricLabel)
-        assertEquals("--", state.focusScoreValue)
-        assertEquals("Score", state.focusScoreMetricLabel)
+        assertEquals("0%", state.focusScoreValue)
+        assertEquals("Progress", state.focusScoreMetricLabel)
         assertEquals("+ Add task", state.addTaskActionLabel)
         assertEquals("today", state.selectedBottomNavItemId)
         assertEquals("Open day", state.dayStatusLabel)
@@ -48,7 +48,7 @@ class TodayUiStateTest {
     @Test
     fun stateDerivesRemainingAndCompletedCountsFromSnapshot() {
         val active = task(id = "active")
-        val completed = task(id = "completed").markCompleted()
+        val completed = task(id = "completed").markCompleted(java.time.Instant.EPOCH)
         val state = TodayUiState(
             snapshot = TodaySnapshot(
                 date = date,
@@ -75,7 +75,7 @@ class TodayUiStateTest {
 
     @Test
     fun completeStateReportsDayCompleteAndFullProgress() {
-        val completed = task(id = "completed").markCompleted()
+        val completed = task(id = "completed").markCompleted(java.time.Instant.EPOCH)
         val state = TodayUiState(
             snapshot = TodaySnapshot(
                 date = date,
@@ -116,7 +116,7 @@ class TodayUiStateTest {
         )
 
         assertEquals(
-            listOf(TodaySection.OVERDUE, TodaySection.NOW, TodaySection.NEXT, TodaySection.ANYTIME),
+            listOf(TodaySection.OVERDUE, TodaySection.NOW, TodaySection.NEXT, TodaySection.ANYTIME, TodaySection.MISSED),
             state.sections.map { section -> section.section },
         )
         assertEquals(listOf("Overdue", "Now", "Next", "Anytime"), state.visibleSections.map { section -> section.title })
@@ -135,7 +135,7 @@ class TodayUiStateTest {
             ),
         )
 
-        assertEquals(4, state.sections.size)
+        assertEquals(5, state.sections.size)
         assertTrue(state.sections.first { section -> section.section == TodaySection.OVERDUE }.isEmpty)
         assertEquals(listOf(TodaySection.ANYTIME), state.visibleSections.map { section -> section.section })
         assertEquals("Anytime, 1 task", state.visibleSections.single().accessibilityLabel)
@@ -144,7 +144,7 @@ class TodayUiStateTest {
     @Test
     fun completedSectionIsDerivedSeparatelyFromVisibleUnresolvedSections() {
         val active = task(id = "active", title = "Write brief")
-        val completed = task(id = "completed", title = "Send update").markCompleted()
+        val completed = task(id = "completed", title = "Send update").markCompleted(java.time.Instant.EPOCH)
         val state = TodayUiState(
             snapshot = TodaySnapshot(
                 date = date,
