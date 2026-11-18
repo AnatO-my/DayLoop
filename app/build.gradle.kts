@@ -43,25 +43,41 @@ android {
 }
 
 val rustAndroidTestJniLibs = layout.buildDirectory.dir("generated/rust/androidTest/jniLibs")
-val buildRustArm64TestLibrary by tasks.registering(Exec::class) {
-    group = "build"
-    description = "Builds the DayLoop Rust FFI library for arm64 instrumentation tests."
-    workingDir(rootProject.projectDir)
-    commandLine(
-        "powershell.exe",
-        "-NoProfile",
-        "-ExecutionPolicy", "Bypass",
-        "-File", rootProject.file("rust/scripts/build-android-ffi.ps1").absolutePath,
-        "-OutputDirectory", rustAndroidTestJniLibs.get().asFile.absolutePath,
-    )
-    inputs.files(fileTree(rootProject.file("rust")) {
-        exclude("target/**")
-    })
-    outputs.dir(rustAndroidTestJniLibs)
-}
+val isWindowsHost = System.getProperty("os.name").startsWith("Windows", ignoreCase = true)
 
-tasks.matching { it.name == "mergeDebugAndroidTestJniLibFolders" }.configureEach {
-    dependsOn(buildRustArm64TestLibrary)
+if (isWindowsHost) {
+    val buildRustArm64TestLibrary by tasks.registering(Exec::class) {
+        group = "build"
+        description = "Builds the DayLoop Rust FFI library for arm64 instrumentation tests."
+        workingDir(rootProject.projectDir)
+        commandLine(
+            "powershell.exe",
+            "-NoProfile",
+            "-ExecutionPolicy", "Bypass",
+            "-File", rootProject.file("rust/scripts/build-android-ffi.ps1").absolutePath,
+            "-OutputDirectory", rustAndroidTestJniLibs.get().asFile.absolutePath,
+        )
+        inputs.files(fileTree(rootProject.file("rust")) {
+            exclude("target/**")
+        })
+        outputs.dir(rustAndroidTestJniLibs)
+    }
+
+    tasks.matching { it.name == "mergeDebugAndroidTestJniLibFolders" }.configureEach {
+        dependsOn(buildRustArm64TestLibrary)
+    }
+} else {
+    tasks.register("buildRustArm64TestLibrary") {
+        group = "build"
+        description = "Windows-only ARM64 Rust JNI build; skipped on ${System.getProperty("os.name")}."
+        onlyIf {
+            logger.lifecycle(
+                "Skipping ARM64 Rust JNI build: the checked-in Android test assembly runs on Windows; " +
+                    "Ubuntu CI still verifies Kotlin unit tests and APK assembly.",
+            )
+            false
+        }
+    }
 }
 
 room {
